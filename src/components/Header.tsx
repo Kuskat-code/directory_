@@ -53,9 +53,18 @@ export default function Header() {
         </div>
 
         <div className="flex items-center gap-3 shrink-0">
-          <button className="text-gray-500 hover:text-brand-accent transition-colors text-lg">🔔</button>
-          <div className="w-7 h-7 bg-gradient-to-br from-blue-400 to-blue-600 rounded-full"></div>
+          <button className="text-gray-500 hover:text-brand-accent transition-colors text-lg cursor-pointer">🔔</button>
+          
+          {/* CAMBIO AQUÍ: Ahora es un Link interactivo real con tamaño y prioridad z-index */}
+          <Link 
+            href="/perfil"
+            title="Ver mi perfil"
+            className="relative z-10 block w-7 h-7 bg-gradient-to-br from-blue-400 to-blue-600 rounded-full hover:scale-105 active:scale-95 transition-all cursor-pointer"
+          >
+            <span className="sr-only">Perfil</span>
+          </Link>
         </div>
+
       </nav>
     </header>
   );
