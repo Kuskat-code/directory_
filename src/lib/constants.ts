@@ -1,4 +1,3 @@
-// Colores de la marca
 export const COLORS = {
   WHITE: '#FFFFFF',
   LIGHT_GRAY: '#F1F5F9',
@@ -6,7 +5,6 @@ export const COLORS = {
   DARK_GRAY: '#334155',
 };
 
-// Profesiones disponibles
 export const PROFESSIONS = [
   { id: 'lawyer', label: 'Abogado/a', icon: '⚖️' },
   { id: 'doctor', label: 'Médico/a', icon: '🏥' },
@@ -27,6 +25,8 @@ export const MEDICAL_SPECIALTIES = [
   'Otorrinolaringología',
   'Gastroenterología',
   'Ortopedia',
+  'Ginecología',
+  'Urología',
 ];
 
 export const EL_SALVADOR_DEPARTMENTS = [
@@ -42,6 +42,7 @@ export const EL_SALVADOR_DEPARTMENTS = [
   'Morazán',
   'La Unión',
   'Usulután',
+  'San Miguel',
 ];
 
 export const VALIDATION = {
@@ -57,23 +58,171 @@ export const APPOINTMENT_STATUSES = {
   CANCELLED: 'Cancelada',
 } as const;
 
-export const EXAMPLE_DOCTORS = [
+export interface Doctor {
+  id: string;
+  name: string;
+  specialty: string;
+  location: string;
+  phone: string;
+  email: string;
+  avatar: string;
+  rating: number;
+  reviews: number;
+  experience: number;
+  bio?: string;
+  certifications?: string[];
+  languages?: string[];
+}
+
+export const EXAMPLE_DOCTORS: Doctor[] = [
   {
     id: '1',
     name: 'Dr. Carlos López',
     specialty: 'Cardiología',
-    location: 'San Salvador, El Salvador',
+    location: 'San Salvador',
     phone: '+503 2345 6789',
-    email: 'carlos.lopez@medicalpro.sv',
+    email: 'carlos.lopez@email.com',
     avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Carlos',
     rating: 4.9,
     reviews: 45,
     experience: 15,
-    bio: 'Cardiólogo experimentado con más de 15 años de trayectoria.',
-    certifications: [
-      'Título de Médico Cirujano - Universidad de El Salvador',
-      'Especialización en Cardiología - Universidad Nacional Autónoma de México',
-    ],
+    bio: 'Cardiólogo con más de 15 años de trayectoria en el diagnóstico y tratamiento de enfermedades cardiovasculares.',
+    certifications: ['Universidad de El Salvador', 'UNAM - Cardiología'],
+    languages: ['Español', 'Inglés'],
+  },
+  {
+    id: '2',
+    name: 'Dra. María García',
+    specialty: 'Pediatría',
+    location: 'Santa Ana',
+    phone: '+503 2345 6790',
+    email: 'maria.garcia@email.com',
+    avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Maria',
+    rating: 4.8,
+    reviews: 38,
+    experience: 12,
+    bio: 'Pediatra apasionada por la salud infantil con experiencia en desarrollo y nutrición pediátrica.',
+    certifications: ['Universidad de El Salvador', 'Hospital Bloom'],
+    languages: ['Español'],
+  },
+  {
+    id: '3',
+    name: 'Dr. Roberto Martínez',
+    specialty: 'Dermatología',
+    location: 'San Salvador',
+    phone: '+503 2345 6791',
+    email: 'roberto.martinez@email.com',
+    avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Roberto',
+    rating: 4.7,
+    reviews: 52,
+    experience: 20,
+    bio: 'Dermatólogo especializado en dermatología clínica, estética y cirugía dermatológica.',
+    certifications: ['Universidad de El Salvador', 'Hospital General'],
+    languages: ['Español', 'Inglés', 'Francés'],
+  },
+  {
+    id: '4',
+    name: 'Dra. Ana Hernández',
+    specialty: 'Neurología',
+    location: 'La Libertad',
+    phone: '+503 2345 6792',
+    email: 'ana.hernandez@email.com',
+    avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Ana',
+    rating: 4.9,
+    reviews: 29,
+    experience: 8,
+    bio: 'Neuróloga dedicada al estudio y tratamiento de trastornos del sistema nervioso central y periférico.',
+    certifications: ['Universidad Centroamericana', 'Hospital de Diagnóstico'],
+    languages: ['Español', 'Inglés'],
+  },
+  {
+    id: '5',
+    name: 'Dr. José Rodríguez',
+    specialty: 'Oftalmología',
+    location: 'San Salvador',
+    phone: '+503 2345 6793',
+    email: 'jose.rodriguez@email.com',
+    avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Jose',
+    rating: 4.6,
+    reviews: 61,
+    experience: 18,
+    bio: 'Oftalmólogo con amplia experiencia en cirugía refractiva y tratamiento de enfermedades oculares.',
+    certifications: ['Universidad de El Salvador', 'Instituto de Oftalmología'],
+    languages: ['Español'],
+  },
+  {
+    id: '6',
+    name: 'Dra. Laura Fernández',
+    specialty: 'Psiquiatría',
+    location: 'Santa Ana',
+    phone: '+503 2345 6794',
+    email: 'laura.fernandez@email.com',
+    avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Laura',
+    rating: 4.8,
+    reviews: 33,
+    experience: 10,
+    bio: 'Psiquiatra enfocada en salud mental, trastornos de ansiedad y depresión con enfoque humanista.',
+    certifications: ['Universidad de El Salvador', 'Hospital Psiquiátrico'],
+    languages: ['Español', 'Inglés'],
+  },
+  {
+    id: '7',
+    name: 'Dr. Miguel Ángel Ruiz',
+    specialty: 'Ortopedia',
+    location: 'San Miguel',
+    phone: '+503 2345 6795',
+    email: 'miguel.ruiz@email.com',
+    avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Miguel',
+    rating: 4.5,
+    reviews: 27,
+    experience: 14,
+    bio: 'Ortopedico especializado en traumatología deportiva y reemplazos articulares.',
+    certifications: ['Universidad de El Salvador', 'Hospital Militar'],
+    languages: ['Español'],
+  },
+  {
+    id: '8',
+    name: 'Dra. Patricia Sandoval',
+    specialty: 'Medicina General',
+    location: 'San Salvador',
+    phone: '+503 2345 6796',
+    email: 'patricia.sandoval@email.com',
+    avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Patricia',
+    rating: 4.9,
+    reviews: 73,
+    experience: 22,
+    bio: 'Médica general con más de 22 años de experiencia en atención primaria y medicina preventiva.',
+    certifications: ['Universidad de El Salvador', 'Ministerio de Salud'],
+    languages: ['Español', 'Inglés'],
+  },
+  {
+    id: '9',
+    name: 'Dr. Fernando Castillo',
+    specialty: 'Cardiología',
+    location: 'La Libertad',
+    phone: '+503 2345 6797',
+    email: 'fernando.castillo@email.com',
+    avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Fernando',
+    rating: 4.7,
+    reviews: 41,
+    experience: 16,
+    bio: 'Cardiólogo intervencionista especializado en cateterismo cardíaco y hemodinamia.',
+    certifications: ['Universidad de El Salvador', 'Hospital Nacional'],
+    languages: ['Español', 'Inglés'],
+  },
+  {
+    id: '10',
+    name: 'Dra. Carmen Rivas',
+    specialty: 'Ginecología',
+    location: 'San Salvador',
+    phone: '+503 2345 6798',
+    email: 'carmen.rivas@email.com',
+    avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Carmen',
+    rating: 4.8,
+    reviews: 56,
+    experience: 19,
+    bio: 'Ginecóloga obstetra con experiencia en atención integral de la salud femenina y embarazos de alto riesgo.',
+    certifications: ['Universidad de El Salvador', 'Hospital de la Mujer'],
     languages: ['Español', 'Inglés'],
   },
 ];
