@@ -137,6 +137,28 @@ body {
   .animate-pulse-slow {
     animation: pulse-slow 3s var(--ease-premium) infinite;
   }
+
+  .profile-input {
+    width: 100%;
+    border-radius: var(--radius-button);
+    border: 1px solid var(--color-border);
+    background-color: rgb(232 244 248 / 0.5);
+    padding: 0.5rem 0.75rem;
+    font-size: 0.875rem;
+    color: var(--color-text);
+    outline: none;
+    transition: border-color 0.2s var(--ease-premium), box-shadow 0.2s var(--ease-premium);
+  }
+
+  .profile-input:focus {
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 2px rgb(10 110 122 / 0.2);
+  }
+
+  .profile-textarea {
+    min-height: 6rem;
+    resize: vertical;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
