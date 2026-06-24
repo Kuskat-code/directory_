@@ -54,13 +54,6 @@ const features = [
   },
 ];
 
-const stats = [
-  { value: '500+', label: 'Especialistas' },
-  { value: '15+', label: 'Especialidades' },
-  { value: '98%', label: 'Satisfaccion' },
-  { value: '10K+', label: 'Pacientes' },
-];
-
 const containerVariants = {
   hidden: {},
   visible: { transition: { staggerChildren: 0.12 } },
@@ -121,21 +114,6 @@ export default function FeaturesSection() {
         aria-label="Estadisticas de la plataforma"
         className="gradient-primary px-4 py-16 md:py-20"
       >
-        <div className="mx-auto grid max-w-6xl grid-cols-2 gap-8 md:grid-cols-4">
-          {stats.map((stat, i) => (
-            <motion.div
-              key={stat.label}
-              initial={{ opacity: 0, y: 24 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: '-40px' }}
-              transition={{ duration: 0.45, delay: i * 0.08, ease: EASE }}
-              className="text-center"
-            >
-              <div className="text-3xl font-bold text-white md:text-4xl">{stat.value}</div>
-              <div className="mt-1 text-sm text-white/75">{stat.label}</div>
-            </motion.div>
-          ))}
-        </div>
       </section>
     </>
   );

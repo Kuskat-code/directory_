@@ -5,7 +5,7 @@ import BranchesMapSection from '@/src/features/directory/components/BranchesMapS
 import FeaturesSection from '@/src/components/FeaturesSection';
 import PricingSection from '@/src/components/PricingSection';
 
-const VIDEO_URL = '/doctor.mp4';
+const VIDEO_URL = '/doctor_writting.mp4';
 
 export default function Home() {
   return (
