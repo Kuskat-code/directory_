@@ -1,11 +1,19 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { motion } from 'framer-motion';
+import { Check, HelpCircle, X } from 'lucide-react';
+import { Button } from '@/src/components/ui/Button';
+import { Badge } from '@/src/components/ui/Badge';
+import { SectionContainer } from '@/src/components/ui/SectionContainer';
+import { Card } from '@/src/components/ui/Card';
 
-// 1. Tipado estricto para asegurar consistencia en los datos de los planes
+const EASE = [0.4, 0, 0.2, 1] as const;
+
 interface PlanFeature {
   text: string;
   included: boolean;
+  tooltip?: string;
 }
 
 interface Plan {
@@ -23,193 +31,232 @@ const PRICING_PLANS: Plan[] = [
   {
     id: 'basic',
     name: 'Basic',
-    description: 'Establece tu presencia básica',
+    description: 'Presencia profesional esencial',
     priceMonthly: 0,
     priceYearly: 0,
-    buttonText: 'Comenzar Gratis',
+    buttonText: 'Comenzar gratis',
     features: [
-      { text: 'Perfil público en el directorio', included: true },
-      { text: 'Información de contacto básica', included: true },
-      { text: 'Tarjeta digital de presentación', included: false },
+      { text: 'Perfil publico en el directorio', included: true },
+      { text: 'Informacion de contacto basica', included: true },
+      { text: 'Tarjeta digital interactiva', included: false, tooltip: 'Disponible en plan Pro' },
     ],
   },
   {
-    id: 'professional',
-    name: 'Professional',
-    description: 'Compromiso directo con clientes',
+    id: 'pro',
+    name: 'Pro',
+    description: 'Visibilidad y conversion optimizada',
     priceMonthly: 29,
-    priceYearly: 23, // ~20% de descuento
-    buttonText: 'Volverse Profesional',
+    priceYearly: 23,
+    buttonText: 'Elegir Pro',
     isPopular: true,
     features: [
-      { text: 'Tarjeta digital interactiva', included: true },
+      { text: 'Tarjeta digital interactiva', included: true, tooltip: 'Perfil enriquecido con CTA directo' },
       { text: 'Enlace directo a WhatsApp', included: true },
-      { text: 'Integración con redes sociales', included: true },
-      { text: 'Dashboard de analíticas básicas', included: true },
+      { text: 'Integracion con redes sociales', included: true },
+      { text: 'Dashboard de analiticas', included: true, tooltip: 'Metricas de visitas y contactos' },
     ],
   },
   {
-    id: 'elite',
-    name: 'Elite',
-    description: 'Visibilidad de máximo nivel',
+    id: 'enterprise',
+    name: 'Enterprise',
+    description: 'Solucion para centros medicos',
     priceMonthly: 79,
     priceYearly: 63,
-    buttonText: 'Contactar Ventas',
+    buttonText: 'Contactar ventas',
     features: [
-      { text: 'Todas las funciones Profesionales', included: true },
-      { text: 'Sistema de reservas inteligente', included: true },
-      { text: 'Posicionamiento destacado en home', included: true },
+      { text: 'Todas las funciones Pro', included: true },
+      { text: 'Sistema de reservas inteligente', included: true, tooltip: 'Agenda integrada multi-especialista' },
+      { text: 'Posicionamiento destacado', included: true },
       { text: 'Soporte prioritario 24/7', included: true },
-      { text: 'Herramientas CRM para clientes', included: true },
+      { text: 'Herramientas CRM', included: true },
     ],
   },
 ];
+
+function AnimatedPrice({ value, isVisible }: { value: number; isVisible: boolean }) {
+  const [display, setDisplay] = useState(0);
+
+  useEffect(() => {
+    if (!isVisible) return;
+    const duration = 800;
+    const start = performance.now();
+    let frame: number;
+
+    const animate = (now: number) => {
+      const progress = Math.min((now - start) / duration, 1);
+      const eased = 1 - Math.pow(1 - progress, 3);
+      setDisplay(Math.round(value * eased));
+      if (progress < 1) frame = requestAnimationFrame(animate);
+    };
+
+    frame = requestAnimationFrame(animate);
+    return () => cancelAnimationFrame(frame);
+  }, [value, isVisible]);
+
+  return <span>{display}</span>;
+}
+
+function FeatureItem({
+  feature,
+  isPopular,
+}: {
+  feature: PlanFeature;
+  isPopular: boolean;
+}) {
+  return (
+    <li
+      className={`flex items-start gap-3 text-sm ${!feature.included && !isPopular ? 'text-text-muted/50 line-through' : ''
+        }`}
+    >
+      {feature.included ? (
+        <Check
+          className={`mt-0.5 h-5 w-5 shrink-0 ${isPopular ? 'text-cyan-200' : 'text-primary'}`}
+          aria-hidden="true"
+        />
+      ) : (
+        <X className="mt-0.5 h-5 w-5 shrink-0 text-text-muted/40" aria-hidden="true" />
+      )}
+      <span className="flex items-center gap-1.5">
+        {feature.text}
+        {feature.tooltip && (
+          <span className="group relative">
+            <HelpCircle
+              className="h-3.5 w-3.5 cursor-help text-text-muted/60"
+              aria-label={feature.tooltip}
+            />
+            <span
+              role="tooltip"
+              className="pointer-events-none absolute bottom-full left-1/2 z-10 mb-2 w-44 -translate-x-1/2 rounded-[var(--radius-button)] bg-text px-2 py-1.5 text-xs text-white opacity-0 shadow-lg transition-opacity duration-200 group-hover:opacity-100 group-focus-within:opacity-100"
+            >
+              {feature.tooltip}
+            </span>
+          </span>
+        )}
+      </span>
+    </li>
+  );
+}
 
 export default function PricingSection() {
   const [isYearly, setIsYearly] = useState(false);
 
   return (
-    <section className="py-20 px-4 bg-brand-light" aria-labelledby="pricing-title">
-      <div className="max-w-6xl mx-auto">
-        
-        {/* Encabezado */}
-        <div className="text-center mb-16">
-          <h2 id="pricing-title" className="text-3xl md:text-4xl font-bold text-brand-dark mb-4 tracking-tight">
-            Elige el plan perfecto
-          </h2>
-          <p className="text-brand-dark/80 max-w-xl mx-auto mb-8 text-base md:text-lg">
-            Muestra tu experiencia, conecta con pacientes de alto valor y expande tu red profesional.
-          </p>
+    <SectionContainer
+      spacing="md"
+      className="bg-secondary/50"
+      aria-labelledby="pricing-title"
+    >
+      <div className="mx-auto mb-14 max-w-2xl text-center">
+        <h2 id="pricing-title" className="text-heading font-bold text-text">
+          Planes para cada etapa de tu practica
+        </h2>
+        <p className="text-subheading mt-4 text-text-muted">
+          Desde consultorios individuales hasta centros medicos. Escala tu presencia digital con confianza.
+        </p>
 
-          {/* Selector Mensual / Anual (Toggle) */}
-          <div className="inline-flex items-center justify-center gap-3 bg-brand-white p-1.5 rounded-full shadow-xs border border-brand-dark/5">
-            <button
-              type="button"
-              onClick={() => setIsYearly(false)}
-              className={`px-4 py-1.5 rounded-full text-sm font-semibold transition-all duration-200 ${
-                !isYearly 
-                  ? 'bg-brand-teal text-brand-white shadow-xs' 
-                  : 'text-brand-dark/70 hover:text-brand-dark'
+        <div
+          className="mt-8 inline-flex items-center gap-1 rounded-[var(--radius-pill)] border border-border bg-white p-1 shadow-sm"
+          role="group"
+          aria-label="Periodo de facturacion"
+        >
+          <button
+            type="button"
+            aria-pressed={!isYearly}
+            onClick={() => setIsYearly(false)}
+            className={`rounded-[var(--radius-pill)] px-5 py-2 text-sm font-semibold transition-all duration-300 transition-premium ${!isYearly ? 'bg-primary text-white shadow-md' : 'text-text-muted hover:text-text'
               }`}
-            >
-              Mensual
-            </button>
-            <button
-              type="button"
-              onClick={() => setIsYearly(true)}
-              className={`px-4 py-1.5 rounded-full text-sm font-semibold flex items-center gap-1.5 transition-all duration-200 ${
-                isYearly 
-                  ? 'bg-brand-teal text-brand-white shadow-xs' 
-                  : 'text-brand-dark/70 hover:text-brand-dark'
+          >
+            Mensual
+          </button>
+          <button
+            type="button"
+            aria-pressed={isYearly}
+            onClick={() => setIsYearly(true)}
+            className={`flex items-center gap-2 rounded-[var(--radius-pill)] px-5 py-2 text-sm font-semibold transition-all duration-300 transition-premium ${isYearly ? 'bg-primary text-white shadow-md' : 'text-text-muted hover:text-text'
               }`}
-            >
-              Anual
-              <span className={`text-xs px-2 py-0.5 rounded-full font-bold transition-colors ${
-                isYearly ? 'bg-brand-accent text-brand-white' : 'bg-brand-accent/10 text-brand-accent'
-              }`}>
-                -20%
-              </span>
-            </button>
-          </div>
+          >
+            Anual
+            <Badge variant="accent" className="text-[10px]">-20%</Badge>
+          </button>
         </div>
+      </div>
 
-        {/* Grid de Tarjetas de Precios */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-stretch lg:gap-6">
-          {PRICING_PLANS.map((plan) => {
-            const price = isYearly ? plan.priceYearly : plan.priceMonthly;
-            
-            return (
-              <article
-                key={plan.id}
-                className={`relative rounded-2xl p-8 flex flex-col justify-between transition-all duration-300 border ${
-                  plan.isPopular
-                    ? 'bg-brand-teal text-brand-white md:-translate-y-4 shadow-xl border-brand-teal'
-                    : 'bg-brand-white text-brand-dark shadow-xs border-brand-dark/10'
-                } hover:shadow-md hover:border-brand-accent/30`}
+      <div className="grid grid-cols-1 items-stretch gap-6 md:grid-cols-2 lg:grid-cols-3 lg:gap-8">
+        {PRICING_PLANS.map((plan, index) => {
+          const price = isYearly ? plan.priceYearly : plan.priceMonthly;
+          const isPopular = Boolean(plan.isPopular);
+
+          return (
+            <motion.article
+              key={plan.id}
+              initial={{ opacity: 0, y: 40 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: '-40px' }}
+              transition={{ duration: 0.5, delay: index * 0.1, ease: EASE }}
+              whileHover={{ y: -8, scale: 1.02 }}
+              className={isPopular ? 'lg:-mt-2 lg:mb-2' : ''}
+            >
+              <Card
+                padding="lg"
+                elevated={isPopular}
+                className={[
+                  'relative flex h-full flex-col',
+                  'transition-shadow duration-300 transition-premium',
+                  isPopular
+                    ? 'border-2 border-transparent bg-primary text-white shadow-glow [background-clip:padding-box,border-box] [background-origin:border-box] bg-[linear-gradient(var(--color-primary),var(--color-primary)),linear-gradient(135deg,#0d9488,#06b6d4)]'
+                    : 'border-border bg-white hover:shadow-glow',
+                ].join(' ')}
               >
-                {/* Badge para el plan destacado */}
-                {plan.isPopular && (
-                  <span className="absolute -top-3.5 left-1/2 -translate-x-1/2 bg-brand-accent text-brand-white text-xs uppercase font-extrabold px-4 py-1 rounded-full tracking-wider shadow-sm animate-pulse-slow">
-                    Más Popular
-                  </span>
+                {isPopular && (
+                  <Badge
+                    variant="accent"
+                    className="absolute -top-3 left-1/2 -translate-x-1/2 shadow-md"
+                  >
+                    Más popular
+                  </Badge>
                 )}
 
-                <div>
-                  <header className="mb-6">
-                    <h3 className="text-2xl font-bold mb-1 tracking-tight">{plan.name}</h3>
-                    <p className={`text-sm ${plan.isPopular ? 'text-brand-light/80' : 'text-brand-dark/60'}`}>
-                      {plan.description}
-                    </p>
-                  </header>
-                  
-                  {/* Sección de Precio */}
-                  <div className="flex items-baseline mb-8 border-b pb-6 border-brand-dark/10">
+                <header className="mb-6">
+                  <h3 className="text-2xl font-bold">{plan.name}</h3>
+                  <p className={`mt-1 text-sm ${isPopular ? 'text-white/75' : 'text-text-muted'}`}>
+                    {plan.description}
+                  </p>
+                </header>
+
+                <div className={`mb-8 border-b pb-6 ${isPopular ? 'border-white/20' : 'border-border'}`}>
+                  <div className="flex items-baseline gap-1">
                     <span className="text-4xl font-extrabold tracking-tight">
-                      ${price}
+                      $
+                      {price === 0 ? (
+                        '0'
+                      ) : (
+                        <AnimatedPrice value={price} isVisible={true} />
+                      )}
                     </span>
-                    <span className={`text-sm ml-1 font-medium ${plan.isPopular ? 'text-brand-light/70' : 'text-brand-dark/50'}`}>
+                    <span className={`text-sm ${isPopular ? 'text-white/70' : 'text-text-muted'}`}>
                       / mes
                     </span>
                   </div>
-
-                  {/* Listado de Características */}
-                  <ul className="space-y-4 mb-8" role="list">
-                    {plan.features.map((feature, idx) => (
-                      <li
-                        key={idx}
-                        className={`flex items-start text-sm font-medium ${
-                          !feature.included && !plan.isPopular ? 'text-brand-dark/40 line-through' : ''
-                        }`}
-                      >
-                        {feature.included ? (
-                          <svg
-                            className={`w-5 h-5 mr-3 shrink-0 ${
-                              plan.isPopular ? 'text-brand-accent' : 'text-brand-teal'
-                            }`}
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            stroke="currentColor"
-                            strokeWidth={2.5}
-                            aria-hidden="true"
-                          >
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                          </svg>
-                        ) : (
-                          <svg
-                            className={`w-5 h-5 mr-3 shrink-0 ${plan.isPopular ? 'text-brand-white/40' : 'text-brand-dark/30'}`}
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            stroke="currentColor"
-                            strokeWidth={2}
-                            aria-hidden="true"
-                          >
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                          </svg>
-                        )}
-                        <span>{feature.text}</span>
-                      </li>
-                    ))}
-                  </ul>
                 </div>
 
-                {/* Botón de Acción con estados Hover pulidos */}
-                <footer className="mt-auto">
-                  <button
-                    type="button"
-                    className={`w-full py-3 px-4 rounded-xl font-bold text-sm transition-all duration-200 cursor-pointer ${
-                      plan.isPopular
-                        ? 'bg-brand-accent text-brand-white hover:bg-brand-accent/90 shadow-sm active:scale-98'
-                        : 'bg-brand-light text-brand-dark hover:bg-brand-dark hover:text-brand-white border border-transparent active:scale-98'
-                    }`}
-                  >
-                    {plan.buttonText}
-                  </button>
-                </footer>
-              </article>
-            );
-          })}
-        </div>
+                <ul className="mb-8 flex flex-1 flex-col gap-3" role="list">
+                  {plan.features.map((feature) => (
+                    <FeatureItem key={feature.text} feature={feature} isPopular={isPopular} />
+                  ))}
+                </ul>
+
+                <Button
+                  type="button"
+                  variant={isPopular ? 'accent' : 'outline'}
+                  className={`w-full ${isPopular ? 'border-0' : ''}`}
+                >
+                  {plan.buttonText}
+                </Button>
+              </Card>
+            </motion.article>
+          );
+        })}
       </div>
-    </section>
+    </SectionContainer>
   );
 }

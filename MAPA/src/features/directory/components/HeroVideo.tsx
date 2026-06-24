@@ -43,22 +43,8 @@ export default function HeroVideo() {
 
         <form
           onSubmit={handleSearch}
-          className="mt-10 bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl p-3 md:p-4 flex flex-col md:flex-row items-stretch md:items-center gap-3"
+          className="mt-10 bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl p-3 md:p-4 flex flex-col md:flex-row items-stretch md:items-center gap-3 max-w-xl mx-auto"
         >
-          <div className="flex-1 relative">
-            <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-lg">🏥</span>
-            <select
-              value={specialty}
-              onChange={(e) => setSpecialty(e.target.value)}
-              className="w-full bg-white/90 text-gray-800 rounded-xl pl-11 pr-4 py-3.5 text-sm outline-none focus:ring-2 focus:ring-blue-400 transition-all cursor-pointer"
-            >
-              <option value="">Todas las especialidades</option>
-              {MEDICAL_SPECIALTIES.map((s) => (
-                <option key={s} value={s}>{s}</option>
-              ))}
-            </select>
-          </div>
-
           <div className="flex-1 relative">
             <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-lg">📍</span>
             <select

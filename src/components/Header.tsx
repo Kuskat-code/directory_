@@ -1,71 +1,229 @@
 'use client';
-import { useState } from 'react';
+
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
+import { AnimatePresence, motion } from 'framer-motion';
+import { Menu, Stethoscope, X } from 'lucide-react';
+import { Button } from '@/src/components/ui/Button';
+
+const EASE = [0.4, 0, 0.2, 1] as const;
 
 const navLinks = [
   { label: 'Directorio', href: '/directorio' },
-  { label: 'Servicios', href: '/servicios' },
-  { label: 'Soporte', href: '/soporte' },
+  { label: 'Funciones', href: '/#features' },
+  { label: 'Precios', href: '/#pricing' },
 ];
+
+function Logo({ light }: { light: boolean }) {
+  return (
+    <Link
+      href="/"
+      className="group flex items-center gap-2 rounded-[var(--radius-button)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+      aria-label="Directorio Medico El Salvador - Inicio"
+    >
+      <span className="flex h-9 w-9 items-center justify-center rounded-[var(--radius-button)] gradient-primary shadow-md transition-transform duration-300 group-hover:scale-105">
+        <Stethoscope className="h-5 w-5 text-white" aria-hidden="true" />
+      </span>
+      <span className={`hidden font-bold sm:block ${light ? 'text-text' : 'text-white'}`}>
+        <span className="gradient-text">Med</span>
+        <span className={light ? 'text-text' : 'text-white'}>Directorio</span>
+      </span>
+    </Link>
+  );
+}
+
+function NavLink({
+  href,
+  label,
+  isActive,
+  isLight,
+  onClick,
+  layoutId,
+}: {
+  href: string;
+  label: string;
+  isActive: boolean;
+  isLight: boolean;
+  onClick?: () => void;
+  layoutId?: string;
+}) {
+  return (
+    <Link
+      href={href}
+      onClick={onClick}
+      className={`relative rounded-[var(--radius-button)] px-4 py-2 text-sm font-medium transition-colors duration-300 transition-premium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${isActive
+        ? isLight
+          ? 'text-primary'
+          : 'text-white'
+        : isLight
+          ? 'text-text-muted hover:text-text'
+          : 'text-white/80 hover:text-white'
+        }`}
+    >
+      {label}
+      {isActive && layoutId && (
+        <motion.span
+          layoutId={layoutId}
+          className={`absolute inset-x-2 -bottom-0.5 h-0.5 rounded-full ${isLight ? 'bg-primary' : 'bg-cyan-300'
+            }`}
+          transition={{ type: 'spring', stiffness: 380, damping: 30 }}
+        />
+      )}
+    </Link>
+  );
+}
 
 export default function Header() {
   const pathname = usePathname();
-  const [query, setQuery] = useState('');
+  const router = useRouter();
+  const [scrolled, setScrolled] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
+
+  const isHeroPage = pathname === '/';
+  const isLight = scrolled || !isHeroPage;
+
+  useEffect(() => {
+    const handleScroll = () => setScrolled(window.scrollY > 20);
+    handleScroll();
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  useEffect(() => {
+    setMobileOpen(false);
+  }, [pathname]);
+
+  useEffect(() => {
+    document.body.style.overflow = mobileOpen ? 'hidden' : '';
+    if (!mobileOpen) return () => { document.body.style.overflow = ''; };
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setMobileOpen(false);
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.body.style.overflow = '';
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [mobileOpen]);
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 py-3">
-      <nav className="w-full max-w-[96%] mx-auto bg-white/80 backdrop-blur-xl border border-gray-200/50 shadow-sm rounded-full px-5 py-2.5 flex items-center justify-between gap-4">
+    <header className="fixed inset-x-0 top-0 z-50">
+      <div className="mx-auto max-w-7xl px-4 pt-3 sm:px-6 lg:px-8 lg:pt-4">
+        <nav
+          aria-label="Navegacion principal"
+          className={[
+            'flex items-center justify-between gap-4 rounded-[var(--radius-card)] px-4 py-3 shadow-md transition-all duration-300 transition-premium md:px-6',
+            isLight ? 'glass-nav' : 'glass-nav-dark',
+          ].join(' ')}
+        >
+          <Logo light={isLight} />
 
-        <Link href="/" className="text-lg font-bold text-gray-900 tracking-tight flex items-center gap-2 shrink-0">
-          <div className="w-7 h-7 bg-gradient-to-br from-brand-accent to-blue-700 rounded-lg"></div>
-          <span className="hidden sm:inline">DirectorioPro</span>
-        </Link>
-
-        <div className="hidden md:flex items-center gap-1">
-          {navLinks.map((link) => {
-            const isActive = pathname === link.href;
-            return (
-              <Link
+          <div className="hidden items-center gap-1 md:flex">
+            {navLinks.map((link) => (
+              <NavLink
                 key={link.href}
-                href={link.href}
-                className={`px-4 py-2 text-sm font-medium rounded-xl transition-colors ${
-                  isActive
-                    ? 'bg-brand-accent/10 text-brand-accent'
-                    : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
-                }`}
-              >
-                {link.label}
-              </Link>
-            );
-          })}
-        </div>
+                {...link}
+                isActive={
+                  link.href.startsWith('/#')
+                    ? false
+                    : pathname === link.href || pathname.startsWith(`${link.href}/`)
+                }
+                isLight={isLight}
+                layoutId="nav-indicator"
+              />
+            ))}
+          </div>
 
-        <div className="relative flex-1 max-w-xs hidden sm:block">
-          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">🔍</span>
-          <input
-            type="text"
-            placeholder="Buscar profesionales..."
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            className="w-full bg-gray-100 text-sm rounded-full pl-9 pr-4 py-1.5 outline-none focus:ring-2 focus:ring-blue-400 focus:bg-white transition-all placeholder:text-gray-400"
-          />
-        </div>
+          <div className="hidden items-center gap-3 md:flex">
+            <Button
+              size="sm"
+              className="whitespace-nowrap"
+              onClick={() => router.push('/perfil')}
+            >
+              Perfil Médico
+            </Button>
+          </div>
 
-        <div className="flex items-center gap-3 shrink-0">
-          <button className="text-gray-500 hover:text-brand-accent transition-colors text-lg cursor-pointer">🔔</button>
-          
-          {/* CAMBIO AQUÍ: Ahora es un Link interactivo real con tamaño y prioridad z-index */}
-          <Link 
-            href="/perfil"
-            title="Ver mi perfil"
-            className="relative z-10 block w-7 h-7 bg-gradient-to-br from-blue-400 to-blue-600 rounded-full hover:scale-105 active:scale-95 transition-all cursor-pointer"
+          <button
+            type="button"
+            className={`flex h-10 w-10 items-center justify-center rounded-[var(--radius-button)] transition-colors md:hidden ${isLight ? 'text-text hover:bg-secondary' : 'text-white hover:bg-white/10'
+              }`}
+            aria-expanded={mobileOpen}
+            aria-controls="mobile-nav"
+            aria-label={mobileOpen ? 'Cerrar menu' : 'Abrir menu'}
+            onClick={() => setMobileOpen((o) => !o)}
           >
-            <span className="sr-only">Perfil</span>
-          </Link>
-        </div>
+            {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+          </button>
+        </nav>
+      </div>
 
-      </nav>
+      <AnimatePresence>
+        {mobileOpen && (
+          <>
+            <motion.button
+              type="button"
+              aria-label="Cerrar menu"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              className="fixed inset-0 z-40 bg-text/40 backdrop-blur-sm md:hidden"
+              onClick={() => setMobileOpen(false)}
+            />
+
+            <motion.div
+              id="mobile-nav"
+              role="dialog"
+              aria-modal="true"
+              aria-label="Menu de navegacion"
+              initial={{ x: '100%' }}
+              animate={{ x: 0 }}
+              exit={{ x: '100%' }}
+              transition={{ duration: 0.3, ease: EASE }}
+              className="fixed inset-y-0 right-0 z-50 flex w-full max-w-xs flex-col bg-white shadow-lg md:hidden"
+            >
+              <div className="flex items-center justify-between border-b border-border p-4">
+                <Logo light />
+                <button
+                  type="button"
+                  onClick={() => setMobileOpen(false)}
+                  className="rounded-[var(--radius-button)] p-2 text-text-muted hover:bg-secondary"
+                  aria-label="Cerrar menu"
+                >
+                  <X className="h-5 w-5" />
+                </button>
+              </div>
+
+              <div className="flex flex-1 flex-col gap-1 p-4">
+                {navLinks.map((link, i) => (
+                  <motion.div
+                    key={link.href}
+                    initial={{ opacity: 0, x: 20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: i * 0.05, ease: EASE }}
+                  >
+                    <NavLink
+                      {...link}
+                      isActive={pathname === link.href}
+                      isLight
+                      onClick={() => setMobileOpen(false)}
+                    />
+                  </motion.div>
+                ))}
+              </div>
+
+              <div className="border-t border-border p-4">
+                <Button variant="outline" className="w-full">
+                  Perfil Medico
+                </Button>
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
     </header>
   );
 }

@@ -1,3 +1,6 @@
+import { Calendar, Clock, MapPin, MessageCircle } from 'lucide-react';
+import { Button } from '@/src/components/ui/Button';
+
 interface ProfileSidebarProps {
   schedule: { days: string; hours: string; closed?: boolean }[];
   address: string;
@@ -6,40 +9,52 @@ interface ProfileSidebarProps {
 export default function ProfileSidebar({ schedule, address }: ProfileSidebarProps) {
   return (
     <div className="space-y-6">
-      {/* CTA de Asesoría */}
-      <section className="bg-brand-white rounded-2xl p-6 shadow-xs border border-brand-dark/5">
-        <h2 className="text-base font-bold text-brand-dark text-center mb-1">¿Necesita asesoría legal?</h2>
-        <p className="text-xs text-brand-dark/60 text-center mb-6">Contacte al especialista para discutir su caso.</p>
+      <section className="rounded-[var(--radius-card)] border border-border bg-surface p-6 shadow-sm">
+        <h2 className="mb-1 text-center text-base font-bold text-text">Agenda tu cita</h2>
+        <p className="mb-6 text-center text-xs text-text-muted">
+          Contacta al especialista para discutir tu caso.
+        </p>
         <div className="space-y-3">
-          <button className="w-full bg-brand-accent hover:bg-brand-accent/90 text-brand-white font-bold py-3 px-4 rounded-xl text-sm transition-colors cursor-pointer shadow-xs">
-            📅 Agendar Cita
-          </button>
-          <button className="w-full bg-emerald-600 hover:bg-emerald-700 text-brand-white font-bold py-3 px-4 rounded-xl text-sm transition-colors cursor-pointer shadow-xs">
-            💬 Contactar WhatsApp
-          </button>
+          <Button variant="primary" className="w-full">
+            <Calendar className="h-4 w-4" aria-hidden="true" />
+            Agendar Cita
+          </Button>
+          <Button variant="accent" className="w-full">
+            <MessageCircle className="h-4 w-4" aria-hidden="true" />
+            Contactar WhatsApp
+          </Button>
         </div>
       </section>
 
-      {/* Horario de Atención */}
-      <section className="bg-brand-white rounded-2xl p-6 shadow-xs border border-brand-dark/5">
-        <h2 className="text-sm font-bold text-brand-dark mb-4 flex items-center gap-2">🕒 Horario de Atención</h2>
+      <section className="rounded-[var(--radius-card)] border border-border bg-surface p-6 shadow-sm">
+        <h2 className="mb-4 flex items-center gap-2 text-sm font-bold text-text">
+          <Clock className="h-4 w-4 text-primary" aria-hidden="true" />
+          Horario de Atencion
+        </h2>
         <div className="space-y-3 text-xs">
           {schedule.map((item, i) => (
-            <div key={i} className="flex justify-between items-center py-1 border-b border-brand-dark/5 last:border-0">
-              <span className="font-medium text-brand-dark/70">{item.days}</span>
-              <span className={`font-bold ${item.closed ? 'text-red-500' : 'text-brand-dark'}`}>{item.hours}</span>
+            <div
+              key={i}
+              className="flex items-center justify-between border-b border-border py-1 last:border-0"
+            >
+              <span className="font-medium text-text-muted">{item.days}</span>
+              <span className={`font-bold ${item.closed ? 'text-warning' : 'text-text'}`}>
+                {item.hours}
+              </span>
             </div>
           ))}
         </div>
       </section>
 
-      {/* Ubicación */}
-      <section className="bg-brand-white rounded-2xl p-6 shadow-xs border border-brand-dark/5">
-        <h2 className="text-sm font-bold text-brand-dark mb-3 flex items-center gap-2">📍 Ubicación</h2>
-        <div className="w-full h-32 bg-slate-100 rounded-xl mb-3 border border-brand-dark/10 flex items-center justify-center text-brand-dark/40 text-xs font-medium">
-          [ Zona del Mapa ]
+      <section className="rounded-[var(--radius-card)] border border-border bg-surface p-6 shadow-sm">
+        <h2 className="mb-3 flex items-center gap-2 text-sm font-bold text-text">
+          <MapPin className="h-4 w-4 text-primary" aria-hidden="true" />
+          Ubicacion
+        </h2>
+        <div className="mb-3 flex h-32 w-full items-center justify-center rounded-[var(--radius-card)] border border-border bg-secondary text-xs font-medium text-text-muted">
+          [ Mapa ]
         </div>
-        <p className="text-xs text-brand-dark/70 leading-relaxed font-medium">{address}</p>
+        <p className="text-xs font-medium leading-relaxed text-text-muted">{address}</p>
       </section>
     </div>
   );
