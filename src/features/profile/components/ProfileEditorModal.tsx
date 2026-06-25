@@ -20,8 +20,9 @@ import {
   User,
   X,
 } from 'lucide-react';
-import type { EditableProfile, ProfileService } from '../types';
+import type { EditableProfile, ProfileService, SpecialtyColorScheme } from '../types';
 import { ImageUploader } from './ImageUploader';
+import { getSpecialtyColors } from '../specialty-colors';
 import { MEDICAL_SPECIALTIES } from '@/src/lib/constants';
 
 const FREE_GALLERY_LIMIT = 3;
@@ -71,6 +72,9 @@ export function ProfileEditorModal({
 }: ProfileEditorModalProps) {
   const [activeTab, setActiveTab] = useState<TabId>('perfil');
 
+  // Derive accent colors from the current specialty being edited
+  const colors = getSpecialtyColors(draft.specialty);
+
   return (
     <AnimatePresence>
       {isOpen && (
@@ -99,12 +103,27 @@ export function ProfileEditorModal({
             transition={{ duration: 0.26, ease: EASE }}
             className="fixed inset-x-4 bottom-4 top-6 z-[110] mx-auto flex max-w-2xl flex-col overflow-hidden rounded-3xl bg-white shadow-[0_32px_64px_-12px_rgb(10_110_122/0.25),0_0_0_1px_rgb(10_110_122/0.06)] sm:inset-x-8 md:inset-x-0 md:left-1/2 md:w-full md:-translate-x-1/2"
           >
+            {/* Thin specialty-color accent strip at top */}
+            <motion.div
+              className="h-1 w-full shrink-0"
+              animate={{ backgroundColor: colors.primary }}
+              transition={{ duration: 0.4, ease: EASE }}
+            />
+
             {/* ── Header ─────────────────────────────────────────── */}
             <div className="flex shrink-0 items-center justify-between border-b border-border/60 bg-white px-5 py-3.5">
               <div className="flex items-center gap-2.5">
-                <span className="flex h-6 w-6 items-center justify-center rounded-md bg-primary/10">
-                  <User className="h-3.5 w-3.5 text-primary" aria-hidden="true" />
-                </span>
+                <motion.span
+                  className="flex h-6 w-6 items-center justify-center rounded-md"
+                  animate={{ backgroundColor: colors.badge }}
+                  transition={{ duration: 0.4, ease: EASE }}
+                >
+                  <User
+                    className="h-3.5 w-3.5"
+                    style={{ color: colors.primary }}
+                    aria-hidden="true"
+                  />
+                </motion.span>
                 <h2 className="text-sm font-bold text-text">Editar perfil</h2>
               </div>
 
@@ -130,14 +149,17 @@ export function ProfileEditorModal({
                   Cancelar
                 </button>
 
-                <button
+                {/* Save button uses specialty color */}
+                <motion.button
                   type="button"
                   onClick={onSave}
                   disabled={isSaving}
-                  className="rounded-[var(--radius-button)] bg-primary px-4 py-1.5 text-xs font-semibold text-white shadow-sm transition-opacity hover:opacity-90 disabled:opacity-60"
+                  animate={{ backgroundColor: colors.primary }}
+                  transition={{ duration: 0.4, ease: EASE }}
+                  className="rounded-[var(--radius-button)] px-4 py-1.5 text-xs font-semibold text-white shadow-sm transition-opacity hover:opacity-90 disabled:opacity-60"
                 >
                   {isSaving ? 'Guardando…' : 'Guardar cambios'}
-                </button>
+                </motion.button>
 
                 <button
                   type="button"
@@ -155,27 +177,31 @@ export function ProfileEditorModal({
               className="flex shrink-0 gap-0.5 overflow-x-auto border-b border-border/60 bg-white px-3"
               style={{ scrollbarWidth: 'none' }}
             >
-              {TABS.map(({ id, label, Icon, premium }) => (
-                <button
-                  key={id}
-                  type="button"
-                  onClick={() => setActiveTab(id)}
-                  className={`flex shrink-0 items-center gap-1.5 border-b-2 px-3 py-3 text-[11px] font-semibold transition-colors ${
-                    activeTab === id
-                      ? 'border-primary text-primary'
-                      : 'border-transparent text-text-muted hover:text-text'
-                  }`}
-                >
-                  <Icon className="h-3.5 w-3.5" aria-hidden="true" />
-                  {label}
-                  {premium && (
-                    <Crown
-                      className="h-2.5 w-2.5 text-amber-400"
-                      aria-label="Función Premium"
-                    />
-                  )}
-                </button>
-              ))}
+              {TABS.map(({ id, label, Icon, premium }) => {
+                const isActive = activeTab === id;
+                return (
+                  <button
+                    key={id}
+                    type="button"
+                    onClick={() => setActiveTab(id)}
+                    className="flex shrink-0 items-center gap-1.5 border-b-2 px-3 py-3 text-[11px] font-semibold transition-colors"
+                    style={
+                      isActive
+                        ? { borderBottomColor: colors.primary, color: colors.primary }
+                        : { borderBottomColor: 'transparent', color: 'var(--color-text-muted)' }
+                    }
+                  >
+                    <Icon className="h-3.5 w-3.5" aria-hidden="true" />
+                    {label}
+                    {premium && (
+                      <Crown
+                        className="h-2.5 w-2.5 text-amber-400"
+                        aria-label="Función Premium"
+                      />
+                    )}
+                  </button>
+                );
+              })}
             </div>
 
             {/* ── Tab content ────────────────────────────────────── */}
@@ -189,7 +215,7 @@ export function ProfileEditorModal({
                   transition={{ duration: 0.16, ease: EASE }}
                 >
                   {activeTab === 'perfil' && (
-                    <PerfilTab draft={draft} onChange={onChange} />
+                    <PerfilTab draft={draft} colors={colors} onChange={onChange} />
                   )}
                   {activeTab === 'resumen' && (
                     <ResumenTab draft={draft} onChange={onChange} />
@@ -215,13 +241,16 @@ export function ProfileEditorModal({
 
 function PerfilTab({
   draft,
+  colors,
   onChange,
 }: {
   draft: EditableProfile;
+  colors: SpecialtyColorScheme;
   onChange: (u: Partial<EditableProfile>) => void;
 }) {
   return (
     <div className="space-y-4">
+      {/* Avatar card */}
       <Card>
         <Field label="Foto de perfil">
           <div className="flex items-center gap-4">
@@ -239,90 +268,100 @@ function PerfilTab({
         </Field>
       </Card>
 
-      <Card>
-        <div className="space-y-4">
-          <Field label="Nombre completo">
-            <input
-              type="text"
-              value={draft.name}
-              onChange={(e) => onChange({ name: e.target.value })}
-              className="profile-input"
-              placeholder="Dr. Nombre Apellido"
-            />
-          </Field>
+      {/* Main info card — tinted with specialty color */}
+      <motion.div
+        animate={{ borderColor: colors.border, backgroundColor: colors.light }}
+        transition={{ duration: 0.4, ease: EASE }}
+        className="space-y-4 rounded-[var(--radius-card)] border p-4 shadow-sm"
+      >
+        <Field label="Nombre completo">
+          <input
+            type="text"
+            value={draft.name}
+            onChange={(e) => onChange({ name: e.target.value })}
+            className="profile-input"
+            placeholder="Dr. Nombre Apellido"
+          />
+        </Field>
 
-          <Field label="Especialidad">
+        {/* Specialty — full-width with color preview dot */}
+        <Field label="Especialidad">
+          <div className="relative">
+            {/* Specialty color swatch */}
+            <motion.span
+              className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 rounded-full"
+              animate={{ backgroundColor: colors.primary }}
+              transition={{ duration: 0.4, ease: EASE }}
+            />
+            <select
+              value={draft.specialty}
+              onChange={(e) => onChange({ specialty: e.target.value })}
+              className="profile-input pl-10"
+            >
+              {MEDICAL_SPECIALTIES.map((s) => (
+                <option key={s} value={s}>
+                  {s}
+                </option>
+              ))}
+            </select>
+          </div>
+        </Field>
+
+        <div className="grid grid-cols-2 gap-4">
+          <Field label="Ubicación">
+            {/* relative wrapper already present in parent div; icon inside */}
             <div className="relative">
-              <Stethoscope className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-text-muted" />
-              <select
-                value={draft.specialty}
-                onChange={(e) => onChange({ specialty: e.target.value })}
-                className="profile-input pl-8"
-              >
-                {MEDICAL_SPECIALTIES.map((s) => (
-                  <option key={s} value={s}>
-                    {s}
-                  </option>
-                ))}
-              </select>
+              <MapPin className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-text-muted" />
+              <input
+                type="text"
+                value={draft.location}
+                onChange={(e) => onChange({ location: e.target.value })}
+                className="profile-input pl-10"
+                placeholder="Ciudad, Depto."
+              />
             </div>
           </Field>
-
-          <div className="grid grid-cols-2 gap-4">
-            <Field label="Ubicación">
-              <div className="relative">
-                <MapPin className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-text-muted" />
-                <input
-                  type="text"
-                  value={draft.location}
-                  onChange={(e) => onChange({ location: e.target.value })}
-                  className="profile-input pl-8"
-                  placeholder="Ciudad, Depto."
-                />
-              </div>
-            </Field>
-            <Field label="Años de experiencia">
-              <input
-                type="number"
-                min={0}
-                max={60}
-                value={draft.experience}
-                onChange={(e) =>
-                  onChange({ experience: parseInt(e.target.value, 10) || 0 })
-                }
-                className="profile-input"
-              />
-            </Field>
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <Field label="Teléfono">
-              <div className="relative">
-                <Phone className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-text-muted" />
-                <input
-                  type="tel"
-                  value={draft.phone}
-                  onChange={(e) => onChange({ phone: e.target.value })}
-                  className="profile-input pl-8"
-                  placeholder="+503 2345 6789"
-                />
-              </div>
-            </Field>
-            <Field label="Correo electrónico">
-              <div className="relative">
-                <Mail className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-text-muted" />
-                <input
-                  type="email"
-                  value={draft.email}
-                  onChange={(e) => onChange({ email: e.target.value })}
-                  className="profile-input pl-8"
-                  placeholder="doctor@email.com"
-                />
-              </div>
-            </Field>
-          </div>
+          <Field label="Años de experiencia">
+            <input
+              type="number"
+              min={0}
+              max={60}
+              value={draft.experience}
+              onChange={(e) =>
+                onChange({ experience: parseInt(e.target.value, 10) || 0 })
+              }
+              className="profile-input"
+            />
+          </Field>
         </div>
-      </Card>
+
+        <div className="grid grid-cols-2 gap-4">
+          <Field label="Teléfono">
+            <div className="relative">
+              <Phone className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-text-muted" />
+              <input
+                type="tel"
+                value={draft.phone}
+                onChange={(e) => onChange({ phone: e.target.value })}
+                className="profile-input pl-10"
+                placeholder="+503 2345 6789"
+              />
+            </div>
+          </Field>
+          <Field label="Correo electrónico">
+            <div className="relative">
+              <Mail className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-text-muted" />
+              <input
+                type="email"
+                value={draft.email}
+                onChange={(e) => onChange({ email: e.target.value })}
+                className="profile-input pl-10"
+                placeholder="doctor@email.com"
+              />
+            </div>
+          </Field>
+        </div>
+      </motion.div>
     </div>
   );
 }
