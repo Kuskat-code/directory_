@@ -1,7 +1,7 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { Crown, ImageIcon, Plus, Sparkles, Trash2 } from 'lucide-react';
+import { ImageIcon, Plus, Trash2 } from 'lucide-react';
 import type { EditableProfile, SpecialtyColorScheme } from '../types';
 import { ImageUploader } from './ImageUploader';
 
@@ -130,32 +130,6 @@ export function GallerySection({
         <p className="py-8 text-center text-sm text-text-muted">
           No hay imágenes en la galería.
         </p>
-      )}
-
-      {isEditing && galleryImages.length >= FREE_GALLERY_LIMIT && (
-        <motion.div
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.3 }}
-          className="mt-5 rounded-xl border border-amber-200 bg-amber-50 p-5 text-center dark:border-amber-700/50 dark:bg-amber-950/30"
-        >
-          <Crown className="mx-auto mb-2 h-5 w-5 text-amber-500" aria-hidden="true" />
-          <p className="mb-0.5 text-xs font-bold text-amber-900 dark:text-amber-100">
-            Límite de la versión gratuita alcanzado
-          </p>
-          <p className="mb-4 text-[11px] leading-relaxed text-amber-700 dark:text-amber-300">
-            Has alcanzado el límite de {FREE_GALLERY_LIMIT} imágenes en la versión gratuita.
-            Actualiza a Premium para subir fotos ilimitadas.
-          </p>
-          <button
-            type="button"
-            onClick={() => alert('¡Próximamente podrás adquirir tu Licencia Premium!')}
-            className="inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-amber-500 to-orange-500 px-5 py-2 text-xs font-bold text-white shadow-md transition-opacity hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400"
-          >
-            <Sparkles className="h-3.5 w-3.5" aria-hidden="true" />
-            Obtener Licencia Premium
-          </button>
-        </motion.div>
       )}
     </motion.section>
   );
