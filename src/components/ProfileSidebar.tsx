@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import { Calendar, Clock, MapPin, MessageCircle, Plus, Trash2 } from 'lucide-react';
 import { Button } from '@/src/components/ui/Button';
 import type { EditableProfile, ProfileScheduleItem } from '@/src/features/profile/types';
+import { getSpecialtyColors } from '@/src/features/profile/specialty-colors';
 
 const EASE = [0.4, 0, 0.2, 1] as const;
 
@@ -28,6 +29,7 @@ export default function ProfileSidebar({
   onChange,
 }: ProfileSidebarProps) {
   const address = `${profile.location}, El Salvador`;
+  const colors = getSpecialtyColors(profile.specialty);
 
   const updateScheduleItem = (index: number, field: keyof ProfileScheduleItem, value: string | boolean) => {
     if (!onChange) return;
@@ -51,9 +53,7 @@ export default function ProfileSidebar({
 
   const sectionClass = (editing: boolean) =>
     `rounded-[var(--radius-card)] border bg-surface p-6 shadow-sm ${
-      editing
-        ? 'border-primary/40 ring-2 ring-primary/10'
-        : 'border-border transition-shadow duration-300 hover:shadow-glow'
+      editing ? 'ring-2' : 'border-border transition-shadow duration-300 hover:shadow-glow'
     }`;
 
   return (
@@ -66,6 +66,7 @@ export default function ProfileSidebar({
         variants={sidebarVariants}
         whileHover={isEditing ? undefined : { y: -4, scale: 1.005 }}
         className={sectionClass(isEditing)}
+        style={isEditing ? { borderColor: colors.border, ringColor: colors.primary } : undefined}
       >
         <h2 className="mb-1 text-center text-base font-bold text-text">Agenda tu cita</h2>
         <p className="mb-6 text-center text-xs text-text-muted">
@@ -94,14 +95,32 @@ export default function ProfileSidebar({
           </div>
         ) : (
           <div className="space-y-3">
-            <Button variant="primary" className="w-full">
+            {/* Primary CTA — specialty color */}
+            <button
+              type="button"
+              className="flex w-full items-center justify-center gap-2 rounded-[var(--radius-button)] px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-opacity hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2"
+              style={{
+                backgroundColor: colors.primary,
+                transition: 'background-color 0.35s ease, opacity 0.15s ease',
+              }}
+            >
               <Calendar className="h-4 w-4" aria-hidden="true" />
               Agendar Cita
-            </Button>
-            <Button variant="accent" className="w-full">
+            </button>
+            {/* Secondary CTA — specialty badge tint */}
+            <button
+              type="button"
+              className="flex w-full items-center justify-center gap-2 rounded-[var(--radius-button)] border px-4 py-2.5 text-sm font-semibold transition-colors hover:opacity-90 focus-visible:outline-none"
+              style={{
+                borderColor: colors.border,
+                backgroundColor: colors.badge,
+                color: colors.text,
+                transition: 'background-color 0.35s ease, border-color 0.35s ease',
+              }}
+            >
               <MessageCircle className="h-4 w-4" aria-hidden="true" />
               Contactar WhatsApp
-            </Button>
+            </button>
           </div>
         )}
       </motion.section>
@@ -117,7 +136,7 @@ export default function ProfileSidebar({
       >
         <div className="mb-4 flex items-center justify-between">
           <h2 className="flex items-center gap-2 text-sm font-bold text-text">
-            <Clock className="h-4 w-4 text-primary" aria-hidden="true" />
+            <Clock className="h-4 w-4" style={{ color: colors.primary }} aria-hidden="true" />
             Horario de Atencion
           </h2>
           {isEditing && onChange && (
@@ -194,7 +213,7 @@ export default function ProfileSidebar({
         className={sectionClass(isEditing)}
       >
         <h2 className="mb-3 flex items-center gap-2 text-sm font-bold text-text">
-          <MapPin className="h-4 w-4 text-primary" aria-hidden="true" />
+          <MapPin className="h-4 w-4" style={{ color: colors.primary }} aria-hidden="true" />
           Ubicacion
         </h2>
         {isEditing && onChange ? (
