@@ -14,6 +14,7 @@ import {
   MapPin,
   Phone,
   Plus,
+  Sparkles,
   Stethoscope,
   Trash2,
   User,
@@ -74,14 +75,14 @@ export function ProfileEditorModal({
     <AnimatePresence>
       {isOpen && (
         <>
-          {/* Backdrop */}
+          {/* Backdrop — z-[100] cubre la navbar (z-50) */}
           <motion.div
             key="editor-backdrop"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.22 }}
-            className="fixed inset-0 z-40 bg-black/40 backdrop-blur-sm"
+            className="fixed inset-0 z-[100] bg-black/50 backdrop-blur-sm"
             onClick={onCancel}
             aria-hidden="true"
           />
@@ -96,20 +97,25 @@ export function ProfileEditorModal({
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.97, y: 24 }}
             transition={{ duration: 0.26, ease: EASE }}
-            className="fixed inset-x-4 bottom-4 top-6 z-50 mx-auto flex max-w-2xl flex-col overflow-hidden rounded-3xl bg-white shadow-2xl dark:bg-zinc-900 sm:inset-x-8 md:inset-x-0 md:left-1/2 md:w-full md:-translate-x-1/2"
+            className="fixed inset-x-4 bottom-4 top-6 z-[110] mx-auto flex max-w-2xl flex-col overflow-hidden rounded-3xl bg-white shadow-[0_32px_64px_-12px_rgb(10_110_122/0.25),0_0_0_1px_rgb(10_110_122/0.06)] sm:inset-x-8 md:inset-x-0 md:left-1/2 md:w-full md:-translate-x-1/2"
           >
             {/* ── Header ─────────────────────────────────────────── */}
-            <div className="flex shrink-0 items-center justify-between border-b border-zinc-100 px-5 py-3.5 dark:border-zinc-800">
-              <h2 className="text-sm font-bold text-zinc-900 dark:text-white">
-                Editar perfil
-              </h2>
+            <div className="flex shrink-0 items-center justify-between border-b border-border/60 bg-white px-5 py-3.5">
+              <div className="flex items-center gap-2.5">
+                <span className="flex h-6 w-6 items-center justify-center rounded-md bg-primary/10">
+                  <User className="h-3.5 w-3.5 text-primary" aria-hidden="true" />
+                </span>
+                <h2 className="text-sm font-bold text-text">Editar perfil</h2>
+              </div>
 
               <div className="flex items-center gap-2">
                 {saveStatus === 'error' && saveError && (
-                  <span className="hidden text-[11px] text-red-500 sm:block">{saveError}</span>
+                  <span className="hidden text-[11px] text-red-500 sm:block">
+                    {saveError}
+                  </span>
                 )}
                 {saveStatus === 'saved' && (
-                  <span className="flex items-center gap-1 text-[11px] font-medium text-emerald-600 dark:text-emerald-400">
+                  <span className="flex items-center gap-1 text-[11px] font-medium text-[var(--color-success)]">
                     <CheckCircle2 className="h-3.5 w-3.5" />
                     Guardado
                   </span>
@@ -119,7 +125,7 @@ export function ProfileEditorModal({
                   type="button"
                   onClick={onCancel}
                   disabled={isSaving}
-                  className="rounded-lg px-3 py-1.5 text-xs font-medium text-zinc-500 transition-colors hover:bg-zinc-100 hover:text-zinc-700 disabled:opacity-50 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-200"
+                  className="rounded-[var(--radius-button)] px-3 py-1.5 text-xs font-medium text-text-muted transition-colors hover:bg-secondary hover:text-text disabled:opacity-50"
                 >
                   Cancelar
                 </button>
@@ -128,7 +134,7 @@ export function ProfileEditorModal({
                   type="button"
                   onClick={onSave}
                   disabled={isSaving}
-                  className="rounded-lg bg-primary px-4 py-1.5 text-xs font-semibold text-white shadow-sm transition-opacity hover:opacity-90 disabled:opacity-60"
+                  className="rounded-[var(--radius-button)] bg-primary px-4 py-1.5 text-xs font-semibold text-white shadow-sm transition-opacity hover:opacity-90 disabled:opacity-60"
                 >
                   {isSaving ? 'Guardando…' : 'Guardar cambios'}
                 </button>
@@ -136,7 +142,7 @@ export function ProfileEditorModal({
                 <button
                   type="button"
                   onClick={onCancel}
-                  className="ml-0.5 rounded-full p-1.5 text-zinc-400 transition-colors hover:bg-zinc-100 hover:text-zinc-600 dark:hover:bg-zinc-800 dark:hover:text-zinc-200"
+                  className="ml-0.5 rounded-full p-1.5 text-text-muted transition-colors hover:bg-secondary hover:text-text"
                   aria-label="Cerrar editor"
                 >
                   <X className="h-4 w-4" />
@@ -146,7 +152,7 @@ export function ProfileEditorModal({
 
             {/* ── Tab bar ────────────────────────────────────────── */}
             <div
-              className="flex shrink-0 gap-0.5 overflow-x-auto border-b border-zinc-100 px-3 dark:border-zinc-800"
+              className="flex shrink-0 gap-0.5 overflow-x-auto border-b border-border/60 bg-white px-3"
               style={{ scrollbarWidth: 'none' }}
             >
               {TABS.map(({ id, label, Icon, premium }) => (
@@ -157,7 +163,7 @@ export function ProfileEditorModal({
                   className={`flex shrink-0 items-center gap-1.5 border-b-2 px-3 py-3 text-[11px] font-semibold transition-colors ${
                     activeTab === id
                       ? 'border-primary text-primary'
-                      : 'border-transparent text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300'
+                      : 'border-transparent text-text-muted hover:text-text'
                   }`}
                 >
                   <Icon className="h-3.5 w-3.5" aria-hidden="true" />
@@ -173,7 +179,7 @@ export function ProfileEditorModal({
             </div>
 
             {/* ── Tab content ────────────────────────────────────── */}
-            <div className="flex-1 overflow-y-auto p-5">
+            <div className="flex-1 overflow-y-auto bg-secondary/20 p-5">
               <AnimatePresence mode="wait" initial={false}>
                 <motion.div
                   key={activeTab}
@@ -215,100 +221,108 @@ function PerfilTab({
   onChange: (u: Partial<EditableProfile>) => void;
 }) {
   return (
-    <div className="space-y-5">
-      <Field label="Foto de perfil">
-        <div className="flex items-center gap-4">
-          <img
-            src={draft.avatar}
-            alt="Foto de perfil actual"
-            className="h-14 w-14 rounded-full object-cover ring-2 ring-zinc-200 dark:ring-zinc-700"
-          />
-          <ImageUploader
-            value={draft.avatar}
-            onChange={(avatar) => onChange({ avatar })}
-            label="Cambiar foto"
-          />
-        </div>
-      </Field>
+    <div className="space-y-4">
+      <Card>
+        <Field label="Foto de perfil">
+          <div className="flex items-center gap-4">
+            <img
+              src={draft.avatar}
+              alt="Foto de perfil actual"
+              className="h-14 w-14 rounded-full object-cover ring-2 ring-border"
+            />
+            <ImageUploader
+              value={draft.avatar}
+              onChange={(avatar) => onChange({ avatar })}
+              label="Cambiar foto"
+            />
+          </div>
+        </Field>
+      </Card>
 
-      <Field label="Nombre completo">
-        <input
-          type="text"
-          value={draft.name}
-          onChange={(e) => onChange({ name: e.target.value })}
-          className="profile-input"
-          placeholder="Dr. Nombre Apellido"
-        />
-      </Field>
-
-      <Field label="Especialidad">
-        <div className="relative">
-          <Stethoscope className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-zinc-400" />
-          <select
-            value={draft.specialty}
-            onChange={(e) => onChange({ specialty: e.target.value })}
-            className="profile-input pl-8"
-          >
-            {MEDICAL_SPECIALTIES.map((s) => (
-              <option key={s} value={s}>
-                {s}
-              </option>
-            ))}
-          </select>
-        </div>
-      </Field>
-
-      <div className="grid grid-cols-2 gap-4">
-        <Field label="Ubicación">
-          <div className="relative">
-            <MapPin className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-zinc-400" />
+      <Card>
+        <div className="space-y-4">
+          <Field label="Nombre completo">
             <input
               type="text"
-              value={draft.location}
-              onChange={(e) => onChange({ location: e.target.value })}
-              className="profile-input pl-8"
-              placeholder="Ciudad, Depto."
+              value={draft.name}
+              onChange={(e) => onChange({ name: e.target.value })}
+              className="profile-input"
+              placeholder="Dr. Nombre Apellido"
             />
-          </div>
-        </Field>
-        <Field label="Años de experiencia">
-          <input
-            type="number"
-            min={0}
-            max={60}
-            value={draft.experience}
-            onChange={(e) => onChange({ experience: parseInt(e.target.value, 10) || 0 })}
-            className="profile-input"
-          />
-        </Field>
-      </div>
+          </Field>
 
-      <div className="grid grid-cols-2 gap-4">
-        <Field label="Teléfono">
-          <div className="relative">
-            <Phone className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-zinc-400" />
-            <input
-              type="tel"
-              value={draft.phone}
-              onChange={(e) => onChange({ phone: e.target.value })}
-              className="profile-input pl-8"
-              placeholder="+503 2345 6789"
-            />
+          <Field label="Especialidad">
+            <div className="relative">
+              <Stethoscope className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-text-muted" />
+              <select
+                value={draft.specialty}
+                onChange={(e) => onChange({ specialty: e.target.value })}
+                className="profile-input pl-8"
+              >
+                {MEDICAL_SPECIALTIES.map((s) => (
+                  <option key={s} value={s}>
+                    {s}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </Field>
+
+          <div className="grid grid-cols-2 gap-4">
+            <Field label="Ubicación">
+              <div className="relative">
+                <MapPin className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-text-muted" />
+                <input
+                  type="text"
+                  value={draft.location}
+                  onChange={(e) => onChange({ location: e.target.value })}
+                  className="profile-input pl-8"
+                  placeholder="Ciudad, Depto."
+                />
+              </div>
+            </Field>
+            <Field label="Años de experiencia">
+              <input
+                type="number"
+                min={0}
+                max={60}
+                value={draft.experience}
+                onChange={(e) =>
+                  onChange({ experience: parseInt(e.target.value, 10) || 0 })
+                }
+                className="profile-input"
+              />
+            </Field>
           </div>
-        </Field>
-        <Field label="Correo electrónico">
-          <div className="relative">
-            <Mail className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-zinc-400" />
-            <input
-              type="email"
-              value={draft.email}
-              onChange={(e) => onChange({ email: e.target.value })}
-              className="profile-input pl-8"
-              placeholder="doctor@email.com"
-            />
+
+          <div className="grid grid-cols-2 gap-4">
+            <Field label="Teléfono">
+              <div className="relative">
+                <Phone className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-text-muted" />
+                <input
+                  type="tel"
+                  value={draft.phone}
+                  onChange={(e) => onChange({ phone: e.target.value })}
+                  className="profile-input pl-8"
+                  placeholder="+503 2345 6789"
+                />
+              </div>
+            </Field>
+            <Field label="Correo electrónico">
+              <div className="relative">
+                <Mail className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-text-muted" />
+                <input
+                  type="email"
+                  value={draft.email}
+                  onChange={(e) => onChange({ email: e.target.value })}
+                  className="profile-input pl-8"
+                  placeholder="doctor@email.com"
+                />
+              </div>
+            </Field>
           </div>
-        </Field>
-      </div>
+        </div>
+      </Card>
     </div>
   );
 }
@@ -323,39 +337,43 @@ function ResumenTab({
   onChange: (u: Partial<EditableProfile>) => void;
 }) {
   return (
-    <div className="space-y-5">
-      <Field label="Biografía profesional">
-        <textarea
-          value={draft.bio}
-          onChange={(e) => onChange({ bio: e.target.value })}
-          rows={7}
-          className="profile-input profile-textarea resize-none"
-          placeholder="Describe tu experiencia y enfoque profesional…"
-          maxLength={1000}
-        />
-        <p className="mt-1 text-right text-[10px] text-zinc-400">
-          {draft.bio.length}/1000
-        </p>
-      </Field>
+    <Card>
+      <div className="space-y-4">
+        <Field label="Biografía profesional">
+          <textarea
+            value={draft.bio}
+            onChange={(e) => onChange({ bio: e.target.value })}
+            rows={7}
+            className="profile-input profile-textarea resize-none"
+            placeholder="Describe tu experiencia y enfoque profesional…"
+            maxLength={1000}
+          />
+          <p className="mt-1 text-right text-[10px] text-text-muted">
+            {draft.bio.length} / 1000
+          </p>
+        </Field>
 
-      <Field label="Idiomas hablados">
-        <input
-          type="text"
-          value={draft.languages.join(', ')}
-          onChange={(e) =>
-            onChange({
-              languages: e.target.value
-                .split(',')
-                .map((l) => l.trim())
-                .filter(Boolean),
-            })
-          }
-          className="profile-input"
-          placeholder="Español, Inglés, Francés…"
-        />
-        <p className="mt-1 text-[10px] text-zinc-400">Separa los idiomas con comas.</p>
-      </Field>
-    </div>
+        <Field label="Idiomas hablados">
+          <input
+            type="text"
+            value={draft.languages.join(', ')}
+            onChange={(e) =>
+              onChange({
+                languages: e.target.value
+                  .split(',')
+                  .map((l) => l.trim())
+                  .filter(Boolean),
+              })
+            }
+            className="profile-input"
+            placeholder="Español, Inglés, Francés…"
+          />
+          <p className="mt-1 text-[10px] text-text-muted">
+            Separa los idiomas con comas.
+          </p>
+        </Field>
+      </div>
+    </Card>
   );
 }
 
@@ -363,39 +381,39 @@ function ResumenTab({
 
 function BannerTab({ draft }: { draft: EditableProfile }) {
   return (
-    <div className="space-y-4">
-      {/* Section title + badge */}
-      <div className="flex items-center gap-2.5">
-        <h3 className="text-sm font-semibold text-zinc-800 dark:text-zinc-100">
-          Imagen de portada
-        </h3>
-        <PremiumBadge />
-      </div>
-
-      {/* Dimmed preview with lock */}
-      <div className="relative overflow-hidden rounded-2xl border border-zinc-200 dark:border-zinc-700">
-        <img
-          src={draft.coverImage}
-          alt="Banner actual del perfil"
-          className="h-40 w-full object-cover opacity-60"
-        />
-        <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-zinc-900/30 backdrop-blur-[1px]">
-          <span className="flex h-9 w-9 items-center justify-center rounded-full bg-white/20 backdrop-blur-sm ring-1 ring-white/30">
-            <Lock className="h-4 w-4 text-white" aria-hidden="true" />
-          </span>
-          <p className="text-[11px] font-medium text-white/80">
-            Solo lectura · versión gratuita
-          </p>
+    <Card>
+      <div className="space-y-4">
+        {/* Title + badge */}
+        <div className="flex items-center gap-2.5">
+          <h3 className="text-sm font-semibold text-text">Imagen de portada</h3>
+          <PremiumBadge />
         </div>
+
+        {/* Dimmed preview with lock overlay */}
+        <div className="relative overflow-hidden rounded-[var(--radius-card)] border border-border/60">
+          <img
+            src={draft.coverImage}
+            alt="Banner actual del perfil"
+            className="h-40 w-full object-cover opacity-50"
+          />
+          <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-text/20 backdrop-blur-[1px]">
+            <span className="flex h-9 w-9 items-center justify-center rounded-full bg-white/80 shadow-sm ring-1 ring-border/40">
+              <Lock className="h-4 w-4 text-text-muted" aria-hidden="true" />
+            </span>
+            <p className="rounded-full bg-white/80 px-3 py-1 text-[11px] font-medium text-text-muted backdrop-blur-sm">
+              Solo lectura · versión gratuita
+            </p>
+          </div>
+        </div>
+
+        <p className="text-xs leading-relaxed text-text-muted">
+          Sube una imagen propia para personalizar el encabezado de tu perfil público y
+          destacar tu consulta o clínica. Disponible exclusivamente en la versión Premium.
+        </p>
+
+        <PremiumUpgradeButton />
       </div>
-
-      <p className="text-xs leading-relaxed text-zinc-500 dark:text-zinc-400">
-        Sube una imagen propia para personalizar el encabezado de tu perfil público y
-        destacar tu consulta o clínica. Disponible exclusivamente en la versión Premium.
-      </p>
-
-      <PremiumUpgradeButton />
-    </div>
+    </Card>
   );
 }
 
@@ -426,93 +444,86 @@ function GaleriaTab({
 
   return (
     <div className="space-y-4">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h3 className="text-sm font-semibold text-zinc-800 dark:text-zinc-100">
-            Galería profesional
-          </h3>
-          <p className="text-[11px] text-zinc-400">
-            {images.length} / {FREE_GALLERY_LIMIT} imágenes gratuitas
-          </p>
+      <Card>
+        {/* Header */}
+        <div className="mb-4 flex items-center justify-between">
+          <div>
+            <h3 className="text-sm font-semibold text-text">Galería profesional</h3>
+            <p className="text-[11px] text-text-muted">
+              {images.length} / {FREE_GALLERY_LIMIT} imágenes en versión gratuita
+            </p>
+          </div>
+          {!atLimit && (
+            <button
+              type="button"
+              onClick={addImage}
+              className="inline-flex items-center gap-1.5 rounded-[var(--radius-button)] border border-border px-3 py-1.5 text-xs font-medium text-text-muted transition-colors hover:border-primary/50 hover:text-primary"
+            >
+              <Plus className="h-3.5 w-3.5" aria-hidden="true" />
+              Agregar foto
+            </button>
+          )}
         </div>
-        {!atLimit && (
-          <button
-            type="button"
-            onClick={addImage}
-            className="inline-flex items-center gap-1.5 rounded-lg border border-zinc-200 px-3 py-1.5 text-xs font-medium text-zinc-600 transition-colors hover:border-primary/60 hover:text-primary dark:border-zinc-700 dark:text-zinc-300 dark:hover:border-primary/50 dark:hover:text-primary"
-          >
-            <Plus className="h-3.5 w-3.5" aria-hidden="true" />
-            Agregar foto
-          </button>
-        )}
-      </div>
 
-      {/* Image grid */}
-      {images.length > 0 ? (
-        <div className="grid grid-cols-3 gap-3">
-          {images.map((imgUrl, i) => (
-            <div key={i} className="space-y-2">
-              <div className="relative aspect-[4/3] overflow-hidden rounded-xl border border-zinc-200 bg-zinc-100 dark:border-zinc-700 dark:bg-zinc-800">
-                <img
-                  src={imgUrl}
-                  alt={`Foto profesional ${i + 1}`}
-                  className="h-full w-full object-cover"
-                  loading="lazy"
+        {/* Image grid */}
+        {images.length > 0 ? (
+          <div className="grid grid-cols-3 gap-3">
+            {images.map((imgUrl, i) => (
+              <div key={i} className="space-y-2">
+                <div className="relative aspect-[4/3] overflow-hidden rounded-[var(--radius-card)] border border-border/60 bg-secondary">
+                  <img
+                    src={imgUrl}
+                    alt={`Foto profesional ${i + 1}`}
+                    className="h-full w-full object-cover"
+                    loading="lazy"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => removeImage(i)}
+                    className="absolute right-1.5 top-1.5 rounded-full bg-white/90 p-1 text-text-muted shadow-sm transition-colors hover:text-red-500"
+                    aria-label={`Eliminar foto ${i + 1}`}
+                  >
+                    <Trash2 className="h-3 w-3" />
+                  </button>
+                </div>
+                <ImageUploader
+                  value={imgUrl}
+                  onChange={(url) => updateImage(i, url)}
+                  label="Cambiar"
+                  showUrlInput
                 />
-                <button
-                  type="button"
-                  onClick={() => removeImage(i)}
-                  className="absolute right-1.5 top-1.5 rounded-full bg-white/90 p-1 text-zinc-500 shadow-sm transition-colors hover:text-red-500 dark:bg-zinc-900/90"
-                  aria-label={`Eliminar foto ${i + 1}`}
-                >
-                  <Trash2 className="h-3 w-3" />
-                </button>
               </div>
-              <ImageUploader
-                value={imgUrl}
-                onChange={(url) => updateImage(i, url)}
-                label="Cambiar"
-                showUrlInput
-              />
-            </div>
-          ))}
-        </div>
-      ) : (
-        <div className="rounded-xl border border-dashed border-zinc-300 py-10 text-center dark:border-zinc-700">
-          <Images className="mx-auto mb-2 h-7 w-7 text-zinc-300" />
-          <p className="text-xs text-zinc-400">Aún no hay fotos en la galería.</p>
-        </div>
-      )}
+            ))}
+          </div>
+        ) : (
+          <div className="rounded-[var(--radius-card)] border border-dashed border-border py-10 text-center">
+            <Images className="mx-auto mb-2 h-7 w-7 text-border" />
+            <p className="text-xs text-text-muted">Aún no hay fotos en la galería.</p>
+          </div>
+        )}
+      </Card>
 
-      {/* Premium upsell — only when at limit */}
+      {/* Premium upsell — shown only at limit */}
       {atLimit && (
         <motion.div
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.2 }}
-          className="flex items-start gap-3 rounded-xl border border-amber-100 bg-amber-50/80 p-4 dark:border-amber-800/30 dark:bg-amber-950/20"
+          className="flex items-start gap-3 rounded-[var(--radius-card)] border border-amber-200/80 bg-amber-50/60 p-4"
         >
           <Crown
             className="mt-0.5 h-4 w-4 shrink-0 text-amber-500"
             aria-hidden="true"
           />
-          <div>
-            <p className="text-[11px] font-semibold text-amber-800 dark:text-amber-300">
+          <div className="min-w-0">
+            <p className="text-[11px] font-semibold text-amber-800">
               Límite gratuito alcanzado
             </p>
-            <p className="mt-0.5 text-[11px] leading-relaxed text-amber-600 dark:text-amber-400">
+            <p className="mt-0.5 text-[11px] leading-relaxed text-amber-700">
               Actualiza a Premium para subir fotos ilimitadas y destacar más tu
               clínica o consultorio.
             </p>
-            <button
-              type="button"
-              onClick={() => alert('¡Próximamente podrás adquirir tu Licencia Premium!')}
-              className="mt-2.5 inline-flex items-center gap-1.5 rounded-md border border-amber-200 bg-white px-3 py-1.5 text-[11px] font-semibold text-amber-700 shadow-sm transition-colors hover:bg-amber-50 dark:border-amber-700/50 dark:bg-zinc-900 dark:text-amber-400 dark:hover:bg-amber-950/40"
-            >
-              <Crown className="h-3 w-3" />
-              Mejorar a Premium
-            </button>
+            <PremiumUpgradeButton className="mt-2.5" />
           </div>
         </motion.div>
       )}
@@ -552,19 +563,17 @@ function ServiciosTab({
   };
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between">
+    <Card>
+      <div className="mb-4 flex items-center justify-between">
         <div>
-          <h3 className="text-sm font-semibold text-zinc-800 dark:text-zinc-100">
-            Áreas de práctica
-          </h3>
-          <p className="text-[11px] text-zinc-400">{services.length}/8 servicios</p>
+          <h3 className="text-sm font-semibold text-text">Áreas de práctica</h3>
+          <p className="text-[11px] text-text-muted">{services.length}/8 servicios</p>
         </div>
         {services.length < 8 && (
           <button
             type="button"
             onClick={addService}
-            className="inline-flex items-center gap-1.5 rounded-lg border border-zinc-200 px-3 py-1.5 text-xs font-medium text-zinc-600 transition-colors hover:border-primary/60 hover:text-primary dark:border-zinc-700 dark:text-zinc-300"
+            className="inline-flex items-center gap-1.5 rounded-[var(--radius-button)] border border-border px-3 py-1.5 text-xs font-medium text-text-muted transition-colors hover:border-primary/50 hover:text-primary"
           >
             <Plus className="h-3.5 w-3.5" aria-hidden="true" />
             Agregar servicio
@@ -576,7 +585,7 @@ function ServiciosTab({
         {services.map((service, i) => (
           <div
             key={i}
-            className="rounded-xl border border-zinc-200 bg-zinc-50/80 p-3.5 dark:border-zinc-700 dark:bg-zinc-800/60"
+            className="rounded-[var(--radius-card)] border border-border/60 bg-secondary/30 p-3.5"
           >
             <div className="mb-2 flex items-start gap-2">
               <input
@@ -589,7 +598,7 @@ function ServiciosTab({
               <button
                 type="button"
                 onClick={() => removeService(i)}
-                className="mt-0.5 shrink-0 rounded-md p-1 text-zinc-400 transition-colors hover:bg-red-50 hover:text-red-500 dark:hover:bg-red-950/30"
+                className="mt-0.5 shrink-0 rounded-[var(--radius-button)] p-1 text-text-muted transition-colors hover:bg-red-50 hover:text-red-500"
                 aria-label="Eliminar servicio"
               >
                 <Trash2 className="h-3.5 w-3.5" />
@@ -605,11 +614,19 @@ function ServiciosTab({
           </div>
         ))}
       </div>
-    </div>
+    </Card>
   );
 }
 
 // ─── Shared atoms ─────────────────────────────────────────────────────────────
+
+function Card({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="rounded-[var(--radius-card)] border border-border/60 bg-white p-4 shadow-sm">
+      {children}
+    </div>
+  );
+}
 
 function Field({
   label,
@@ -620,7 +637,7 @@ function Field({
 }) {
   return (
     <div>
-      <label className="mb-1.5 block text-xs font-semibold text-zinc-500 dark:text-zinc-400">
+      <label className="mb-1.5 block text-xs font-semibold text-text-muted">
         {label}
       </label>
       {children}
@@ -630,21 +647,21 @@ function Field({
 
 function PremiumBadge() {
   return (
-    <span className="inline-flex items-center gap-1 rounded-full border border-amber-200 bg-amber-50 px-2 py-0.5 text-[10px] font-semibold text-amber-600 dark:border-amber-700/40 dark:bg-amber-950/30 dark:text-amber-400">
+    <span className="inline-flex items-center gap-1 rounded-full border border-amber-200 bg-amber-50 px-2 py-0.5 text-[10px] font-semibold text-amber-600">
       <Crown className="h-2.5 w-2.5" aria-hidden="true" />
       Premium
     </span>
   );
 }
 
-function PremiumUpgradeButton() {
+function PremiumUpgradeButton({ className = '' }: { className?: string }) {
   return (
     <button
       type="button"
       onClick={() => alert('¡Próximamente podrás adquirir tu Licencia Premium!')}
-      className="inline-flex items-center gap-2 rounded-lg border border-amber-200 bg-amber-50 px-4 py-2 text-xs font-semibold text-amber-700 transition-colors hover:border-amber-300 hover:bg-amber-100 dark:border-amber-700/40 dark:bg-amber-950/30 dark:text-amber-400 dark:hover:bg-amber-900/30"
+      className={`inline-flex items-center gap-2 rounded-[var(--radius-button)] bg-gradient-to-r from-amber-500 to-orange-500 px-4 py-2 text-xs font-semibold text-white shadow-sm transition-opacity hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400 focus-visible:ring-offset-1 ${className}`}
     >
-      <Crown className="h-3.5 w-3.5" aria-hidden="true" />
+      <Sparkles className="h-3.5 w-3.5" aria-hidden="true" />
       Mejorar a Premium
     </button>
   );
