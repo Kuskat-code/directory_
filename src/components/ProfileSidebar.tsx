@@ -4,7 +4,6 @@ import { motion } from 'framer-motion';
 import { Calendar, Clock, MapPin, MessageCircle, Plus, Trash2 } from 'lucide-react';
 import { Button } from '@/src/components/ui/Button';
 import type { EditableProfile, ProfileScheduleItem } from '@/src/features/profile/types';
-import { getSpecialtyColors } from '@/src/features/profile/specialty-colors';
 
 const EASE = [0.4, 0, 0.2, 1] as const;
 
@@ -29,7 +28,6 @@ export default function ProfileSidebar({
   onChange,
 }: ProfileSidebarProps) {
   const address = `${profile.location}, El Salvador`;
-  const colors = getSpecialtyColors(profile.specialty);
 
   const updateScheduleItem = (index: number, field: keyof ProfileScheduleItem, value: string | boolean) => {
     if (!onChange) return;
@@ -53,7 +51,9 @@ export default function ProfileSidebar({
 
   const sectionClass = (editing: boolean) =>
     `rounded-[var(--radius-card)] border bg-surface p-6 shadow-sm ${
-      editing ? 'ring-2' : 'border-border transition-shadow duration-300 hover:shadow-glow'
+      editing
+        ? 'border-primary/40 ring-2 ring-primary/10'
+        : 'border-border transition-shadow duration-300 hover:shadow-glow'
     }`;
 
   return (
@@ -66,7 +66,6 @@ export default function ProfileSidebar({
         variants={sidebarVariants}
         whileHover={isEditing ? undefined : { y: -4, scale: 1.005 }}
         className={sectionClass(isEditing)}
-        style={isEditing ? { borderColor: colors.border, ringColor: colors.primary } : undefined}
       >
         <h2 className="mb-1 text-center text-base font-bold text-text">Agenda tu cita</h2>
         <p className="mb-6 text-center text-xs text-text-muted">
@@ -136,7 +135,7 @@ export default function ProfileSidebar({
       >
         <div className="mb-4 flex items-center justify-between">
           <h2 className="flex items-center gap-2 text-sm font-bold text-text">
-            <Clock className="h-4 w-4" style={{ color: colors.primary }} aria-hidden="true" />
+            <Clock className="h-4 w-4 text-primary" aria-hidden="true" />
             Horario de Atencion
           </h2>
           {isEditing && onChange && (
@@ -213,7 +212,7 @@ export default function ProfileSidebar({
         className={sectionClass(isEditing)}
       >
         <h2 className="mb-3 flex items-center gap-2 text-sm font-bold text-text">
-          <MapPin className="h-4 w-4" style={{ color: colors.primary }} aria-hidden="true" />
+          <MapPin className="h-4 w-4 text-primary" aria-hidden="true" />
           Ubicacion
         </h2>
         {isEditing && onChange ? (
