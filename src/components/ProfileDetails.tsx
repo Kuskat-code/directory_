@@ -1,13 +1,14 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { Plus, Star, Trash2 } from 'lucide-react';
+import { Crown, Plus, Sparkles, Star, Trash2 } from 'lucide-react';
 import type { Doctor } from '@/src/lib/constants';
 import type { EditableProfile, ProfileService } from '@/src/features/profile/types';
 import { ImageUploader } from '@/src/features/profile/components/ImageUploader';
 import { Button } from '@/src/components/ui/Button';
 
 const EASE = [0.4, 0, 0.2, 1] as const;
+const FREE_GALLERY_LIMIT = 3;
 
 const sectionVariants = {
   hidden: { opacity: 0, y: 28 },
@@ -71,6 +72,7 @@ export default function ProfileDetails({
 
   const addGalleryImage = () => {
     if (!onChange) return;
+    if (profile.galleryImages.length >= FREE_GALLERY_LIMIT) return;
     onChange({
       galleryImages: [
         ...profile.galleryImages,
@@ -226,7 +228,7 @@ export default function ProfileDetails({
       >
         <div className="mb-4 flex items-center justify-between">
           <h2 className="text-base font-bold text-text tracking-tight">Galeria Profesional</h2>
-          {isEditing && onChange && (
+          {isEditing && onChange && profile.galleryImages.length < FREE_GALLERY_LIMIT && (
             <Button type="button" variant="ghost" size="sm" onClick={addGalleryImage}>
               <Plus className="h-4 w-4" />
               Agregar foto
@@ -272,6 +274,32 @@ export default function ProfileDetails({
             </motion.div>
           ))}
         </div>
+
+        {isEditing && profile.galleryImages.length >= FREE_GALLERY_LIMIT && (
+          <motion.div
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3 }}
+            className="mt-5 rounded-xl border border-amber-200 bg-amber-50 p-5 text-center dark:border-amber-700/50 dark:bg-amber-950/30"
+          >
+            <Crown className="mx-auto mb-2 h-5 w-5 text-amber-500" aria-hidden="true" />
+            <p className="mb-0.5 text-xs font-bold text-amber-900 dark:text-amber-100">
+              Límite de la versión gratuita alcanzado
+            </p>
+            <p className="mb-4 text-[11px] leading-relaxed text-amber-700 dark:text-amber-300">
+              Has alcanzado el límite de {FREE_GALLERY_LIMIT} imágenes en la versión gratuita.
+              Actualiza a Premium para subir fotos ilimitadas.
+            </p>
+            <button
+              type="button"
+              onClick={() => alert('¡Próximamente podrás adquirir tu Licencia Premium!')}
+              className="inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-amber-500 to-orange-500 px-5 py-2 text-xs font-bold text-white shadow-md transition-opacity hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400"
+            >
+              <Sparkles className="h-3.5 w-3.5" aria-hidden="true" />
+              Obtener Licencia Premium
+            </button>
+          </motion.div>
+        )}
       </motion.section>
 
       <motion.section

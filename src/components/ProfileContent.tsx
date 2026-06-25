@@ -2,6 +2,7 @@
 
 import { useMemo } from 'react';
 import { motion } from 'framer-motion';
+import { Lock, Sparkles } from 'lucide-react';
 import { useSearchParams } from 'next/navigation';
 import { EXAMPLE_DOCTORS } from '@/src/lib/constants';
 import ProfileHero from '@/src/components/ProfileHero';
@@ -10,7 +11,6 @@ import ProfileSidebar from '@/src/components/ProfileSidebar';
 import { buildDefaultProfile } from '@/src/features/profile/lib/defaults';
 import { useProfileEditor } from '@/src/features/profile/hooks/use-profile-editor';
 import { ProfileEditToolbar } from '@/src/features/profile/components/ProfileEditToolbar';
-import { ImageUploader } from '@/src/features/profile/components/ImageUploader';
 
 const EASE = [0.4, 0, 0.2, 1] as const;
 
@@ -63,15 +63,27 @@ export default function ProfileContent() {
       >
         <div className="absolute inset-0 bg-text/20 backdrop-blur-[2px]" />
         {isEditing && (
-          <div className="absolute inset-0 flex items-end justify-center bg-text/30 p-4">
-            <div className="w-full max-w-md rounded-[var(--radius-card)] bg-white/95 p-4 shadow-lg backdrop-blur-sm">
-              <p className="mb-2 text-xs font-semibold text-text">Imagen de portada</p>
-              <ImageUploader
-                value={profile.coverImage}
-                onChange={(coverImage) => updateDraft({ coverImage })}
-                label="Subir portada"
-                showUrlInput
-              />
+          <div className="absolute inset-0 flex items-center justify-center bg-black/50 backdrop-blur-[2px]">
+            <div className="mx-4 w-full max-w-sm rounded-2xl border border-amber-200/40 bg-white/95 p-6 text-center shadow-2xl backdrop-blur-sm dark:border-amber-700/40 dark:bg-gray-900/95">
+              <div className="mb-3 flex justify-center">
+                <span className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-amber-400 to-orange-500 shadow-md">
+                  <Lock className="h-5 w-5 text-white" aria-hidden="true" />
+                </span>
+              </div>
+              <p className="mb-1 text-sm font-bold text-gray-900 dark:text-white">
+                Función Premium
+              </p>
+              <p className="mb-4 text-xs leading-relaxed text-gray-500 dark:text-gray-400">
+                Personalizar el banner de fondo requiere una Licencia Premium.
+              </p>
+              <button
+                type="button"
+                onClick={() => alert('¡Próximamente podrás adquirir tu Licencia Premium!')}
+                className="inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-amber-500 to-orange-500 px-5 py-2 text-xs font-bold text-white shadow-md transition-opacity hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400"
+              >
+                <Sparkles className="h-3.5 w-3.5" aria-hidden="true" />
+                Obtener Licencia Premium
+              </button>
             </div>
           </div>
         )}
