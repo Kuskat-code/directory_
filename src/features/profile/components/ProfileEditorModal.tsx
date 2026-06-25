@@ -104,26 +104,33 @@ export function ProfileEditorModal({
             className="fixed inset-x-4 bottom-4 top-6 z-[110] mx-auto flex max-w-2xl flex-col overflow-hidden rounded-3xl bg-white shadow-[0_32px_64px_-12px_rgb(10_110_122/0.25),0_0_0_1px_rgb(10_110_122/0.06)] sm:inset-x-8 md:inset-x-0 md:left-1/2 md:w-full md:-translate-x-1/2"
           >
             {/* Thin specialty-color accent strip at top */}
-            <motion.div
+            <div
               className="h-1 w-full shrink-0"
-              animate={{ backgroundColor: colors.primary }}
-              transition={{ duration: 0.4, ease: EASE }}
+              style={{
+                backgroundColor: colors.primary,
+                transition: 'background-color 0.35s ease',
+              }}
             />
 
             {/* ── Header ─────────────────────────────────────────── */}
             <div className="flex shrink-0 items-center justify-between border-b border-border/60 bg-white px-5 py-3.5">
               <div className="flex items-center gap-2.5">
-                <motion.span
+                <span
                   className="flex h-6 w-6 items-center justify-center rounded-md"
-                  animate={{ backgroundColor: colors.badge }}
-                  transition={{ duration: 0.4, ease: EASE }}
+                  style={{
+                    backgroundColor: colors.badge,
+                    transition: 'background-color 0.35s ease',
+                  }}
                 >
                   <User
                     className="h-3.5 w-3.5"
-                    style={{ color: colors.primary }}
+                    style={{
+                      color: colors.primary,
+                      transition: 'color 0.35s ease',
+                    }}
                     aria-hidden="true"
                   />
-                </motion.span>
+                </span>
                 <h2 className="text-sm font-bold text-text">Editar perfil</h2>
               </div>
 
@@ -149,17 +156,18 @@ export function ProfileEditorModal({
                   Cancelar
                 </button>
 
-                {/* Save button uses specialty color */}
-                <motion.button
+                <button
                   type="button"
                   onClick={onSave}
                   disabled={isSaving}
-                  animate={{ backgroundColor: colors.primary }}
-                  transition={{ duration: 0.4, ease: EASE }}
-                  className="rounded-[var(--radius-button)] px-4 py-1.5 text-xs font-semibold text-white shadow-sm transition-opacity hover:opacity-90 disabled:opacity-60"
+                  className="rounded-[var(--radius-button)] px-4 py-1.5 text-xs font-semibold text-white shadow-sm hover:opacity-90 disabled:opacity-60"
+                  style={{
+                    backgroundColor: colors.primary,
+                    transition: 'background-color 0.35s ease, opacity 0.15s ease',
+                  }}
                 >
                   {isSaving ? 'Guardando…' : 'Guardar cambios'}
-                </motion.button>
+                </button>
 
                 <button
                   type="button"
@@ -187,8 +195,16 @@ export function ProfileEditorModal({
                     className="flex shrink-0 items-center gap-1.5 border-b-2 px-3 py-3 text-[11px] font-semibold transition-colors"
                     style={
                       isActive
-                        ? { borderBottomColor: colors.primary, color: colors.primary }
-                        : { borderBottomColor: 'transparent', color: 'var(--color-text-muted)' }
+                        ? {
+                            borderBottomColor: colors.primary,
+                            color: colors.primary,
+                            transition: 'color 0.35s ease, border-color 0.35s ease',
+                          }
+                        : {
+                            borderBottomColor: 'transparent',
+                            color: 'var(--color-text-muted)',
+                            transition: 'color 0.35s ease, border-color 0.35s ease',
+                          }
                     }
                   >
                     <Icon className="h-3.5 w-3.5" aria-hidden="true" />
@@ -269,10 +285,13 @@ function PerfilTab({
       </Card>
 
       {/* Main info card — tinted with specialty color */}
-      <motion.div
-        animate={{ borderColor: colors.border, backgroundColor: colors.light }}
-        transition={{ duration: 0.4, ease: EASE }}
+      <div
         className="space-y-4 rounded-[var(--radius-card)] border p-4 shadow-sm"
+        style={{
+          borderColor: colors.border,
+          backgroundColor: colors.light,
+          transition: 'border-color 0.35s ease, background-color 0.35s ease',
+        }}
       >
         <Field label="Nombre completo">
           <input
@@ -287,11 +306,13 @@ function PerfilTab({
         {/* Specialty — full-width with color swatch dot */}
         <Field label="Especialidad">
           <div className="relative w-full">
-            <motion.span
+            <span
               aria-hidden="true"
               className="pointer-events-none absolute left-3 top-1/2 z-10 h-3.5 w-3.5 -translate-y-1/2 rounded-full"
-              animate={{ backgroundColor: colors.primary }}
-              transition={{ duration: 0.4, ease: EASE }}
+              style={{
+                backgroundColor: colors.primary,
+                transition: 'background-color 0.35s ease',
+              }}
             />
             <select
               value={draft.specialty}
@@ -373,7 +394,7 @@ function PerfilTab({
             </div>
           </Field>
         </div>
-      </motion.div>
+      </div>
     </div>
   );
 }

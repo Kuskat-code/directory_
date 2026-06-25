@@ -1,7 +1,8 @@
 'use client';
 
-import { motion } from 'framer-motion';
-import { Plus, Star, Trash2 } from 'lucide-react';
+import { useCallback, useEffect, useState } from 'react';
+import { AnimatePresence, motion } from 'framer-motion';
+import { ChevronLeft, ChevronRight, Plus, Star, Trash2, X } from 'lucide-react';
 import type { Doctor } from '@/src/lib/constants';
 import type { EditableProfile, ProfileService } from '@/src/features/profile/types';
 import { ImageUploader } from '@/src/features/profile/components/ImageUploader';
@@ -43,6 +44,33 @@ export default function ProfileDetails({
   isEditing = false,
   onChange,
 }: ProfileDetailsProps) {
+  const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
+
+  const closeLightbox = useCallback(() => setLightboxIndex(null), []);
+
+  const goPrev = useCallback(() => {
+    setLightboxIndex((i) =>
+      i === null ? null : (i - 1 + profile.galleryImages.length) % profile.galleryImages.length,
+    );
+  }, [profile.galleryImages.length]);
+
+  const goNext = useCallback(() => {
+    setLightboxIndex((i) =>
+      i === null ? null : (i + 1) % profile.galleryImages.length,
+    );
+  }, [profile.galleryImages.length]);
+
+  useEffect(() => {
+    if (lightboxIndex === null) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') closeLightbox();
+      if (e.key === 'ArrowLeft') goPrev();
+      if (e.key === 'ArrowRight') goNext();
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [lightboxIndex, closeLightbox, goPrev, goNext]);
+
   const updateService = (index: number, field: keyof ProfileService, value: string) => {
     if (!onChange) return;
     const services = profile.services.map((s, i) =>
@@ -241,26 +269,36 @@ export default function ProfileDetails({
               whileInView={{ opacity: 1, scale: 1 }}
               viewport={{ once: true, margin: '-40px' }}
               transition={{ duration: 0.4, delay: i * 0.08, ease: EASE }}
-              whileHover={isEditing ? undefined : { scale: 1.05 }}
               className="space-y-2"
             >
-              <div className="relative aspect-4/3 overflow-hidden rounded-[var(--radius-card)] border border-border/50 bg-secondary">
+              <button
+                type="button"
+                onClick={() => !isEditing && setLightboxIndex(i)}
+                className={`group relative block aspect-[4/3] w-full overflow-hidden rounded-[var(--radius-card)] border border-border/50 bg-secondary ${
+                  !isEditing ? 'cursor-zoom-in' : 'cursor-default'
+                }`}
+                aria-label={`Ver imagen ${i + 1} en grande`}
+                tabIndex={isEditing ? -1 : 0}
+              >
                 <img
                   src={imgUrl}
                   alt={`Instalacion profesional ${i + 1}`}
-                  className="h-full w-full object-cover"
+                  className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
                 />
+                {!isEditing && (
+                  <span className="absolute inset-0 flex items-center justify-center bg-text/0 transition-colors duration-200 group-hover:bg-text/10" />
+                )}
                 {isEditing && onChange && (
                   <button
                     type="button"
-                    onClick={() => removeGalleryImage(i)}
+                    onClick={(e) => { e.stopPropagation(); removeGalleryImage(i); }}
                     className="absolute right-2 top-2 rounded-full bg-white/90 p-1.5 text-text-muted shadow-sm transition-colors hover:text-red-500"
                     aria-label="Eliminar imagen"
                   >
                     <Trash2 className="h-3.5 w-3.5" />
                   </button>
                 )}
-              </div>
+              </button>
               {isEditing && onChange && (
                 <ImageUploader
                   value={imgUrl}
@@ -272,8 +310,96 @@ export default function ProfileDetails({
             </motion.div>
           ))}
         </div>
-
       </motion.section>
+
+      {/* ── Lightbox / Gallery viewer ──────────────────────────────── */}
+      <AnimatePresence>
+        {lightboxIndex !== null && (
+          <motion.div
+            key="lightbox"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="fixed inset-0 z-[200] flex items-center justify-center bg-black/90 p-4"
+            onClick={closeLightbox}
+            aria-modal="true"
+            role="dialog"
+            aria-label="Visor de galería"
+          >
+            {/* Close button */}
+            <button
+              type="button"
+              onClick={closeLightbox}
+              className="absolute right-4 top-4 z-10 flex h-9 w-9 items-center justify-center rounded-full bg-white/10 text-white/80 backdrop-blur-sm transition-colors hover:bg-white/20 hover:text-white"
+              aria-label="Cerrar visor"
+            >
+              <X className="h-5 w-5" />
+            </button>
+
+            {/* Image counter */}
+            <span className="absolute left-1/2 top-4 z-10 -translate-x-1/2 rounded-full bg-black/40 px-3 py-1 text-xs font-medium text-white/70 backdrop-blur-sm">
+              {lightboxIndex + 1} / {profile.galleryImages.length}
+            </span>
+
+            {/* Prev button */}
+            {profile.galleryImages.length > 1 && (
+              <button
+                type="button"
+                onClick={(e) => { e.stopPropagation(); goPrev(); }}
+                className="absolute left-4 top-1/2 z-10 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full bg-white/10 text-white backdrop-blur-sm transition-colors hover:bg-white/25"
+                aria-label="Imagen anterior"
+              >
+                <ChevronLeft className="h-6 w-6" />
+              </button>
+            )}
+
+            {/* Image with slide animation */}
+            <AnimatePresence mode="wait" initial={false}>
+              <motion.img
+                key={lightboxIndex}
+                src={profile.galleryImages[lightboxIndex]}
+                alt={`Instalación profesional ${lightboxIndex + 1}`}
+                initial={{ opacity: 0, scale: 0.96 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.96 }}
+                transition={{ duration: 0.22, ease: EASE }}
+                onClick={(e) => e.stopPropagation()}
+                className="max-h-[85vh] max-w-[85vw] rounded-xl object-contain shadow-2xl"
+              />
+            </AnimatePresence>
+
+            {/* Next button */}
+            {profile.galleryImages.length > 1 && (
+              <button
+                type="button"
+                onClick={(e) => { e.stopPropagation(); goNext(); }}
+                className="absolute right-4 top-1/2 z-10 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full bg-white/10 text-white backdrop-blur-sm transition-colors hover:bg-white/25"
+                aria-label="Siguiente imagen"
+              >
+                <ChevronRight className="h-6 w-6" />
+              </button>
+            )}
+
+            {/* Dot indicators */}
+            {profile.galleryImages.length > 1 && (
+              <div className="absolute bottom-5 left-1/2 flex -translate-x-1/2 gap-2">
+                {profile.galleryImages.map((_, i) => (
+                  <button
+                    key={i}
+                    type="button"
+                    onClick={(e) => { e.stopPropagation(); setLightboxIndex(i); }}
+                    className={`h-1.5 rounded-full transition-all duration-200 ${
+                      i === lightboxIndex ? 'w-5 bg-white' : 'w-1.5 bg-white/40 hover:bg-white/70'
+                    }`}
+                    aria-label={`Ir a imagen ${i + 1}`}
+                  />
+                ))}
+              </div>
+            )}
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       <motion.section
         custom={3}
