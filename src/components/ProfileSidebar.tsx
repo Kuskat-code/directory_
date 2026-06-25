@@ -94,32 +94,21 @@ export default function ProfileSidebar({
           </div>
         ) : (
           <div className="space-y-3">
-            {/* Primary CTA — specialty color */}
             <button
               type="button"
-              className="flex w-full items-center justify-center gap-2 rounded-[var(--radius-button)] px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-opacity hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2"
-              style={{
-                backgroundColor: colors.primary,
-                transition: 'background-color 0.35s ease, opacity 0.15s ease',
-              }}
+              className={`flex w-full items-center justify-center gap-2 rounded-[var(--radius-button)] px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 ${
+                profile.specialty === 'Psiquiatría'
+                  ? 'bg-purple-600 hover:bg-purple-700'
+                  : 'bg-primary hover:opacity-90'
+              }`}
             >
               <Calendar className="h-4 w-4" aria-hidden="true" />
               Agendar Cita
             </button>
-            {/* Secondary CTA — specialty badge tint */}
-            <button
-              type="button"
-              className="flex w-full items-center justify-center gap-2 rounded-[var(--radius-button)] border px-4 py-2.5 text-sm font-semibold transition-colors hover:opacity-90 focus-visible:outline-none"
-              style={{
-                borderColor: colors.border,
-                backgroundColor: colors.badge,
-                color: colors.text,
-                transition: 'background-color 0.35s ease, border-color 0.35s ease',
-              }}
-            >
+            <Button variant="accent" className="w-full">
               <MessageCircle className="h-4 w-4" aria-hidden="true" />
               Contactar WhatsApp
-            </button>
+            </Button>
           </div>
         )}
       </motion.section>
