@@ -284,19 +284,20 @@ function PerfilTab({
           />
         </Field>
 
-        {/* Specialty — full-width with color preview dot */}
+        {/* Specialty — full-width with color swatch dot */}
         <Field label="Especialidad">
-          <div className="relative">
-            {/* Specialty color swatch */}
+          <div className="relative w-full">
             <motion.span
-              className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 rounded-full"
+              aria-hidden="true"
+              className="pointer-events-none absolute left-3 top-1/2 z-10 h-3.5 w-3.5 -translate-y-1/2 rounded-full"
               animate={{ backgroundColor: colors.primary }}
               transition={{ duration: 0.4, ease: EASE }}
             />
             <select
               value={draft.specialty}
               onChange={(e) => onChange({ specialty: e.target.value })}
-              className="profile-input pl-10"
+              className="profile-input"
+              style={{ paddingLeft: '2.5rem' }}
             >
               {MEDICAL_SPECIALTIES.map((s) => (
                 <option key={s} value={s}>
@@ -309,14 +310,17 @@ function PerfilTab({
 
         <div className="grid grid-cols-2 gap-4">
           <Field label="Ubicación">
-            {/* relative wrapper already present in parent div; icon inside */}
-            <div className="relative">
-              <MapPin className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-text-muted" />
+            <div className="relative w-full">
+              <MapPin
+                aria-hidden="true"
+                className="pointer-events-none absolute left-3 top-1/2 z-10 h-3.5 w-3.5 -translate-y-1/2 text-text-muted"
+              />
               <input
                 type="text"
                 value={draft.location}
                 onChange={(e) => onChange({ location: e.target.value })}
-                className="profile-input pl-10"
+                className="profile-input"
+                style={{ paddingLeft: '2.5rem' }}
                 placeholder="Ciudad, Depto."
               />
             </div>
@@ -337,25 +341,33 @@ function PerfilTab({
 
         <div className="grid grid-cols-2 gap-4">
           <Field label="Teléfono">
-            <div className="relative">
-              <Phone className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-text-muted" />
+            <div className="relative w-full">
+              <Phone
+                aria-hidden="true"
+                className="pointer-events-none absolute left-3 top-1/2 z-10 h-3.5 w-3.5 -translate-y-1/2 text-text-muted"
+              />
               <input
                 type="tel"
                 value={draft.phone}
                 onChange={(e) => onChange({ phone: e.target.value })}
-                className="profile-input pl-10"
+                className="profile-input"
+                style={{ paddingLeft: '2.5rem' }}
                 placeholder="+503 2345 6789"
               />
             </div>
           </Field>
           <Field label="Correo electrónico">
-            <div className="relative">
-              <Mail className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-text-muted" />
+            <div className="relative w-full">
+              <Mail
+                aria-hidden="true"
+                className="pointer-events-none absolute left-3 top-1/2 z-10 h-3.5 w-3.5 -translate-y-1/2 text-text-muted"
+              />
               <input
                 type="email"
                 value={draft.email}
                 onChange={(e) => onChange({ email: e.target.value })}
-                className="profile-input pl-10"
+                className="profile-input"
+                style={{ paddingLeft: '2.5rem' }}
                 placeholder="doctor@email.com"
               />
             </div>
