@@ -144,11 +144,17 @@ export default function PricingSection() {
 
   return (
     <section
-      className="bg-slate-50 px-4 py-24"
+      className="relative overflow-hidden bg-slate-50/50 px-4 py-24"
       aria-labelledby="pricing-title"
     >
+      {/* Spherical blue glow — behind everything */}
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute left-1/2 top-[40%] h-[350px] w-[600px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-blue-500/10 blur-[130px] z-0"
+      />
+
       {/* ── Header ─────────────────────────────────────────────────────── */}
-      <div className="mx-auto max-w-2xl text-center">
+      <div className="relative z-10 mx-auto max-w-2xl text-center">
         <h2
           id="pricing-title"
           className="text-4xl font-bold text-slate-900"
@@ -197,15 +203,8 @@ export default function PricingSection() {
       </div>
 
       {/* ── Cards grid ─────────────────────────────────────────────────── */}
-      <div className="relative mx-auto mt-12 max-w-6xl overflow-hidden px-4">
-
-        {/* Blue glow orb — decorative, behind cards */}
-        <div
-          aria-hidden="true"
-          className="pointer-events-none absolute left-1/2 top-1/4 h-[500px] w-[500px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-blue-400/20 blur-[120px]"
-        />
-
-        <div className="relative z-10 grid grid-cols-1 gap-8 md:grid-cols-3">
+      <div className="relative z-10 mx-auto mt-12 max-w-6xl px-4">
+        <div className="grid grid-cols-1 gap-8 md:grid-cols-3">
         {PRICING_PLANS.map((plan, index) => {
           const price = isYearly ? plan.priceYearly : plan.priceMonthly;
           const isPopular = Boolean(plan.isPopular);
@@ -213,15 +212,15 @@ export default function PricingSection() {
           return (
             <motion.article
               key={plan.id}
-              initial={{ opacity: 0, y: 40, filter: 'blur(10px)' }}
+              initial={{ opacity: 0, y: 30, filter: 'blur(8px)' }}
               whileInView={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
               viewport={{ once: true, margin: '-40px' }}
-              transition={{ duration: 0.6, delay: index * 0.15, ease: 'easeOut' }}
+              transition={{ duration: 0.7, delay: index * 0.15, ease: 'easeOut' }}
               whileHover={{ y: -6 }}
-              className={`relative flex flex-col rounded-3xl border bg-white p-8 transition-shadow duration-300 ${
+              className={`relative flex flex-col rounded-3xl bg-white p-8 transition-shadow duration-300 ${
                 isPopular
-                  ? 'border-slate-200 shadow-md hover:shadow-lg'
-                  : 'border-slate-200 shadow-sm hover:shadow-md'
+                  ? 'border-2 border-blue-500/60 shadow-md hover:shadow-lg'
+                  : 'border border-slate-200 shadow-sm hover:shadow-md'
               }`}
             >
               {/* Popular badge — top right */}
