@@ -3,7 +3,6 @@ import Footer from '@/src/components/Footer';
 import HeroSearch from '@/src/features/directory/components/HeroSearch';
 import BranchesMapSection from '@/src/features/directory/components/BranchesMapSection';
 import FeaturesSection from '@/src/components/FeaturesSection';
-import NewsCarousel from '@/src/components/NewsCarousel';
 import PricingSection from '@/src/components/PricingSection';
 
 const VIDEO_URL = '/doctor_writting.mp4';
@@ -18,7 +17,6 @@ export default function Home() {
         <div id="features">
           <FeaturesSection />
         </div>
-        <NewsCarousel />
         <div id="pricing">
           <PricingSection />
         </div>

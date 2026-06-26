@@ -3,6 +3,7 @@
 import { motion } from 'framer-motion';
 import { SectionContainer } from '@/src/components/ui/SectionContainer';
 import { Card } from '@/src/components/ui/Card';
+import NewsCarousel from '@/src/components/NewsCarousel';
 
 const EASE = [0.4, 0, 0.2, 1] as const;
 
@@ -110,11 +111,7 @@ export default function FeaturesSection() {
         </motion.div>
       </SectionContainer>
 
-      <section
-        aria-label="Estadisticas de la plataforma"
-        className="gradient-primary px-4 py-16 md:py-20"
-      >
-      </section>
+      <NewsCarousel />
     </>
   );
 }
