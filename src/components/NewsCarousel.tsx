@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 
@@ -86,11 +86,14 @@ const pageVariants = {
 
 // ─── NewsCard ─────────────────────────────────────────────────────────────────
 
-function NewsCard({ item }: { item: NewsItem }) {
+function NewsCard({ item, index }: { item: NewsItem; index: number }) {
   return (
     <motion.article
-      whileHover={{ y: -6 }}
-      transition={{ duration: 0.25, ease: EASE }}
+      initial={{ opacity: 0, y: 30, filter: 'blur(8px)' }}
+      whileInView={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+      viewport={{ once: true, margin: '-40px' }}
+      transition={{ duration: 0.7, delay: index * 0.12, ease: 'easeOut' }}
+      whileHover={{ y: -8 }}
       className="flex cursor-pointer flex-col overflow-hidden rounded-2xl border border-slate-700/40 bg-white will-change-transform"
     >
       {/* Image */}
@@ -155,13 +158,23 @@ function NavButton({
 export default function NewsCarousel() {
   const [page, setPage] = useState(0);
   const [direction, setDirection] = useState(1);
+  const isPaused = useRef(false);
 
   const go = (dir: number) => {
-    const next = page + dir;
-    if (next < 0 || next >= TOTAL_PAGES) return;
+    const next = (page + dir + TOTAL_PAGES) % TOTAL_PAGES;
     setDirection(dir);
     setPage(next);
   };
+
+  // Autoplay — advances page every 5s, wraps around, pauses on hover
+  useEffect(() => {
+    const id = setInterval(() => {
+      if (isPaused.current) return;
+      setDirection(1);
+      setPage((prev) => (prev + 1) % TOTAL_PAGES);
+    }, 5000);
+    return () => clearInterval(id);
+  }, []);
 
   const currentCards = NEWS.slice(page * CARDS_PER_PAGE, (page + 1) * CARDS_PER_PAGE);
 
@@ -169,6 +182,8 @@ export default function NewsCarousel() {
     <section
       className="relative overflow-hidden bg-slate-950 px-4 py-20 text-white"
       aria-label="Últimas noticias médicas"
+      onMouseEnter={() => { isPaused.current = true; }}
+      onMouseLeave={() => { isPaused.current = false; }}
     >
       {/* Spherical blue glow */}
       <div
@@ -179,10 +194,10 @@ export default function NewsCarousel() {
       <div className="relative z-10 mx-auto max-w-6xl">
         {/* ── Header ──────────────────────────────────────────────────────── */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.5, ease: EASE }}
+          initial={{ opacity: 0, y: 30, filter: 'blur(8px)' }}
+          whileInView={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+          viewport={{ once: true, margin: '-40px' }}
+          transition={{ duration: 0.7, ease: 'easeOut' }}
           className="mb-10 flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-end"
         >
           <div>
@@ -220,8 +235,8 @@ export default function NewsCarousel() {
               exit="exit"
               className="grid grid-cols-1 gap-5 sm:grid-cols-2 md:grid-cols-3"
             >
-              {currentCards.map((item) => (
-                <NewsCard key={item.id} item={item} />
+              {currentCards.map((item, i) => (
+                <NewsCard key={item.id} item={item} index={i} />
               ))}
             </motion.div>
           </AnimatePresence>
