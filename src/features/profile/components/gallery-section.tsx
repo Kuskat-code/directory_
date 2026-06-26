@@ -6,6 +6,7 @@ import type { EditableProfile, SpecialtyColorScheme } from '../types';
 import { ImageUploader } from './ImageUploader';
 
 const EASE = [0.4, 0, 0.2, 1] as const;
+const FREE_GALLERY_LIMIT = 3;
 
 const FALLBACK_GALLERY_IMAGE =
   'https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?q=80&w=400';
@@ -29,7 +30,7 @@ export function GallerySection({
   };
 
   const addImage = () => {
-    if (galleryImages.length >= 12) return;
+    if (galleryImages.length >= FREE_GALLERY_LIMIT) return;
     onChange({ galleryImages: [...galleryImages, FALLBACK_GALLERY_IMAGE] });
   };
 
@@ -61,7 +62,7 @@ export function GallerySection({
           Galería Profesional
         </h2>
 
-        {isEditing && galleryImages.length < 12 && (
+        {isEditing && galleryImages.length < FREE_GALLERY_LIMIT && (
           <button
             type="button"
             onClick={addImage}

@@ -22,12 +22,29 @@ interface ProfileSidebarProps {
   onChange?: (updates: Partial<EditableProfile>) => void;
 }
 
+const SPECIALTY_BTN_CLASS: Record<string, string> = {
+  'Psiquiatría':        'bg-purple-600 hover:bg-purple-700',
+  'Psiquiatria':        'bg-purple-600 hover:bg-purple-700',
+  'Cardiología':        'bg-red-600 hover:bg-red-700',
+  'Cardiologia':        'bg-red-600 hover:bg-red-700',
+  'Pediatría':          'bg-orange-500 hover:bg-orange-600',
+  'Pediatria':          'bg-orange-500 hover:bg-orange-600',
+  'Neurología':         'bg-indigo-600 hover:bg-indigo-700',
+  'Neurologia':         'bg-indigo-600 hover:bg-indigo-700',
+  'Dermatología':       'bg-pink-600 hover:bg-pink-700',
+  'Dermatologia':       'bg-pink-600 hover:bg-pink-700',
+  'Ginecología':        'bg-rose-500 hover:bg-rose-600',
+  'Ginecologia':        'bg-rose-500 hover:bg-rose-600',
+};
+
 export default function ProfileSidebar({
   profile,
   isEditing = false,
   onChange,
 }: ProfileSidebarProps) {
   const address = `${profile.location}, El Salvador`;
+  const btnColorClass =
+    SPECIALTY_BTN_CLASS[profile.specialty] ?? 'bg-teal-600 hover:bg-teal-700';
 
   const updateScheduleItem = (index: number, field: keyof ProfileScheduleItem, value: string | boolean) => {
     if (!onChange) return;
@@ -94,10 +111,13 @@ export default function ProfileSidebar({
           </div>
         ) : (
           <div className="space-y-3">
-            <Button variant="primary" className="w-full">
+            <button
+              type="button"
+              className={`flex w-full items-center justify-center gap-2 rounded-[var(--radius-button)] px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 ${btnColorClass}`}
+            >
               <Calendar className="h-4 w-4" aria-hidden="true" />
               Agendar Cita
-            </Button>
+            </button>
             <Button variant="accent" className="w-full">
               <MessageCircle className="h-4 w-4" aria-hidden="true" />
               Contactar WhatsApp
