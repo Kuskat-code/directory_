@@ -1,8 +1,9 @@
 import Header from '@/src/components/Header';
 import Footer from '@/src/components/Footer';
 import HeroSection from '@/src/components/HeroSection';
-import BranchesMapSection from '@/src/features/directory/components/BranchesMapSection';
 import FeaturesSection from '@/src/components/FeaturesSection';
+import OrienteMapSection from '@/src/components/landing/OrienteMapSection';
+import SpecialtiesSection from '@/src/components/landing/SpecialtiesSection';
 import PricingSection from '@/src/components/PricingSection';
 
 export default function Home() {
@@ -11,10 +12,11 @@ export default function Home() {
       <Header />
       <main className="flex flex-col">
         <HeroSection />
-        <BranchesMapSection />
         <div id="features">
           <FeaturesSection />
         </div>
+        <OrienteMapSection />
+        <SpecialtiesSection />
         <div id="pricing">
           <PricingSection />
         </div>
