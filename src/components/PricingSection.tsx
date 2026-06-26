@@ -2,7 +2,15 @@
 
 import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { Check, HelpCircle, X } from 'lucide-react';
+import {
+  BarChart3,
+  Calendar,
+  Layers,
+  MapPin,
+  MessageSquare,
+  ShieldCheck,
+  User,
+} from 'lucide-react';
 
 const EASE = [0.4, 0, 0.2, 1] as const;
 
@@ -10,8 +18,7 @@ const EASE = [0.4, 0, 0.2, 1] as const;
 
 interface PlanFeature {
   text: string;
-  included: boolean;
-  tooltip?: string;
+  Icon: React.ElementType;
 }
 
 interface Plan {
@@ -36,14 +43,9 @@ const PRICING_PLANS: Plan[] = [
     priceYearly: 0,
     buttonText: 'Comenzar gratis',
     features: [
-      { text: 'Perfil público en el directorio',       included: true  },
-      { text: 'Información de contacto básica',        included: true  },
-      { text: 'Ubicación en el mapa interactivo',      included: true  },
-      { text: 'Tarjeta digital interactiva',           included: false, tooltip: 'Disponible en plan Pro' },
-      { text: 'Enlace directo a WhatsApp',             included: false },
-      { text: 'Dashboard de analíticas básicas',       included: false },
-      { text: 'Sistema de reservas inteligente',       included: false },
-      { text: 'Soporte prioritario 24/7',              included: false },
+      { text: 'Perfil en directorio profesional',  Icon: User          },
+      { text: 'Información de contacto esencial',  Icon: MessageSquare },
+      { text: 'Ubicación en mapa interactivo',     Icon: MapPin        },
     ],
   },
   {
@@ -55,15 +57,10 @@ const PRICING_PLANS: Plan[] = [
     buttonText: 'Elegir Pro',
     isPopular: true,
     features: [
-      { text: 'Perfil público en el directorio',       included: true  },
-      { text: 'Información de contacto básica',        included: true  },
-      { text: 'Ubicación en el mapa interactivo',      included: true  },
-      { text: 'Tarjeta digital interactiva',           included: true, tooltip: 'Perfil enriquecido con CTA directo' },
-      { text: 'Enlace directo a WhatsApp',             included: true  },
-      { text: 'Dashboard de analíticas',               included: true, tooltip: 'Métricas de visitas y contactos' },
-      { text: 'Posicionamiento destacado',             included: true  },
-      { text: 'Sistema de reservas inteligente',       included: false },
-      { text: 'Herramientas CRM avanzadas',            included: false },
+      { text: 'Todo lo del plan Basic',            Icon: Layers        },
+      { text: 'Tarjeta digital interactiva',       Icon: User          },
+      { text: 'Enlace directo a WhatsApp',         Icon: MessageSquare },
+      { text: 'Dashboard de analíticas básicas',   Icon: BarChart3     },
     ],
   },
   {
@@ -74,17 +71,10 @@ const PRICING_PLANS: Plan[] = [
     priceYearly: 63,
     buttonText: 'Contactar ventas',
     features: [
-      { text: 'Perfil público en el directorio',       included: true  },
-      { text: 'Información de contacto básica',        included: true  },
-      { text: 'Ubicación en el mapa interactivo',      included: true  },
-      { text: 'Tarjeta digital interactiva',           included: true  },
-      { text: 'Enlace directo a WhatsApp',             included: true  },
-      { text: 'Dashboard de analíticas',               included: true  },
-      { text: 'Sistema de reservas inteligente',       included: true, tooltip: 'Agenda integrada multi-especialista' },
-      { text: 'Posicionamiento VIP en el directorio',  included: true  },
-      { text: 'Herramientas CRM integradas',           included: true  },
-      { text: 'Soporte técnico prioritario 24/7',      included: true  },
-      { text: 'Diseño personalizable / Multi-perfil',  included: true  },
+      { text: 'Todo lo del plan Pro',              Icon: Layers        },
+      { text: 'Sistema de reservas inteligente',   Icon: Calendar      },
+      { text: 'Posicionamiento destacado VIP',     Icon: ShieldCheck   },
+      { text: 'Soporte técnico prioritario 24/7',  Icon: ShieldCheck   },
     ],
   },
 ];
@@ -117,42 +107,11 @@ function AnimatedPrice({ value, isVisible }: { value: number; isVisible: boolean
 // ─── FeatureItem ──────────────────────────────────────────────────────────────
 
 function FeatureItem({ feature }: { feature: PlanFeature }) {
+  const { Icon, text } = feature;
   return (
     <li className="flex items-start gap-3">
-      {feature.included ? (
-        <Check
-          className="mt-0.5 h-4 w-4 shrink-0 text-emerald-500"
-          aria-hidden="true"
-        />
-      ) : (
-        <X
-          className="mt-0.5 h-4 w-4 shrink-0 text-rose-400/70"
-          aria-hidden="true"
-        />
-      )}
-      <span
-        className={
-          feature.included
-            ? 'text-sm text-slate-600'
-            : 'text-sm line-through text-slate-400 opacity-40'
-        }
-      >
-        {feature.text}
-        {feature.tooltip && feature.included && (
-          <span className="group relative ml-1 inline-block">
-            <HelpCircle
-              className="inline h-3.5 w-3.5 cursor-help text-slate-400"
-              aria-label={feature.tooltip}
-            />
-            <span
-              role="tooltip"
-              className="pointer-events-none absolute bottom-full left-1/2 z-10 mb-2 w-44 -translate-x-1/2 rounded-lg bg-slate-900 px-2 py-1.5 text-xs text-white opacity-0 shadow-lg transition-opacity duration-200 group-hover:opacity-100 group-focus-within:opacity-100"
-            >
-              {feature.tooltip}
-            </span>
-          </span>
-        )}
-      </span>
+      <Icon className="mt-0.5 h-4 w-4 shrink-0 text-slate-400" aria-hidden="true" />
+      <span className="text-sm text-slate-600">{text}</span>
     </li>
   );
 }
@@ -270,7 +229,7 @@ export default function PricingSection() {
                   )}
                 </div>
 
-                {/* 4. CTA button — right below price */}
+                {/* 4. CTA button */}
                 <button
                   type="button"
                   className={`mb-6 w-full rounded-xl px-4 py-3 text-center text-sm font-medium text-white transition-colors ${
@@ -283,7 +242,7 @@ export default function PricingSection() {
                 </button>
 
                 {/* 5. Features list */}
-                <div className="border-t border-slate-100 pt-6">
+                <div className="border-t border-slate-100 pt-5">
                   <ul className="flex flex-col gap-3" role="list">
                     {plan.features.map((feature) => (
                       <FeatureItem key={feature.text} feature={feature} />
