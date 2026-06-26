@@ -4,74 +4,58 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { AnimatePresence, motion } from 'framer-motion';
-import { Menu, Stethoscope, X } from 'lucide-react';
+import { Menu, X } from 'lucide-react';
 import { Button } from '@/src/components/ui/Button';
 
 const EASE = [0.4, 0, 0.2, 1] as const;
 
 const navLinks = [
+  { label: 'Inicio', href: '/' },
   { label: 'Directorio', href: '/directorio' },
-  { label: 'Funciones', href: '/#features' },
-  { label: 'Precios', href: '/#pricing' },
+  { label: 'Precios', href: '/precios' },
+  { label: 'Soporte', href: '/soporte' },
 ];
-
-function Logo({ light }: { light: boolean }) {
-  return (
-    <Link
-      href="/"
-      className="group flex items-center gap-2 rounded-[var(--radius-button)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
-      aria-label="Directorio Medico El Salvador - Inicio"
-    >
-      <span className="flex h-9 w-9 items-center justify-center rounded-[var(--radius-button)] gradient-primary shadow-md transition-transform duration-300 group-hover:scale-105">
-        <Stethoscope className="h-5 w-5 text-white" aria-hidden="true" />
-      </span>
-      <span className={`hidden font-bold sm:block ${light ? 'text-text' : 'text-white'}`}>
-        <span className="gradient-text">Med</span>
-        <span className={light ? 'text-text' : 'text-white'}>Directorio</span>
-      </span>
-    </Link>
-  );
-}
 
 function NavLink({
   href,
   label,
   isActive,
-  isLight,
   onClick,
   layoutId,
+  mobileMenu,
 }: {
   href: string;
   label: string;
   isActive: boolean;
-  isLight: boolean;
   onClick?: () => void;
   layoutId?: string;
+  mobileMenu?: boolean;
 }) {
   return (
     <Link
       href={href}
       onClick={onClick}
-      className={`relative rounded-[var(--radius-button)] px-4 py-2 text-sm font-medium transition-colors duration-300 transition-premium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${isActive
-        ? isLight
-          ? 'text-primary'
-          : 'text-white'
-        : isLight
-          ? 'text-text-muted hover:text-text'
-          : 'text-white/80 hover:text-white'
-        }`}
+      className={`relative whitespace-nowrap rounded-[var(--radius-button)] font-medium tracking-wide transition-colors duration-300 transition-premium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
+        mobileMenu ? 'block w-full px-4 py-3 text-base' : 'text-[1.05rem]'
+      } ${
+        isActive ? 'text-primary' : 'text-gray-700 hover:opacity-70'
+      }`}
     >
       {label}
       {isActive && layoutId && (
         <motion.span
           layoutId={layoutId}
-          className={`absolute inset-x-2 -bottom-0.5 h-0.5 rounded-full ${isLight ? 'bg-primary' : 'bg-cyan-300'
-            }`}
+          className="absolute inset-x-2 -bottom-0.5 h-0.5 rounded-full bg-primary"
           transition={{ type: 'spring', stiffness: 380, damping: 30 }}
         />
       )}
     </Link>
   );
+}
+
+function isNavLinkActive(pathname: string, href: string) {
+  if (href === '/') return pathname === '/';
+  return pathname === href || pathname.startsWith(`${href}/`);
 }
 
 export default function Header() {
@@ -81,7 +65,7 @@ export default function Header() {
   const [mobileOpen, setMobileOpen] = useState(false);
 
   const isHeroPage = pathname === '/';
-  const isLight = scrolled || !isHeroPage;
+  const hasSolidBg = scrolled || !isHeroPage;
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 20);
@@ -109,56 +93,59 @@ export default function Header() {
   }, [mobileOpen]);
 
   return (
-    <header className="fixed inset-x-0 top-0 z-50">
-      <div className="mx-auto max-w-7xl px-4 pt-3 sm:px-6 lg:px-8 lg:pt-4">
-        <nav
-          aria-label="Navegacion principal"
-          className={[
-            'flex items-center justify-between gap-4 rounded-[var(--radius-card)] px-4 py-3 shadow-md transition-all duration-300 transition-premium md:px-6',
-            isLight ? 'glass-nav' : 'glass-nav-dark',
-          ].join(' ')}
-        >
-          <Logo light={isLight} />
-
-          <div className="hidden items-center gap-1 md:flex">
-            {navLinks.map((link) => (
+    <header
+      className={[
+        'fixed inset-x-0 top-0 z-50 transition-all duration-300 ease-in-out',
+        hasSolidBg ? 'bg-white/95 shadow-md backdrop-blur-md' : 'bg-transparent shadow-none',
+      ].join(' ')}
+    >
+      <nav
+        aria-label="Navegacion principal"
+        className="relative mx-auto flex h-20 w-full max-w-7xl items-center justify-center px-4 sm:px-6 lg:px-8"
+      >
+        <ul className="hidden items-center gap-10 md:flex">
+          {navLinks.map((link) => (
+            <li key={link.href}>
               <NavLink
-                key={link.href}
                 {...link}
-                isActive={
-                  link.href.startsWith('/#')
-                    ? false
-                    : pathname === link.href || pathname.startsWith(`${link.href}/`)
-                }
-                isLight={isLight}
+                isActive={isNavLinkActive(pathname, link.href)}
                 layoutId="nav-indicator"
               />
-            ))}
-          </div>
+            </li>
+          ))}
+        </ul>
 
-          <div className="hidden items-center gap-3 md:flex">
+        <div className="absolute right-4 hidden sm:right-6 md:block lg:right-8">
+          {hasSolidBg ? (
             <Button
               size="sm"
               className="whitespace-nowrap"
               onClick={() => router.push('/perfil')}
             >
-              Perfil Médico
+              Iniciar sesión
             </Button>
-          </div>
+          ) : (
+            <button
+              type="button"
+              onClick={() => router.push('/perfil')}
+              className="rounded-lg border border-gray-300 px-5 py-2.5 text-[1.05rem] font-semibold whitespace-nowrap text-gray-700 transition-all duration-300 hover:bg-gray-50"
+            >
+              Iniciar sesión
+            </button>
+          )}
+        </div>
 
-          <button
-            type="button"
-            className={`flex h-10 w-10 items-center justify-center rounded-[var(--radius-button)] transition-colors md:hidden ${isLight ? 'text-text hover:bg-secondary' : 'text-white hover:bg-white/10'
-              }`}
-            aria-expanded={mobileOpen}
-            aria-controls="mobile-nav"
-            aria-label={mobileOpen ? 'Cerrar menu' : 'Abrir menu'}
-            onClick={() => setMobileOpen((o) => !o)}
-          >
-            {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-          </button>
-        </nav>
-      </div>
+        <button
+          type="button"
+          className="absolute right-4 flex h-10 w-10 shrink-0 items-center justify-center rounded-[var(--radius-button)] text-text transition-colors hover:bg-secondary md:hidden"
+          aria-expanded={mobileOpen}
+          aria-controls="mobile-nav"
+          aria-label={mobileOpen ? 'Cerrar menu' : 'Abrir menu'}
+          onClick={() => setMobileOpen((o) => !o)}
+        >
+          {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+        </button>
+      </nav>
 
       <AnimatePresence>
         {mobileOpen && (
@@ -183,10 +170,9 @@ export default function Header() {
               animate={{ x: 0 }}
               exit={{ x: '100%' }}
               transition={{ duration: 0.3, ease: EASE }}
-              className="fixed inset-y-0 right-0 z-50 flex w-full max-w-xs flex-col bg-white shadow-lg md:hidden"
+              className="fixed inset-y-0 right-0 z-50 flex w-full max-w-xs flex-col bg-white shadow-lg sm:max-w-sm md:hidden"
             >
-              <div className="flex items-center justify-between border-b border-border p-4">
-                <Logo light />
+              <div className="flex justify-end border-b border-border p-4">
                 <button
                   type="button"
                   onClick={() => setMobileOpen(false)}
@@ -207,8 +193,8 @@ export default function Header() {
                   >
                     <NavLink
                       {...link}
-                      isActive={pathname === link.href}
-                      isLight
+                      isActive={isNavLinkActive(pathname, link.href)}
+                      mobileMenu
                       onClick={() => setMobileOpen(false)}
                     />
                   </motion.div>
@@ -216,8 +202,14 @@ export default function Header() {
               </div>
 
               <div className="border-t border-border p-4">
-                <Button variant="outline" className="w-full">
-                  Perfil Medico
+                <Button
+                  className="w-full"
+                  onClick={() => {
+                    setMobileOpen(false);
+                    router.push('/perfil');
+                  }}
+                >
+                  Iniciar sesión
                 </Button>
               </div>
             </motion.div>

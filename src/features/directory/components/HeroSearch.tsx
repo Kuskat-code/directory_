@@ -156,8 +156,8 @@ export default function HeroSearch({ videoSrc, variant = 'gradient' }: HeroSearc
   return (
     <section
       className={[
-        'relative flex items-center justify-center overflow-hidden px-4',
-        variant === 'video' ? 'h-[50vh] min-h-[400px]' : 'min-h-[85vh] py-28 md:py-32',
+        'relative flex items-center justify-center overflow-hidden px-4 pt-0',
+        variant === 'video' ? 'h-screen min-h-[400px]' : 'min-h-[85vh] py-28 md:py-32',
       ].join(' ')}
     >
       {showVideo ? (
@@ -171,8 +171,9 @@ export default function HeroSearch({ videoSrc, variant = 'gradient' }: HeroSearc
             aria-hidden="true"
             src={videoSrc}
           />
+          <div className="absolute inset-0 bg-black/35" aria-hidden="true" />
           <div
-            className="absolute inset-0 bg-gradient-to-b from-text/15 via-transparent to-surface"
+            className="absolute inset-0 bg-gradient-to-b from-text/10 via-transparent to-surface/80"
             aria-hidden="true"
           />
         </>
