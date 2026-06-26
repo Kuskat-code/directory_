@@ -89,13 +89,13 @@ export default function NewsCarousel() {
 
   return (
     <section
-      className="relative overflow-hidden bg-slate-50/50 px-4 py-20"
+      className="relative overflow-hidden bg-slate-950 px-4 py-20 text-white"
       aria-label="Últimas noticias médicas"
     >
-      {/* Subtle blue glow — matches PricingSection aesthetic */}
+      {/* Spherical blue glow — positioned left for visual interest */}
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute left-1/2 top-1/2 z-0 h-[360px] w-[560px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-blue-400/[0.1] blur-[120px]"
+        className="pointer-events-none absolute left-1/4 top-1/2 z-0 h-[500px] w-[500px] -translate-y-1/2 rounded-full bg-blue-500/[0.15] blur-[120px]"
       />
 
       <div className="relative z-10 mx-auto max-w-5xl">
@@ -107,13 +107,13 @@ export default function NewsCarousel() {
           transition={{ duration: 0.5, ease: EASE }}
           className="mb-10 text-center"
         >
-          <span className="mb-3 inline-block rounded-full bg-blue-50 px-3 py-1 text-xs font-semibold uppercase tracking-wider text-blue-600">
+          <span className="mb-3 inline-block rounded-full bg-blue-500/20 px-3 py-1 text-xs font-semibold uppercase tracking-wider text-blue-400">
             Novedades
           </span>
-          <h2 className="text-4xl font-bold text-slate-900">
+          <h2 className="text-4xl font-bold text-white">
             Últimas noticias médicas
           </h2>
-          <p className="mt-3 text-slate-500">
+          <p className="mt-3 text-slate-400">
             Mantente al día con los avances del sector salud digital en El Salvador.
           </p>
         </motion.div>
@@ -125,7 +125,7 @@ export default function NewsCarousel() {
             type="button"
             onClick={() => go(-1)}
             aria-label="Noticia anterior"
-            className="z-10 flex h-11 w-11 shrink-0 items-center justify-center rounded-full border-2 border-slate-200 bg-white text-slate-500 shadow-sm transition-all hover:border-blue-400 hover:text-blue-600 hover:shadow-md"
+            className="z-10 flex h-11 w-11 shrink-0 items-center justify-center rounded-full border-2 border-slate-700 bg-slate-800 text-slate-300 transition-all hover:border-blue-500 hover:text-blue-400"
           >
             <ChevronLeft className="h-5 w-5" />
           </button>
@@ -141,7 +141,7 @@ export default function NewsCarousel() {
                 animate="center"
                 exit="exit"
                 whileHover={{ y: -6 }}
-                className="w-full cursor-pointer overflow-hidden rounded-3xl border-2 border-slate-100 bg-white shadow-sm transition-shadow duration-300 hover:shadow-xl hover:shadow-blue-500/5"
+                className="w-full cursor-pointer overflow-hidden rounded-3xl border border-slate-700/50 bg-white shadow-lg shadow-black/30 transition-shadow duration-300 hover:shadow-2xl hover:shadow-blue-500/10"
               >
                 {/* Image */}
                 <div className="relative h-56 w-full overflow-hidden sm:h-64">
@@ -186,7 +186,7 @@ export default function NewsCarousel() {
             type="button"
             onClick={() => go(1)}
             aria-label="Siguiente noticia"
-            className="z-10 flex h-11 w-11 shrink-0 items-center justify-center rounded-full border-2 border-slate-200 bg-white text-slate-500 shadow-sm transition-all hover:border-blue-400 hover:text-blue-600 hover:shadow-md"
+            className="z-10 flex h-11 w-11 shrink-0 items-center justify-center rounded-full border-2 border-slate-700 bg-slate-800 text-slate-300 transition-all hover:border-blue-500 hover:text-blue-400"
           >
             <ChevronRight className="h-5 w-5" />
           </button>
@@ -208,7 +208,7 @@ export default function NewsCarousel() {
               className={`rounded-full transition-all duration-300 ${
                 i === index
                   ? 'h-2 w-7 bg-blue-500'
-                  : 'h-2 w-2 bg-slate-300 hover:bg-slate-400'
+                  : 'h-2 w-2 bg-slate-600 hover:bg-slate-500'
               }`}
             />
           ))}
