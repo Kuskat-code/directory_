@@ -1,7 +1,8 @@
 import Header from '@/src/components/Header';
 import Footer from '@/src/components/Footer';
 import HeroSearch from '@/src/features/directory/components/HeroSearch';
-import BranchesMapSection from '@/src/features/directory/components/BranchesMapSection';
+import OrienteMapSection from '@/src/components/landing/OrienteMapSection';
+import SpecialtiesSection from '@/src/components/landing/SpecialtiesSection';
 import FeaturesSection from '@/src/components/FeaturesSection';
 import PricingSection from '@/src/components/PricingSection';
 
@@ -13,10 +14,11 @@ export default function Home() {
       <Header />
       <main className="flex flex-col">
         <HeroSearch variant="video" videoSrc={VIDEO_URL} />
-        <BranchesMapSection />
         <div id="features">
           <FeaturesSection />
         </div>
+        <OrienteMapSection />
+        <SpecialtiesSection />
         <div id="pricing">
           <PricingSection />
         </div>

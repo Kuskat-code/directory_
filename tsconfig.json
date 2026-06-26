@@ -30,5 +30,5 @@
     ".next/dev/types/**/*.ts",
     "**/*.mts"
   ],
-  "exclude": ["node_modules", "archivos_trabajados", "MAPA"]
+  "exclude": ["node_modules", "archivos_trabajados", "MAPA", "WEB2.0"]
 }
