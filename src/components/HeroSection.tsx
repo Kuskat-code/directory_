@@ -16,7 +16,7 @@ export default function HeroSection() {
   const [current, setCurrent] = useState(0);
 
   return (
-    <section className="flex min-h-screen items-center bg-[#F8FAFA] px-6 pt-16 pb-16 md:px-12 md:pt-20 lg:px-20">
+    <section className="flex min-h-screen items-center bg-white px-6 pt-16 pb-16 md:px-12 md:pt-20 lg:px-20">
       <div className="mx-auto grid w-full max-w-7xl grid-cols-1 items-center gap-12 md:grid-cols-2 md:gap-16 lg:gap-20">
         <motion.div
           initial={{ opacity: 0, y: 24 }}

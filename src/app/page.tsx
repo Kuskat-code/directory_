@@ -8,7 +8,7 @@ import PricingSection from '@/src/components/PricingSection';
 
 export default function Home() {
   return (
-    <div className="min-h-screen bg-[#F8FAFA]">
+    <div className="min-h-screen bg-white">
       <Header />
       <main className="flex flex-col">
         <HeroSection />

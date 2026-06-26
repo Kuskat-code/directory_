@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import {
@@ -31,6 +32,8 @@ const iconMap = {
 const DOUBLE_SPECIALTIES = [...LANDING_SPECIALTIES, ...LANDING_SPECIALTIES];
 
 export default function SpecialtiesSection() {
+  const [isPaused, setIsPaused] = useState(false);
+
   return (
     <section
       id="especialidades"
@@ -62,9 +65,6 @@ export default function SpecialtiesSection() {
           className="mb-12 flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-end px-4"
         >
           <div>
-            <span className="mb-2 inline-block rounded-full bg-blue-50 px-3 py-1 text-xs font-semibold uppercase tracking-wider text-primary">
-              Especialidades
-            </span>
             <h2
               id="specialties-heading"
               className="text-heading font-bold text-text text-3xl md:text-4xl"
@@ -86,7 +86,12 @@ export default function SpecialtiesSection() {
             WebkitMaskImage: 'linear-gradient(to right, transparent, white 15%, white 85%, transparent)'
           }}
         >
-          <div className="animate-marquee-infinite flex gap-4 md:gap-6 w-max hover:[animation-play-state:paused] transition-all">
+          <div
+            className="animate-marquee-infinite flex w-max gap-4 transition-all md:gap-6"
+            style={{ animationPlayState: isPaused ? 'paused' : 'running' }}
+            onMouseEnter={() => setIsPaused(true)}
+            onMouseLeave={() => setIsPaused(false)}
+          >
             {DOUBLE_SPECIALTIES.map((spec, i) => {
               const Icon = iconMap[spec.icon as keyof typeof iconMap] || Stethoscope;
               return (
