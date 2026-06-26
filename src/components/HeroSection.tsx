@@ -1,14 +1,22 @@
 'use client';
 
 import Link from 'next/link';
+import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { PhoneMockup } from '@/src/components/phone-mockup';
 
 const EASE = [0.4, 0, 0.2, 1] as const;
 
+const videos = [
+  '/videos/consultorio.mp4',
+  '/videos/doctor_writting.mp4',
+  '/videos/escritorio.mp4',
+];
+
 export default function HeroSection() {
+  const [current, setCurrent] = useState(0);
+
   return (
-    <section className="flex min-h-screen items-center bg-[#F8FAFA] px-6 pt-20 pb-16 md:px-12 lg:px-20">
+    <section className="flex min-h-screen items-center bg-[#F8FAFA] px-6 pt-16 pb-16 md:px-12 md:pt-20 lg:px-20">
       <div className="mx-auto grid w-full max-w-7xl grid-cols-1 items-center gap-12 md:grid-cols-2 md:gap-16 lg:gap-20">
         <motion.div
           initial={{ opacity: 0, y: 24 }}
@@ -59,9 +67,20 @@ export default function HeroSection() {
           initial={{ opacity: 0, y: 32 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.7, delay: 0.15, ease: EASE }}
-          className="flex justify-center md:justify-end"
+          className="flex items-center justify-center"
         >
-          <PhoneMockup />
+          <div className="relative h-[220px] w-full overflow-hidden rounded-2xl bg-gray-900 shadow-2xl ring-1 ring-gray-200 md:h-[320px] md:w-[480px]">
+            <video
+              key={videos[current]}
+              autoPlay
+              muted
+              playsInline
+              onEnded={() => setCurrent((prev) => (prev + 1) % videos.length)}
+              className="absolute inset-0 h-full w-full object-cover"
+              src={videos[current]}
+            />
+            <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 h-16 bg-gradient-to-t from-black/30 to-transparent" />
+          </div>
         </motion.div>
       </div>
     </section>
