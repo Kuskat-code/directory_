@@ -197,7 +197,15 @@ export default function PricingSection() {
       </div>
 
       {/* ── Cards grid ─────────────────────────────────────────────────── */}
-      <div className="mx-auto mt-12 grid max-w-6xl grid-cols-1 gap-8 md:grid-cols-3">
+      <div className="relative mx-auto mt-12 max-w-6xl overflow-hidden px-4">
+
+        {/* Blue glow orb — decorative, behind cards */}
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute left-1/2 top-1/4 h-[500px] w-[500px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-blue-400/20 blur-[120px]"
+        />
+
+        <div className="relative z-10 grid grid-cols-1 gap-8 md:grid-cols-3">
         {PRICING_PLANS.map((plan, index) => {
           const price = isYearly ? plan.priceYearly : plan.priceMonthly;
           const isPopular = Boolean(plan.isPopular);
@@ -205,10 +213,10 @@ export default function PricingSection() {
           return (
             <motion.article
               key={plan.id}
-              initial={{ opacity: 0, y: 40 }}
-              whileInView={{ opacity: 1, y: 0 }}
+              initial={{ opacity: 0, y: 40, filter: 'blur(10px)' }}
+              whileInView={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
               viewport={{ once: true, margin: '-40px' }}
-              transition={{ duration: 0.5, delay: index * 0.1, ease: EASE }}
+              transition={{ duration: 0.6, delay: index * 0.15, ease: 'easeOut' }}
               whileHover={{ y: -6 }}
               className={`relative flex flex-col rounded-3xl border bg-white p-8 transition-shadow duration-300 ${
                 isPopular
@@ -274,6 +282,7 @@ export default function PricingSection() {
             </motion.article>
           );
         })}
+        </div>
       </div>
     </section>
   );
