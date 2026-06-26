@@ -216,11 +216,10 @@ export default function PricingSection() {
               whileInView={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
               viewport={{ once: true, margin: '-40px' }}
               transition={{ duration: 0.7, delay: index * 0.15, ease: 'easeOut' }}
-              whileHover={{ y: -6 }}
-              className={`relative flex flex-col rounded-3xl bg-white p-8 transition-shadow duration-300 ${
+              className={`relative flex flex-col rounded-3xl bg-white p-8 transition-all duration-300 ease-out will-change-transform hover:-translate-y-2 hover:border-blue-500 hover:shadow-xl hover:shadow-blue-500/5 ${
                 isPopular
-                  ? 'border-2 border-blue-500/60 shadow-md hover:shadow-lg'
-                  : 'border border-slate-200 shadow-sm hover:shadow-md'
+                  ? 'border-2 border-blue-500/60 shadow-md'
+                  : 'border-2 border-slate-200 shadow-sm'
               }`}
             >
               {/* Popular badge — top right */}
