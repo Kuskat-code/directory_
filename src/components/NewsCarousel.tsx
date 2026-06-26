@@ -94,7 +94,7 @@ function NewsCard({ item, index }: { item: NewsItem; index: number }) {
       viewport={{ once: true, margin: '-40px' }}
       transition={{ duration: 0.7, delay: index * 0.12, ease: 'easeOut' }}
       whileHover={{ y: -8 }}
-      className="flex cursor-pointer flex-col overflow-hidden rounded-2xl border border-slate-700/40 bg-white will-change-transform"
+      className="flex cursor-pointer flex-col overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-sm will-change-transform"
     >
       {/* Image */}
       <div className="relative w-full overflow-hidden">
@@ -146,7 +146,7 @@ function NavButton({
       onClick={onClick}
       disabled={disabled}
       aria-label={label}
-      className="flex h-10 w-10 items-center justify-center rounded-full border border-slate-700 bg-slate-800 text-slate-300 transition-all hover:border-blue-500 hover:text-blue-400 disabled:cursor-not-allowed disabled:opacity-30"
+      className="flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-slate-100 text-slate-600 transition-all hover:border-slate-300 hover:bg-slate-200 hover:text-slate-900 disabled:cursor-not-allowed disabled:opacity-30"
     >
       {children}
     </button>
@@ -180,16 +180,11 @@ export default function NewsCarousel() {
 
   return (
     <section
-      className="relative overflow-hidden bg-slate-950 px-4 py-20 text-white"
+      className="relative overflow-hidden bg-white px-4 py-20 text-slate-900"
       aria-label="Últimas noticias médicas"
       onMouseEnter={() => { isPaused.current = true; }}
       onMouseLeave={() => { isPaused.current = false; }}
     >
-      {/* Spherical blue glow */}
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute left-1/2 top-1/2 z-0 h-[500px] w-[600px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-blue-500/[0.12] blur-[140px]"
-      />
 
       <div className="relative z-10 mx-auto max-w-6xl">
         {/* ── Header ──────────────────────────────────────────────────────── */}
@@ -201,13 +196,13 @@ export default function NewsCarousel() {
           className="mb-10 flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-end"
         >
           <div>
-            <span className="mb-2 inline-block rounded-full bg-blue-500/20 px-3 py-1 text-xs font-semibold uppercase tracking-wider text-blue-400">
+            <span className="mb-2 inline-block rounded-full bg-blue-50 px-3 py-1 text-xs font-semibold uppercase tracking-wider text-blue-600">
               Novedades
             </span>
-            <h2 className="text-3xl font-bold text-white sm:text-4xl">
+            <h2 className="text-3xl font-bold text-slate-900 sm:text-4xl">
               Últimas noticias médicas
             </h2>
-            <p className="mt-2 text-slate-400">
+            <p className="mt-2 text-slate-500">
               Mantente al día con los avances del sector salud digital en El Salvador.
             </p>
           </div>
@@ -258,7 +253,7 @@ export default function NewsCarousel() {
               className={`rounded-full transition-all duration-300 ${
                 i === page
                   ? 'h-2 w-7 bg-blue-500'
-                  : 'h-2 w-2 bg-slate-600 hover:bg-slate-500'
+                  : 'h-2 w-2 bg-slate-300 hover:bg-slate-400'
               }`}
             />
           ))}
