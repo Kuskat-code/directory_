@@ -109,12 +109,6 @@ export default function FeaturesSection() {
           })}
         </motion.div>
       </SectionContainer>
-
-      <section
-        aria-label="Estadisticas de la plataforma"
-        className="gradient-primary px-4 py-16 md:py-20"
-      >
-      </section>
     </>
   );
 }
