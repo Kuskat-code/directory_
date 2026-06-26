@@ -147,10 +147,10 @@ export default function PricingSection() {
       className="relative overflow-hidden bg-slate-50/50 px-4 py-24"
       aria-labelledby="pricing-title"
     >
-      {/* Spherical blue glow — behind everything */}
+      {/* Spherical blue glow — larger & more opaque for visibility */}
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute left-1/2 top-[40%] h-[350px] w-[600px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-blue-500/10 blur-[130px] z-0"
+        className="pointer-events-none absolute left-1/2 top-[45%] z-0 h-[450px] w-[700px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-blue-500/20 blur-[140px]"
       />
 
       {/* ── Header ─────────────────────────────────────────────────────── */}
