@@ -144,13 +144,13 @@ export default function PricingSection() {
 
   return (
     <section
-      className="relative overflow-hidden bg-slate-50/50 px-4 py-24"
+      className="relative overflow-hidden bg-slate-50/20 px-4 py-24"
       aria-labelledby="pricing-title"
     >
-      {/* Spherical blue glow — larger & more opaque for visibility */}
+      {/* Spherical blue glow */}
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute left-1/2 top-[45%] z-0 h-[450px] w-[700px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-blue-500/20 blur-[140px]"
+        className="pointer-events-none absolute left-1/2 top-[40%] z-0 h-[400px] w-[700px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-blue-500/[0.18] blur-[140px]"
       />
 
       {/* ── Header ─────────────────────────────────────────────────────── */}
@@ -231,16 +231,16 @@ export default function PricingSection() {
                 </div>
               )}
 
-              {/* Plan header */}
-              <header className="mb-6">
-                <h3 className="mb-2 text-2xl font-bold text-slate-900">
-                  {plan.name}
-                </h3>
-                <p className="text-sm text-slate-500">{plan.description}</p>
-              </header>
+              {/* 1. Plan name */}
+              <h3 className="mb-1 text-2xl font-bold text-slate-900">
+                {plan.name}
+              </h3>
 
-              {/* Price */}
-              <div className="mb-8 border-b border-slate-100 pb-6">
+              {/* 2. Short description */}
+              <p className="mb-5 text-sm text-slate-500">{plan.description}</p>
+
+              {/* 3. Price */}
+              <div className="mb-6">
                 <div className="flex items-baseline gap-1">
                   <span className="text-4xl font-extrabold text-slate-900">
                     $
@@ -259,17 +259,10 @@ export default function PricingSection() {
                 )}
               </div>
 
-              {/* Features list */}
-              <ul className="mb-8 flex flex-1 flex-col gap-3.5" role="list">
-                {plan.features.map((feature) => (
-                  <FeatureItem key={feature.text} feature={feature} />
-                ))}
-              </ul>
-
-              {/* CTA button */}
+              {/* 4. CTA button — immediately below price */}
               <button
                 type="button"
-                className={`w-full rounded-xl px-4 py-3 text-center text-sm font-medium text-white transition-colors ${
+                className={`mb-6 w-full rounded-xl px-4 py-3 text-center text-sm font-medium text-white transition-colors ${
                   isPopular
                     ? 'bg-blue-600 hover:bg-blue-700'
                     : 'bg-slate-950 hover:bg-slate-900'
@@ -277,6 +270,15 @@ export default function PricingSection() {
               >
                 {plan.buttonText}
               </button>
+
+              {/* 5. Features list */}
+              <div className="border-t border-slate-100 pt-6">
+                <ul className="flex flex-col gap-3" role="list">
+                  {plan.features.map((feature) => (
+                    <FeatureItem key={feature.text} feature={feature} />
+                  ))}
+                </ul>
+              </div>
             </motion.article>
           );
         })}
