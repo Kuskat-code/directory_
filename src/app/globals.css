@@ -138,6 +138,22 @@ body {
     animation: pulse-slow 3s var(--ease-premium) infinite;
   }
 
+  @keyframes floatIcon {
+
+    0%,
+    100% {
+      transform: translateY(0px) rotate(0deg);
+    }
+
+    50% {
+      transform: translateY(-12px) rotate(6deg);
+    }
+  }
+
+  .animate-float-icon {
+    animation: floatIcon ease-in-out infinite;
+  }
+
   .profile-input {
     width: 100%;
     border-radius: var(--radius-button);
@@ -167,7 +183,8 @@ body {
   }
 
   .skeleton,
-  .animate-pulse-slow {
+  .animate-pulse-slow,
+  .animate-float-icon {
     animation: none;
   }
 }

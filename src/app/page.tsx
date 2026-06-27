@@ -1,22 +1,24 @@
 import Header from '@/src/components/Header';
 import Footer from '@/src/components/Footer';
-import HeroSearch from '@/src/features/directory/components/HeroSearch';
-import BranchesMapSection from '@/src/features/directory/components/BranchesMapSection';
+import HeroSection from '@/src/components/HeroSection';
 import FeaturesSection from '@/src/components/FeaturesSection';
+import OrienteMapSection from '@/src/components/landing/OrienteMapSection';
+import SpecialtiesSection from '@/src/components/landing/SpecialtiesSection';
+import NewsCarousel from '@/src/components/NewsCarousel';
 import PricingSection from '@/src/components/PricingSection';
-
-const VIDEO_URL = '/doctor_writting.mp4';
 
 export default function Home() {
   return (
-    <div className="min-h-screen bg-surface">
+    <div className="min-h-screen bg-white">
       <Header />
       <main className="flex flex-col">
-        <HeroSearch variant="video" videoSrc={VIDEO_URL} />
-        <BranchesMapSection />
+        <HeroSection />
         <div id="features">
           <FeaturesSection />
         </div>
+        <OrienteMapSection />
+        <SpecialtiesSection />
+        <NewsCarousel />
         <div id="pricing">
           <PricingSection />
         </div>

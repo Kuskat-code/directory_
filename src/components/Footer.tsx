@@ -11,7 +11,7 @@ export default function Footer() {
             <span className="flex h-9 w-9 items-center justify-center rounded-[var(--radius-button)] gradient-primary">
               <Stethoscope className="h-5 w-5 text-white" aria-hidden="true" />
             </span>
-            <span className="text-xl font-bold">MedDirectorio</span>
+            <span className="text-xl font-bold">Directorio </span>
           </div>
           <p className="text-sm text-white/60">
             El directorio medico de referencia en El Salvador. Conectamos pacientes con especialistas verificados.

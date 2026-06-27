@@ -3,9 +3,8 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
-import { Calendar, MapPin, Star } from 'lucide-react';
+import { Calendar, MapPin } from 'lucide-react';
 import type { Doctor } from '@/src/lib/constants';
-import { Badge } from '@/src/components/ui/Badge';
 import { Card } from '@/src/components/ui/Card';
 
 interface Props {
@@ -15,38 +14,20 @@ interface Props {
 
 const EASE = [0.4, 0, 0.2, 1] as const;
 
-const specialtyColors: Record<string, 'primary' | 'accent' | 'success' | 'warning'> = {
-  Cardiología: 'accent',
-  Pediatría: 'success',
-  Dermatología: 'warning',
-  Neurología: 'primary',
-  Psiquiatría: 'primary',
-  Ginecología: 'accent',
-  'Medicina General': 'success',
+const SPECIALTY_COLORS: Record<string, { bg: string; text: string; button: string }> = {
+  'Medicina General': { bg: 'bg-green-100', text: 'text-green-700', button: 'bg-green-600 hover:bg-green-700' },
+  'Cardiología': { bg: 'bg-red-100', text: 'text-red-700', button: 'bg-red-600 hover:bg-red-700' },
+  'Dermatología': { bg: 'bg-orange-100', text: 'text-orange-700', button: 'bg-orange-500 hover:bg-orange-600' },
+  'Pediatría': { bg: 'bg-sky-100', text: 'text-sky-700', button: 'bg-sky-500 hover:bg-sky-600' },
+  'Psiquiatría': { bg: 'bg-violet-100', text: 'text-violet-700', button: 'bg-violet-600 hover:bg-violet-700' },
+  'Neurología': { bg: 'bg-indigo-100', text: 'text-indigo-700', button: 'bg-indigo-600 hover:bg-indigo-700' },
+  'Oftalmología': { bg: 'bg-blue-100', text: 'text-blue-700', button: 'bg-blue-600 hover:bg-blue-700' },
+  'Otorrinolaringología': { bg: 'bg-yellow-100', text: 'text-yellow-700', button: 'bg-yellow-500 hover:bg-yellow-600' },
+  'Gastroenterología': { bg: 'bg-lime-100', text: 'text-lime-700', button: 'bg-lime-600 hover:bg-lime-700' },
+  'Ortopedia': { bg: 'bg-slate-100', text: 'text-slate-700', button: 'bg-slate-600 hover:bg-slate-700' },
+  'Ginecología': { bg: 'bg-pink-100', text: 'text-pink-700', button: 'bg-pink-500 hover:bg-pink-600' },
+  'Urología': { bg: 'bg-amber-100', text: 'text-amber-700', button: 'bg-amber-500 hover:bg-amber-600' },
 };
-
-function StarRating({ rating, reviews }: { rating: number; reviews: number }) {
-  const full = Math.floor(rating);
-  const hasHalf = rating % 1 >= 0.5;
-
-  return (
-    <div className="flex items-center gap-2" aria-label={`${rating} de 5 estrellas, ${reviews} resenas`}>
-      <div className="flex items-center gap-0.5" aria-hidden="true">
-        {Array.from({ length: 5 }, (_, i) => {
-          const filled = i < full || (i === full && hasHalf);
-          return (
-            <Star
-              key={i}
-              className={`h-4 w-4 ${filled ? 'fill-amber-400 text-amber-400' : 'fill-border text-border'}`}
-            />
-          );
-        })}
-      </div>
-      <span className="text-sm font-semibold text-text">{rating.toFixed(1)}</span>
-      <span className="text-xs text-text-muted">({reviews})</span>
-    </div>
-  );
-}
 
 function AvailabilityIndicator({ status }: { status: Doctor['availability'] }) {
   const config = {
@@ -64,7 +45,7 @@ function AvailabilityIndicator({ status }: { status: Doctor['availability'] }) {
 }
 
 export default function DoctorCard({ doctor, index = 0 }: Props) {
-  const badgeVariant = specialtyColors[doctor.specialty] ?? 'primary';
+  const specialtyColor = SPECIALTY_COLORS[doctor.specialty] ?? { bg: 'bg-teal-100', text: 'text-teal-700', button: 'bg-teal-600 hover:bg-teal-700' };
 
   return (
     <motion.article
@@ -98,13 +79,13 @@ export default function DoctorCard({ doctor, index = 0 }: Props) {
 
           <h3 className="text-lg font-bold text-text">{doctor.name}</h3>
 
-          <Badge variant={badgeVariant} className="mt-2">
+          <span
+            className={`mt-2 inline-flex items-center rounded-[var(--radius-pill)] px-3 py-1 text-xs font-semibold transition-colors duration-300 transition-premium ${specialtyColor.bg} ${specialtyColor.text}`}
+          >
             {doctor.specialty}
-          </Badge>
+          </span>
 
           <div className="mt-4 w-full space-y-3">
-            <StarRating rating={doctor.rating} reviews={doctor.reviews} />
-
             <div className="flex items-center justify-center gap-1.5 text-sm text-text-muted">
               <MapPin className="h-4 w-4 shrink-0 text-primary" aria-hidden="true" />
               <span>{doctor.location}</span>
@@ -113,7 +94,7 @@ export default function DoctorCard({ doctor, index = 0 }: Props) {
             <AvailabilityIndicator status={doctor.availability} />
 
             <p className="text-xs text-text-muted">
-              {doctor.experience} anos de experiencia
+              {doctor.experience} años de experiencia
             </p>
           </div>
         </div>
@@ -121,7 +102,7 @@ export default function DoctorCard({ doctor, index = 0 }: Props) {
         <div className="mt-auto border-t border-border p-4">
           <Link
             href={`/perfil?id=${doctor.id}`}
-            className="inline-flex w-full items-center justify-center gap-2 rounded-[var(--radius-button)] bg-primary px-5 py-2.5 text-sm font-semibold text-white shadow-md transition-all duration-300 transition-premium hover:bg-primary-dark hover:shadow-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 active:scale-[0.98]"
+            className={`inline-flex w-full items-center justify-center gap-2 rounded-[var(--radius-button)] ${specialtyColor.button} px-5 py-2.5 text-sm font-semibold text-white shadow-md transition-all duration-300 transition-premium hover:shadow-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 active:scale-[0.98]`}
           >
             <Calendar className="h-4 w-4" aria-hidden="true" />
             View Profile

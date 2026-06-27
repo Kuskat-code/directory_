@@ -123,13 +123,13 @@ export default function PricingSection() {
 
   return (
     <section
-      className="relative overflow-hidden bg-slate-50/20 px-4 py-24"
+      className="relative overflow-hidden bg-white px-4 py-24"
       aria-labelledby="pricing-title"
     >
       {/* Spherical blue glow */}
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute left-1/2 top-[40%] z-0 h-[400px] w-[700px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-blue-500/[0.25] blur-[160px]"
+        className="pointer-events-none absolute left-1/2 top-[40%] z-0 h-[400px] w-[700px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-blue-500/[0.18] blur-[160px]"
       />
 
       {/* ── Header ─────────────────────────────────────────────────────────── */}

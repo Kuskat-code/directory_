@@ -36,6 +36,40 @@ export const VALIDATION = {
   PASSWORD_MIN_LENGTH: 8,
 } as const;
 
+export const LANDING_SPECIALTIES = [
+  { name: 'Medicina General', icon: 'stethoscope' },
+  { name: 'Cardiología', icon: 'heart' },
+  { name: 'Pediatría', icon: 'baby' },
+  { name: 'Psicología', icon: 'brain' },
+  { name: 'Neurología', icon: 'activity' },
+  { name: 'Nefrología', icon: 'droplets' },
+  { name: 'Dermatología', icon: 'sparkles' },
+  { name: 'Ginecología', icon: 'heart-handshake' },
+] as const;
+
+export function countDoctorsByDepartment(department: string): number {
+  return EXAMPLE_DOCTORS.filter((d) => d.location === department).length;
+}
+
+export function getTopSpecialtiesForDepartment(
+  department: string,
+  defaults: readonly string[],
+): string[] {
+  const counts = new Map<string, number>();
+
+  for (const doctor of EXAMPLE_DOCTORS) {
+    if (doctor.location !== department) continue;
+    counts.set(doctor.specialty, (counts.get(doctor.specialty) ?? 0) + 1);
+  }
+
+  if (counts.size === 0) return [...defaults];
+
+  return [...counts.entries()]
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 3)
+    .map(([specialty]) => specialty);
+}
+
 export const APPOINTMENT_STATUSES = {
   PENDING: 'Pendiente',
   CONFIRMED: 'Confirmada',
