@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
-import { Calendar, MapPin, Star } from 'lucide-react';
+import { Calendar, MapPin } from 'lucide-react';
 import type { Doctor } from '@/src/lib/constants';
 import { Badge } from '@/src/components/ui/Badge';
 import { Card } from '@/src/components/ui/Card';
@@ -24,29 +24,6 @@ const specialtyColors: Record<string, 'primary' | 'accent' | 'success' | 'warnin
   Ginecología: 'accent',
   'Medicina General': 'success',
 };
-
-function StarRating({ rating, reviews }: { rating: number; reviews: number }) {
-  const full = Math.floor(rating);
-  const hasHalf = rating % 1 >= 0.5;
-
-  return (
-    <div className="flex items-center gap-2" aria-label={`${rating} de 5 estrellas, ${reviews} resenas`}>
-      <div className="flex items-center gap-0.5" aria-hidden="true">
-        {Array.from({ length: 5 }, (_, i) => {
-          const filled = i < full || (i === full && hasHalf);
-          return (
-            <Star
-              key={i}
-              className={`h-4 w-4 ${filled ? 'fill-amber-400 text-amber-400' : 'fill-border text-border'}`}
-            />
-          );
-        })}
-      </div>
-      <span className="text-sm font-semibold text-text">{rating.toFixed(1)}</span>
-      <span className="text-xs text-text-muted">({reviews})</span>
-    </div>
-  );
-}
 
 function AvailabilityIndicator({ status }: { status: Doctor['availability'] }) {
   const config = {
@@ -103,8 +80,6 @@ export default function DoctorCard({ doctor, index = 0 }: Props) {
           </Badge>
 
           <div className="mt-4 w-full space-y-3">
-            <StarRating rating={doctor.rating} reviews={doctor.reviews} />
-
             <div className="flex items-center justify-center gap-1.5 text-sm text-text-muted">
               <MapPin className="h-4 w-4 shrink-0 text-primary" aria-hidden="true" />
               <span>{doctor.location}</span>
@@ -113,7 +88,7 @@ export default function DoctorCard({ doctor, index = 0 }: Props) {
             <AvailabilityIndicator status={doctor.availability} />
 
             <p className="text-xs text-text-muted">
-              {doctor.experience} anos de experiencia
+              {doctor.experience} años de experiencia
             </p>
           </div>
         </div>

@@ -14,24 +14,21 @@ export default function DirectorioContent() {
   const searchParams = useSearchParams();
   const [specialty, setSpecialty] = useState(searchParams.get('specialty') || '');
   const [location, setLocation] = useState(searchParams.get('location') || '');
-  const [minRating, setMinRating] = useState(0);
 
   const filtered = useMemo(() => {
     return EXAMPLE_DOCTORS.filter((d) => {
       if (specialty && d.specialty !== specialty) return false;
       if (location && !d.location.toLowerCase().includes(location.toLowerCase())) return false;
-      if (d.rating < minRating) return false;
       return true;
     });
-  }, [specialty, location, minRating]);
+  }, [specialty, location]);
 
   const clearFilters = () => {
     setSpecialty('');
     setLocation('');
-    setMinRating(0);
   };
 
-  const hasFilters = specialty || location || minRating > 0;
+  const hasFilters = specialty || location;
 
   return (
     <div className="min-h-screen bg-secondary/40">
@@ -98,30 +95,6 @@ export default function DirectorioContent() {
                       ))}
                     </select>
                   </div>
-
-                  <fieldset>
-                    <legend className="text-xs font-semibold uppercase tracking-wide text-text-muted">
-                      Valoracion minima
-                    </legend>
-                    <div className="mt-2 flex flex-col gap-1">
-                      {[0, 3, 3.5, 4, 4.5].map((r) => (
-                        <label
-                          key={r}
-                          className={`flex cursor-pointer items-center gap-3 rounded-[var(--radius-button)] px-3 py-2 text-sm transition-colors ${minRating === r ? 'bg-primary/10 text-primary' : 'text-text-muted hover:bg-secondary'
-                            }`}
-                        >
-                          <input
-                            type="radio"
-                            name="rating"
-                            checked={minRating === r}
-                            onChange={() => setMinRating(r)}
-                            className="accent-primary"
-                          />
-                          {r === 0 ? 'Cualquiera' : `${r}+ estrellas`}
-                        </label>
-                      ))}
-                    </div>
-                  </fieldset>
                 </div>
               </div>
             </aside>
