@@ -1,60 +1,163 @@
 'use client';
-import { useState } from 'react';
+
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
+import { motion } from 'framer-motion';
+import { Button } from '@/src/components/ui/Button';
 
 const navLinks = [
+  { label: 'Inicio', href: '/' },
   { label: 'Directorio', href: '/directorio' },
-  { label: 'Servicios', href: '/servicios' },
+  { label: 'Precios', href: '/precios' },
   { label: 'Soporte', href: '/soporte' },
 ];
 
+function isNavLinkActive(pathname: string, href: string) {
+  if (href === '/') return pathname === '/';
+  return pathname === href || pathname.startsWith(`${href}/`);
+}
+
 export default function Header() {
   const pathname = usePathname();
-  const [query, setQuery] = useState('');
+  const router = useRouter();
+  const [scrolled, setScrolled] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
+
+  const isHeroPage = pathname === '/';
+  const hasSolidBg = scrolled || !isHeroPage || menuOpen;
+
+  useEffect(() => {
+    const handleScroll = () => setScrolled(window.scrollY > 20);
+    handleScroll();
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  useEffect(() => {
+    if (scrolled) setMenuOpen(false);
+  }, [scrolled]);
+
+  useEffect(() => {
+    setMenuOpen(false);
+  }, [pathname]);
+
+  useEffect(() => {
+    document.body.style.overflow = menuOpen ? 'hidden' : '';
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [menuOpen]);
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 py-3">
-      <nav className="w-full max-w-[96%] mx-auto bg-white/80 backdrop-blur-xl border border-gray-200/50 shadow-sm rounded-full px-5 py-2.5 flex items-center justify-between gap-4">
+    <header
+      className={[
+        'fixed inset-x-0 top-0 z-50 transition-all duration-300 ease-in-out',
+        hasSolidBg ? 'bg-white/95 shadow-md backdrop-blur-md' : 'bg-transparent shadow-none',
+      ].join(' ')}
+    >
+      <nav aria-label="Navegacion principal">
+        <div className="relative mx-auto flex h-16 max-w-7xl items-center justify-center px-6 md:h-20">
+          <ul className="hidden items-center gap-8 md:flex lg:gap-10">
+            {navLinks.map((link) => {
+              const isActive = isNavLinkActive(pathname, link.href);
+              return (
+                <li key={link.href}>
+                  <Link
+                    href={link.href}
+                    className={`relative text-[1.05rem] font-medium tracking-wide transition-colors duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
+                      isActive ? 'text-primary' : 'text-gray-700 hover:opacity-70'
+                    }`}
+                  >
+                    {link.label}
+                    {isActive && (
+                      <motion.span
+                        layoutId="nav-indicator"
+                        className="absolute inset-x-0 -bottom-1 h-0.5 rounded-full bg-primary"
+                        transition={{ type: 'spring', stiffness: 380, damping: 30 }}
+                      />
+                    )}
+                  </Link>
+                </li>
+              );
+            })}
+          </ul>
 
-        <Link href="/" className="text-lg font-bold text-gray-900 tracking-tight flex items-center gap-2 shrink-0">
-          <div className="w-7 h-7 bg-gradient-to-br from-brand-accent to-blue-700 rounded-lg"></div>
-          <span className="hidden sm:inline">DirectorioPro</span>
-        </Link>
-
-        <div className="hidden md:flex items-center gap-1">
-          {navLinks.map((link) => {
-            const isActive = pathname === link.href;
-            return (
-              <Link
-                key={link.href}
-                href={link.href}
-                className={`px-4 py-2 text-sm font-medium rounded-xl transition-colors ${
-                  isActive
-                    ? 'bg-brand-accent/10 text-brand-accent'
-                    : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
-                }`}
+          <div className="absolute right-6 hidden md:block">
+            {hasSolidBg && !menuOpen ? (
+              <Button
+                size="sm"
+                className="whitespace-nowrap"
+                onClick={() => router.push('/perfil')}
               >
-                {link.label}
-              </Link>
-            );
-          })}
+                Iniciar sesión
+              </Button>
+            ) : (
+              <button
+                type="button"
+                onClick={() => router.push('/perfil')}
+                className="rounded-lg border border-gray-300 px-5 py-2.5 text-[1.05rem] font-semibold whitespace-nowrap text-gray-700 transition-all duration-300 hover:bg-gray-50"
+              >
+                Iniciar sesión
+              </button>
+            )}
+          </div>
+
+          <button
+            type="button"
+            onClick={() => setMenuOpen((open) => !open)}
+            className="absolute right-6 flex flex-col gap-1.5 p-2 text-gray-800 transition-colors duration-300 md:hidden"
+            aria-expanded={menuOpen}
+            aria-controls="mobile-nav"
+            aria-label={menuOpen ? 'Cerrar menu' : 'Abrir menu'}
+          >
+            <span
+              className={`block h-0.5 w-6 bg-current transition-all duration-300 ${menuOpen ? 'translate-y-2 rotate-45' : ''}`}
+            />
+            <span
+              className={`block h-0.5 w-6 bg-current transition-all duration-300 ${menuOpen ? 'opacity-0' : ''}`}
+            />
+            <span
+              className={`block h-0.5 w-6 bg-current transition-all duration-300 ${menuOpen ? '-translate-y-2 -rotate-45' : ''}`}
+            />
+          </button>
         </div>
 
-        <div className="relative flex-1 max-w-xs hidden sm:block">
-          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">🔍</span>
-          <input
-            type="text"
-            placeholder="Buscar profesionales..."
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            className="w-full bg-gray-100 text-sm rounded-full pl-9 pr-4 py-1.5 outline-none focus:ring-2 focus:ring-blue-400 focus:bg-white transition-all placeholder:text-gray-400"
-          />
-        </div>
-
-        <div className="flex items-center gap-3 shrink-0">
-          <button className="text-gray-500 hover:text-brand-accent transition-colors text-lg">🔔</button>
-          <div className="w-7 h-7 bg-gradient-to-br from-blue-400 to-blue-600 rounded-full"></div>
+        <div
+          id="mobile-nav"
+          className={`overflow-hidden transition-all duration-300 ease-in-out md:hidden ${
+            menuOpen ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
+          }`}
+        >
+          <ul className="flex flex-col gap-4 bg-white/95 px-6 pb-6 backdrop-blur-md">
+            {navLinks.map((link) => {
+              const isActive = isNavLinkActive(pathname, link.href);
+              return (
+                <li key={link.href}>
+                  <Link
+                    href={link.href}
+                    onClick={() => setMenuOpen(false)}
+                    className={`block text-lg font-medium transition-colors ${
+                      isActive ? 'text-primary' : 'text-gray-700 hover:text-teal-600'
+                    }`}
+                  >
+                    {link.label}
+                  </Link>
+                </li>
+              );
+            })}
+            <li>
+              <Button
+                className="w-full"
+                onClick={() => {
+                  setMenuOpen(false);
+                  router.push('/perfil');
+                }}
+              >
+                Iniciar sesión
+              </Button>
+            </li>
+          </ul>
         </div>
       </nav>
     </header>

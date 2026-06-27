@@ -1,109 +1,115 @@
 'use client';
+
 import { motion } from 'framer-motion';
+import { SectionContainer } from '@/src/components/ui/SectionContainer';
+import { Card } from '@/src/components/ui/Card';
+
+const EASE = [0.4, 0, 0.2, 1] as const;
+
+function DirectoryIcon() {
+  return (
+    <svg viewBox="0 0 64 64" fill="none" className="h-14 w-14" aria-hidden="true">
+      <rect x="8" y="12" width="48" height="40" rx="8" className="fill-secondary stroke-primary" strokeWidth="2" />
+      <circle cx="24" cy="28" r="6" className="fill-primary/20 stroke-primary" strokeWidth="2" />
+      <path d="M36 26h16M36 32h12M36 38h14" className="stroke-primary" strokeWidth="2" strokeLinecap="round" />
+      <path d="M8 44h48" className="stroke-primary/30" strokeWidth="2" />
+    </svg>
+  );
+}
+
+function SearchIcon() {
+  return (
+    <svg viewBox="0 0 64 64" fill="none" className="h-14 w-14" aria-hidden="true">
+      <circle cx="28" cy="28" r="16" className="fill-secondary stroke-primary" strokeWidth="2" />
+      <path d="M40 40l14 14" className="stroke-accent" strokeWidth="3" strokeLinecap="round" />
+      <path d="M22 28h12M28 22v12" className="stroke-primary" strokeWidth="2" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+function TrustIcon() {
+  return (
+    <svg viewBox="0 0 64 64" fill="none" className="h-14 w-14" aria-hidden="true">
+      <path d="M32 8l20 8v16c0 12-8 22-20 24-12-2-20-12-20-24V16l20-8z" className="fill-secondary stroke-primary" strokeWidth="2" />
+      <path d="M24 32l6 6 12-14" className="stroke-success" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
 
 const features = [
   {
-    icon: '📋',
-    title: 'Directorio Completo',
-    desc: 'Accede a una amplia base de profesionales verificados en todas las especialidades.',
+    icon: DirectoryIcon,
+    title: 'Directorio verificado',
+    desc: 'Accede a cientos de medicos certificados en todas las especialidades de El Salvador.',
   },
   {
-    icon: '🔍',
-    title: 'Búsqueda Inteligente',
-    desc: 'Encuentra al profesional ideal con filtros avanzados por especialidad, ubicación y más.',
+    icon: SearchIcon,
+    title: 'Busqueda inteligente',
+    desc: 'Filtra por especialidad, ubicacion y valoraciones para encontrar al especialista ideal.',
   },
   {
-    icon: '🤝',
-    title: 'Conexión Directa',
-    desc: 'Conecta directamente con los profesionales y agenda citas de forma sencilla.',
+    icon: TrustIcon,
+    title: 'Confianza garantizada',
+    desc: 'Resenas autenticas, perfiles completos y disponibilidad en tiempo real para decidir con seguridad.',
   },
-];
-
-const stats = [
-  { value: '500+', label: 'Profesionales' },
-  { value: '15+', label: 'Especialidades' },
-  { value: '98%', label: 'Satisfacción' },
-  { value: '1K+', label: 'Clientes' },
 ];
 
 const containerVariants = {
   hidden: {},
-  visible: { transition: { staggerChildren: 0.15 } },
+  visible: { transition: { staggerChildren: 0.12 } },
 };
 
 const cardVariants = {
-  hidden: { opacity: 0, y: 60 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: 'easeOut' as const } },
+  hidden: { opacity: 0, y: 40 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: EASE } },
 };
 
 export default function FeaturesSection() {
   return (
     <>
-      <section className="py-20 px-4">
-        <div className="max-w-6xl mx-auto">
-          <motion.h2
-            initial={{ opacity: 0, y: 40 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.5 }}
-            className="text-3xl md:text-4xl font-bold text-center text-gray-900 mb-4"
-          >
-            ¿Por qué DirectorioPro?
-          </motion.h2>
-          <motion.p
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.5, delay: 0.1 }}
-            className="text-gray-500 text-center max-w-2xl mx-auto mb-12"
-          >
-            La plataforma más confiable para encontrar profesionales en El Salvador
-          </motion.p>
+      <SectionContainer aria-labelledby="features-heading">
+        <motion.div
+          initial={{ opacity: 0, y: 32 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.5, ease: EASE }}
+          className="mx-auto mb-14 max-w-2xl text-center"
+        >
+          <h2 id="features-heading" className="text-heading font-bold text-text">
+            Salud de confianza, tecnologia moderna
+          </h2>
+          <p className="text-subheading mt-4 text-text-muted">
+            La plataforma medica mas completa de El Salvador, disenada para pacientes exigentes y profesionales de excelencia.
+          </p>
+        </motion.div>
 
-          <motion.div
-            variants={containerVariants}
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, margin: '-50px' }}
-            className="grid grid-cols-1 md:grid-cols-3 gap-8"
-          >
-            {features.map((f, i) => (
-              <motion.div
-                key={i}
-                variants={cardVariants}
-                className="bg-white rounded-2xl p-8 shadow-lg border border-gray-100 hover:shadow-xl transition-shadow"
-              >
-                <div className="text-4xl mb-4">{f.icon}</div>
-                <h3 className="text-xl font-semibold text-gray-900 mb-3">{f.title}</h3>
-                <p className="text-gray-500 text-sm leading-relaxed">{f.desc}</p>
+        <motion.div
+          variants={containerVariants}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, margin: '-60px' }}
+          className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3 lg:gap-8"
+        >
+          {features.map((feature) => {
+            const Icon = feature.icon;
+            return (
+              <motion.div key={feature.title} variants={cardVariants} whileHover={{ y: -6, scale: 1.01 }}>
+                <Card
+                  hoverable
+                  className="group h-full border-secondary/80 bg-gradient-to-b from-white to-secondary/30"
+                >
+                  <div className="mb-5 transition-transform duration-300 transition-premium group-hover:scale-110">
+                    <Icon />
+                  </div>
+                  <h3 className="text-xl font-bold text-text">{feature.title}</h3>
+                  <p className="mt-3 text-sm leading-relaxed text-text-muted">{feature.desc}</p>
+                </Card>
               </motion.div>
-            ))}
-          </motion.div>
-        </div>
-      </section>
-
-      <section className="py-16 px-4 bg-gray-900">
-        <div className="max-w-6xl mx-auto">
-          <motion.div
-            variants={containerVariants}
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, margin: '-50px' }}
-            className="grid grid-cols-2 md:grid-cols-4 gap-8"
-          >
-            {stats.map((s, i) => (
-              <motion.div
-                key={i}
-                variants={cardVariants}
-                className="text-center"
-              >
-                <div className="text-4xl md:text-5xl font-bold text-white mb-2">{s.value}</div>
-                <div className="text-gray-400 text-sm">{s.label}</div>
-              </motion.div>
-            ))}
-          </motion.div>
-        </div>
-      </section>
+            );
+          })}
+        </motion.div>
+      </SectionContainer>
     </>
   );
 }
+

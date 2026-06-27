@@ -1,65 +1,114 @@
 'use client';
+
+import Link from 'next/link';
+import Image from 'next/image';
 import { motion } from 'framer-motion';
+import { Calendar, MapPin } from 'lucide-react';
 import type { Doctor } from '@/src/lib/constants';
+import { Card } from '@/src/components/ui/Card';
 
 interface Props {
   doctor: Doctor;
   index?: number;
 }
 
-function StarRating({ rating }: { rating: number }) {
-  const full = Math.floor(rating);
-  const hasHalf = rating % 1 >= 0.5;
+const EASE = [0.4, 0, 0.2, 1] as const;
+
+const SPECIALTY_COLORS: Record<string, { bg: string; text: string; button: string }> = {
+  'Medicina General': { bg: 'bg-green-100', text: 'text-green-700', button: 'bg-green-600 hover:bg-green-700' },
+  'Cardiología': { bg: 'bg-red-100', text: 'text-red-700', button: 'bg-red-600 hover:bg-red-700' },
+  'Dermatología': { bg: 'bg-orange-100', text: 'text-orange-700', button: 'bg-orange-500 hover:bg-orange-600' },
+  'Pediatría': { bg: 'bg-sky-100', text: 'text-sky-700', button: 'bg-sky-500 hover:bg-sky-600' },
+  'Psiquiatría': { bg: 'bg-violet-100', text: 'text-violet-700', button: 'bg-violet-600 hover:bg-violet-700' },
+  'Neurología': { bg: 'bg-indigo-100', text: 'text-indigo-700', button: 'bg-indigo-600 hover:bg-indigo-700' },
+  'Oftalmología': { bg: 'bg-blue-100', text: 'text-blue-700', button: 'bg-blue-600 hover:bg-blue-700' },
+  'Otorrinolaringología': { bg: 'bg-yellow-100', text: 'text-yellow-700', button: 'bg-yellow-500 hover:bg-yellow-600' },
+  'Gastroenterología': { bg: 'bg-lime-100', text: 'text-lime-700', button: 'bg-lime-600 hover:bg-lime-700' },
+  'Ortopedia': { bg: 'bg-slate-100', text: 'text-slate-700', button: 'bg-slate-600 hover:bg-slate-700' },
+  'Ginecología': { bg: 'bg-pink-100', text: 'text-pink-700', button: 'bg-pink-500 hover:bg-pink-600' },
+  'Urología': { bg: 'bg-amber-100', text: 'text-amber-700', button: 'bg-amber-500 hover:bg-amber-600' },
+};
+
+function AvailabilityIndicator({ status }: { status: Doctor['availability'] }) {
+  const config = {
+    available: { label: 'Disponible hoy', dot: 'bg-success', text: 'text-success' },
+    limited: { label: 'Pocos horarios', dot: 'bg-warning', text: 'text-warning' },
+    unavailable: { label: 'Sin cupos', dot: 'bg-text-muted', text: 'text-text-muted' },
+  }[status ?? 'available'];
 
   return (
-    <span className="inline-flex items-center gap-0.5 text-yellow-400" aria-label={`${rating} estrellas`}>
-      {Array.from({ length: 5 }, (_, i) => {
-        if (i < full) return <span key={i} className="text-sm">★</span>;
-        if (i === full && hasHalf) return <span key={i} className="text-sm">★</span>;
-        return <span key={i} className="text-sm text-gray-300">★</span>;
-      })}
-    </span>
+    <div className={`flex items-center gap-1.5 text-xs font-medium ${config.text}`}>
+      <span className={`h-2 w-2 rounded-full ${config.dot}`} aria-hidden="true" />
+      {config.label}
+    </div>
   );
 }
 
 export default function DoctorCard({ doctor, index = 0 }: Props) {
+  const specialtyColor = SPECIALTY_COLORS[doctor.specialty] ?? { bg: 'bg-teal-100', text: 'text-teal-700', button: 'bg-teal-600 hover:bg-teal-700' };
+
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 30 }}
+    <motion.article
+      initial={{ opacity: 0, y: 28 }}
       whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: '-30px' }}
-      transition={{ duration: 0.4, delay: index * 0.05, ease: 'easeOut' }}
-      whileHover={{ y: -6, boxShadow: '0 12px 40px rgba(0,0,0,0.1)' }}
-      className="bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-lg transition-shadow p-6 flex flex-col items-center text-center"
+      viewport={{ once: true, margin: '-40px' }}
+      transition={{ duration: 0.45, delay: index * 0.06, ease: EASE }}
+      whileHover={{ y: -6, scale: 1.01 }}
+      className="group h-full"
     >
-      <div className="w-20 h-20 rounded-full overflow-hidden bg-gray-100 mb-4 ring-2 ring-gray-100">
-        <img
-          src={doctor.avatar}
-          alt={doctor.name}
-          className="w-full h-full object-cover"
-          loading="lazy"
-        />
-      </div>
+      <Card
+        hoverable
+        padding="none"
+        className="flex h-full flex-col overflow-hidden transition-shadow duration-300 transition-premium group-hover:shadow-glow"
+      >
+        <div className="relative flex flex-col items-center px-6 pb-6 pt-8 text-center">
+          <div className="relative mb-4">
+            <div className="absolute -inset-1 rounded-full bg-gradient-to-br from-primary/30 to-cyan-400/30 opacity-0 blur-md transition-opacity duration-300 group-hover:opacity-100" />
+            <div className="relative h-20 w-20 overflow-hidden rounded-full ring-2 ring-secondary bg-secondary">
+              <Image
+                src={doctor.avatar}
+                alt={`Foto de ${doctor.name}`}
+                width={80}
+                height={80}
+                className="h-full w-full object-cover"
+                loading="lazy"
+                unoptimized
+              />
+            </div>
+          </div>
 
-      <h3 className="text-lg font-semibold text-gray-900">{doctor.name}</h3>
-      <p className="text-sm text-brand-accent font-medium mt-0.5">{doctor.specialty}</p>
+          <h3 className="text-lg font-bold text-text">{doctor.name}</h3>
 
-      <div className="flex items-center gap-2 mt-3">
-        <StarRating rating={doctor.rating} />
-        <span className="text-sm font-medium text-gray-700">{doctor.rating}</span>
-        <span className="text-xs text-gray-400">({doctor.reviews})</span>
-      </div>
+          <span
+            className={`mt-2 inline-flex items-center rounded-[var(--radius-pill)] px-3 py-1 text-xs font-semibold transition-colors duration-300 transition-premium ${specialtyColor.bg} ${specialtyColor.text}`}
+          >
+            {doctor.specialty}
+          </span>
 
-      <div className="flex items-center gap-1.5 mt-2 text-sm text-gray-500">
-        <span>📍</span>
-        <span>{doctor.location}</span>
-      </div>
+          <div className="mt-4 w-full space-y-3">
+            <div className="flex items-center justify-center gap-1.5 text-sm text-text-muted">
+              <MapPin className="h-4 w-4 shrink-0 text-primary" aria-hidden="true" />
+              <span>{doctor.location}</span>
+            </div>
 
-      <p className="text-xs text-gray-400 mt-1">{doctor.experience} años de experiencia</p>
+            <AvailabilityIndicator status={doctor.availability} />
 
-      <button className="mt-4 w-full py-2.5 px-4 bg-brand-teal text-white text-sm font-medium rounded-xl hover:brightness-110 transition-all active:scale-[0.98]">
-        Ver perfil
-      </button>
-    </motion.div>
+            <p className="text-xs text-text-muted">
+              {doctor.experience} años de experiencia
+            </p>
+          </div>
+        </div>
+
+        <div className="mt-auto border-t border-border p-4">
+          <Link
+            href={`/perfil?id=${doctor.id}`}
+            className={`inline-flex w-full items-center justify-center gap-2 rounded-[var(--radius-button)] ${specialtyColor.button} px-5 py-2.5 text-sm font-semibold text-white shadow-md transition-all duration-300 transition-premium hover:shadow-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 active:scale-[0.98]`}
+          >
+            <Calendar className="h-4 w-4" aria-hidden="true" />
+            View Profile
+          </Link>
+        </div>
+      </Card>
+    </motion.article>
   );
 }

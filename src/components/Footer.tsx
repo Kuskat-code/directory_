@@ -1,42 +1,55 @@
 import Link from 'next/link';
-import { PROFESSIONS } from '@/src/lib/constants';
+import { Stethoscope } from 'lucide-react';
+import { MEDICAL_SPECIALTIES } from '@/src/lib/constants';
 
 export default function Footer() {
   return (
-    <footer className="bg-brand-dark text-white py-12 mt-auto">
-      <div className="max-w-7xl mx-auto px-4 grid grid-cols-1 md:grid-cols-4 gap-8">
+    <footer className="mt-auto bg-text py-14 text-white">
+      <div className="mx-auto grid max-w-7xl grid-cols-1 gap-10 px-4 sm:px-6 md:grid-cols-2 lg:grid-cols-4 lg:px-8">
         <div className="flex flex-col gap-4">
-          <h2 className="text-xl font-bold">DirectorioPro</h2>
-          <p className="text-sm text-gray-400">
-            El directorio profesional líder del país. Conectando talento con oportunidades.
+          <div className="flex items-center gap-2">
+            <span className="flex h-9 w-9 items-center justify-center rounded-[var(--radius-button)] gradient-primary">
+              <Stethoscope className="h-5 w-5 text-white" aria-hidden="true" />
+            </span>
+            <span className="text-xl font-bold">Directorio </span>
+          </div>
+          <p className="text-sm text-white/60">
+            El directorio medico de referencia en El Salvador. Conectamos pacientes con especialistas verificados.
           </p>
-          <p className="text-xs text-gray-500 mt-4">
-            © 2024 DirectorioPro El Salvador. El directorio profesional líder del país.
+          <p className="mt-2 text-xs text-white/40">
+            &copy; {new Date().getFullYear()} MedDirectorio El Salvador. Todos los derechos reservados.
           </p>
         </div>
+
         <div>
-          <h3 className="font-semibold mb-4 text-brand-white">Profesiones</h3>
-          <ul className="flex flex-col gap-2 text-sm text-gray-400">
-            {PROFESSIONS?.slice(0, 4).map((prof) => (
-              <li key={prof.id}>
-                <Link href={`/directory?profession=${prof.id}`} className="hover:text-white transition">
-                  {prof.id.charAt(0).toUpperCase() + prof.id.slice(1)}s
+          <h3 className="mb-4 font-semibold">Especialidades</h3>
+          <ul className="flex flex-col gap-2 text-sm text-white/60">
+            {MEDICAL_SPECIALTIES.slice(0, 5).map((spec) => (
+              <li key={spec}>
+                <Link
+                  href={`/directorio?specialty=${encodeURIComponent(spec)}`}
+                  className="transition-colors hover:text-white"
+                >
+                  {spec}
                 </Link>
               </li>
             ))}
           </ul>
         </div>
+
         <div>
-          <h3 className="font-semibold mb-4 text-brand-white">Legal</h3>
-          <ul className="flex flex-col gap-2 text-sm text-gray-400">
-            <li><Link href="/terms" className="hover:text-white transition">Terms of Service</Link></li>
-            <li><Link href="/privacy" className="hover:text-white transition">Privacy Policy</Link></li>
+          <h3 className="mb-4 font-semibold">Legal</h3>
+          <ul className="flex flex-col gap-2 text-sm text-white/60">
+            <li><Link href="/terms" className="transition-colors hover:text-white">Terminos de servicio</Link></li>
+            <li><Link href="/privacy" className="transition-colors hover:text-white">Politica de privacidad</Link></li>
           </ul>
         </div>
+
         <div>
-          <h3 className="font-semibold mb-4 text-brand-white">Soporte</h3>
-          <ul className="flex flex-col gap-2 text-sm text-gray-400">
-            <li><Link href="/contact" className="hover:text-white transition">Contact Support</Link></li>
+          <h3 className="mb-4 font-semibold">Soporte</h3>
+          <ul className="flex flex-col gap-2 text-sm text-white/60">
+            <li><Link href="/contact" className="transition-colors hover:text-white">Contactar soporte</Link></li>
+            <li><Link href="/directorio" className="transition-colors hover:text-white">Buscar especialistas</Link></li>
           </ul>
         </div>
       </div>
