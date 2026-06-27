@@ -4,6 +4,7 @@ import HeroSection from '@/src/components/HeroSection';
 import FeaturesSection from '@/src/components/FeaturesSection';
 import OrienteMapSection from '@/src/components/landing/OrienteMapSection';
 import SpecialtiesSection from '@/src/components/landing/SpecialtiesSection';
+import NewsCarousel from '@/src/components/NewsCarousel';
 import PricingSection from '@/src/components/PricingSection';
 
 export default function Home() {
@@ -17,6 +18,7 @@ export default function Home() {
         </div>
         <OrienteMapSection />
         <SpecialtiesSection />
+        <NewsCarousel />
         <div id="pricing">
           <PricingSection />
         </div>
