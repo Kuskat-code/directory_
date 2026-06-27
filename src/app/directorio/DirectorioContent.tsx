@@ -2,13 +2,13 @@
 
 import { useState, useMemo, type ElementType } from 'react';
 import { useSearchParams } from 'next/navigation';
-import {
-  SlidersHorizontal,
-  Heart, Stethoscope, Activity, Brain, Eye, Baby,
-  Bone, FlaskConical, Ear, Microscope, ShieldPlus,
-  Droplets, Thermometer, Zap, Sun, Moon, Star,
-  Wind, Leaf, Cross, Pill, ScanLine, Dna,
-} from 'lucide-react';
+import { SlidersHorizontal } from 'lucide-react';
+import { LuStethoscope, LuActivity, LuThermometer, LuMicroscope } from 'react-icons/lu';
+import { GiStomach, GiKidneys, GiLiver, GiMedicines } from 'react-icons/gi';
+import { FaBaby, FaBone, FaBrain, FaHeartbeat, FaEye } from 'react-icons/fa';
+import { FaEarListen } from 'react-icons/fa6';
+import { MdPregnantWoman, MdOutlineVaccines } from 'react-icons/md';
+import { RiMentalHealthLine } from 'react-icons/ri';
 import { EXAMPLE_DOCTORS, MEDICAL_SPECIALTIES, EL_SALVADOR_DEPARTMENTS_ORIENTE } from '@/src/lib/constants';
 import Header from '@/src/components/Header';
 import Footer from '@/src/components/Footer';
@@ -16,20 +16,20 @@ import DoctorCard from '@/src/features/directory/components/DoctorCard';
 import { SectionContainer } from '@/src/components/ui/SectionContainer';
 import { Button } from '@/src/components/ui/Button';
 
-// Lucide icons associated with each specialty, used for the floating background decoration
+// Specialty-specific icons (react-icons + lucide) used for the floating background decoration
 const SPECIALTY_ICONS: Record<string, ElementType[]> = {
-  'Medicina General': [Stethoscope, ShieldPlus, Thermometer, Cross, Pill],
-  'Cardiología': [Heart, Activity, Zap, Stethoscope, Droplets],
-  'Dermatología': [Sun, Leaf, Star, Microscope, ScanLine],
-  'Pediatría': [Baby, Star, Moon, Heart, Stethoscope],
-  'Psiquiatría': [Brain, Moon, Star, Wind, Zap],
-  'Neurología': [Brain, Zap, Activity, Dna, ScanLine],
-  'Oftalmología': [Eye, Sun, Star, ScanLine, Microscope],
-  'Otorrinolaringología': [Ear, Wind, Activity, Stethoscope, Zap],
-  'Gastroenterología': [FlaskConical, Droplets, Leaf, Microscope, Pill],
-  'Ortopedia': [Bone, ShieldPlus, Zap, Activity, Cross],
-  'Ginecología': [Heart, Baby, Moon, Star, Leaf],
-  'Urología': [Droplets, FlaskConical, Microscope, ShieldPlus, Activity],
+  'Medicina General': [LuStethoscope, LuThermometer, LuActivity, MdOutlineVaccines, GiMedicines],
+  'Cardiología': [FaHeartbeat, LuActivity, LuStethoscope, GiLiver, LuMicroscope],
+  'Dermatología': [LuMicroscope, LuActivity, LuStethoscope, GiMedicines, MdOutlineVaccines],
+  'Pediatría': [FaBaby, LuStethoscope, FaHeartbeat, MdOutlineVaccines, LuThermometer],
+  'Psiquiatría': [FaBrain, RiMentalHealthLine, LuActivity, LuStethoscope, GiMedicines],
+  'Neurología': [FaBrain, LuActivity, LuMicroscope, LuStethoscope, GiMedicines],
+  'Oftalmología': [FaEye, LuMicroscope, LuActivity, LuStethoscope, GiMedicines],
+  'Otorrinolaringología': [FaEarListen, LuActivity, LuStethoscope, LuMicroscope, GiMedicines],
+  'Gastroenterología': [GiStomach, GiMedicines, LuMicroscope, LuActivity, LuStethoscope],
+  'Ortopedia': [FaBone, LuActivity, LuStethoscope, GiMedicines, LuMicroscope],
+  'Ginecología': [MdPregnantWoman, FaBaby, FaHeartbeat, LuStethoscope, GiMedicines],
+  'Urología': [GiKidneys, LuMicroscope, GiMedicines, LuActivity, LuStethoscope],
 };
 
 // Soft (300 shade) text color per specialty so the floating icons match the badge palette
@@ -50,18 +50,26 @@ const SPECIALTY_ICON_COLOR: Record<string, string> = {
 
 // Fixed (seeded) position/size/animation combos to avoid per-render layout shifts
 const FLOAT_SEEDS = [
-  { top: '3%', left: '8%', size: 'h-10 w-10', opacity: 'opacity-40', delay: '0s', duration: '4.5s' },
-  { top: '8%', left: '55%', size: 'h-8 w-8', opacity: 'opacity-35', delay: '1.2s', duration: '5.2s' },
-  { top: '15%', left: '88%', size: 'h-12 w-12', opacity: 'opacity-40', delay: '0.6s', duration: '6s' },
-  { top: '25%', left: '20%', size: 'h-7 w-7', opacity: 'opacity-35', delay: '2.1s', duration: '4s' },
-  { top: '35%', left: '70%', size: 'h-11 w-11', opacity: 'opacity-40', delay: '1.8s', duration: '5.5s' },
-  { top: '45%', left: '40%', size: 'h-9 w-9', opacity: 'opacity-35', delay: '0.3s', duration: '3.5s' },
-  { top: '55%', left: '5%', size: 'h-8 w-8', opacity: 'opacity-40', delay: '2.6s', duration: '4.8s' },
-  { top: '60%', left: '80%', size: 'h-10 w-10', opacity: 'opacity-35', delay: '1.0s', duration: '5s' },
-  { top: '70%', left: '30%', size: 'h-7 w-7', opacity: 'opacity-40', delay: '0.9s', duration: '6s' },
-  { top: '75%', left: '62%', size: 'h-9 w-9', opacity: 'opacity-35', delay: '2.3s', duration: '3.8s' },
-  { top: '85%', left: '15%', size: 'h-11 w-11', opacity: 'opacity-40', delay: '1.5s', duration: '5.3s' },
-  { top: '90%', left: '78%', size: 'h-8 w-8', opacity: 'opacity-35', delay: '0.4s', duration: '4.2s' },
+  { top: '3%', left: '2%', size: 'h-10 w-10', opacity: 'opacity-50', delay: '0s', duration: '4.5s' },
+  { top: '7%', left: '25%', size: 'h-7 w-7', opacity: 'opacity-45', delay: '1.2s', duration: '5.2s' },
+  { top: '5%', left: '55%', size: 'h-12 w-12', opacity: 'opacity-50', delay: '0.6s', duration: '6s' },
+  { top: '10%', left: '80%', size: 'h-8 w-8', opacity: 'opacity-45', delay: '2.1s', duration: '4s' },
+  { top: '18%', left: '10%', size: 'h-9 w-9', opacity: 'opacity-50', delay: '1.8s', duration: '5.5s' },
+  { top: '22%', left: '45%', size: 'h-7 w-7', opacity: 'opacity-45', delay: '0.3s', duration: '3.5s' },
+  { top: '20%', left: '90%', size: 'h-11 w-11', opacity: 'opacity-50', delay: '2.6s', duration: '4.8s' },
+  { top: '35%', left: '3%', size: 'h-8 w-8', opacity: 'opacity-45', delay: '1.0s', duration: '5s' },
+  { top: '38%', left: '65%', size: 'h-10 w-10', opacity: 'opacity-50', delay: '0.9s', duration: '6s' },
+  { top: '42%', left: '30%', size: 'h-7 w-7', opacity: 'opacity-45', delay: '2.3s', duration: '3.8s' },
+  { top: '50%', left: '85%', size: 'h-12 w-12', opacity: 'opacity-50', delay: '1.5s', duration: '5.3s' },
+  { top: '55%', left: '18%', size: 'h-9 w-9', opacity: 'opacity-45', delay: '0.4s', duration: '4.2s' },
+  { top: '60%', left: '50%', size: 'h-8 w-8', opacity: 'opacity-50', delay: '1.7s', duration: '4.7s' },
+  { top: '65%', left: '75%', size: 'h-7 w-7', opacity: 'opacity-45', delay: '0.8s', duration: '5.1s' },
+  { top: '70%', left: '8%', size: 'h-11 w-11', opacity: 'opacity-50', delay: '2.0s', duration: '3.9s' },
+  { top: '75%', left: '38%', size: 'h-10 w-10', opacity: 'opacity-45', delay: '1.3s', duration: '5.6s' },
+  { top: '80%', left: '92%', size: 'h-8 w-8', opacity: 'opacity-50', delay: '0.2s', duration: '4.4s' },
+  { top: '85%', left: '60%', size: 'h-9 w-9', opacity: 'opacity-45', delay: '2.5s', duration: '5.8s' },
+  { top: '90%', left: '22%', size: 'h-7 w-7', opacity: 'opacity-50', delay: '1.1s', duration: '4.1s' },
+  { top: '95%', left: '48%', size: 'h-10 w-10', opacity: 'opacity-45', delay: '0.7s', duration: '5.9s' },
 ];
 
 export default function DirectorioContent() {
@@ -89,7 +97,27 @@ export default function DirectorioContent() {
   const floatingColor = SPECIALTY_ICON_COLOR[specialty] ?? 'text-teal-300';
 
   return (
-    <div className="min-h-screen bg-secondary/40">
+    <div className="relative min-h-screen bg-secondary/40">
+      {/* Decorative floating specialty icons scattered behind the entire page */}
+      {floatingIcons && (
+        <div className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden="true">
+          {FLOAT_SEEDS.map((seed, i) => {
+            const Icon = floatingIcons[i % floatingIcons.length];
+            return (
+              <Icon
+                key={i}
+                className={`animate-float-icon absolute ${seed.size} ${seed.opacity} ${floatingColor}`}
+                style={{
+                  top: seed.top,
+                  left: seed.left,
+                  animationDelay: seed.delay,
+                  animationDuration: seed.duration,
+                }}
+              />
+            );
+          })}
+        </div>
+      )}
       <Header />
 
       <main className="pt-24 pb-16">
@@ -111,7 +139,7 @@ export default function DirectorioContent() {
             )}
           </div>
 
-          <div className="flex flex-col gap-8 lg:flex-row">
+          <div className="relative flex flex-col gap-8 lg:flex-row">
             <aside className="shrink-0 lg:w-72" aria-label="Filtros de busqueda">
               <div className="sticky top-24 rounded-[var(--radius-card)] border border-border bg-white p-5 shadow-md">
                 <div className="mb-5 flex items-center gap-2 text-sm font-bold text-text">
@@ -158,26 +186,6 @@ export default function DirectorioContent() {
             </aside>
 
             <div className="relative flex-1">
-              {/* Decorative floating specialty icons scattered behind the doctor grid */}
-              {floatingIcons && (
-                <div className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden="true">
-                  {FLOAT_SEEDS.map((seed, i) => {
-                    const Icon = floatingIcons[i % floatingIcons.length];
-                    return (
-                      <Icon
-                        key={i}
-                        className={`animate-float-icon absolute ${seed.size} ${seed.opacity} ${floatingColor}`}
-                        style={{
-                          top: seed.top,
-                          left: seed.left,
-                          animationDelay: seed.delay,
-                          animationDuration: seed.duration,
-                        }}
-                      />
-                    );
-                  })}
-                </div>
-              )}
               <div className="relative grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3">
                 {filtered.length === 0 ? (
                   <div className="col-span-full rounded-[var(--radius-card)] border border-border bg-white py-20 text-center shadow-sm">
