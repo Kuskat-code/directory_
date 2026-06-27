@@ -3,7 +3,7 @@ import { MEDICAL_SPECIALTIES } from '@/src/lib/constants';
 
 export default function Footer() {
   return (
-    <footer className="mt-auto border-t border-slate-200/20 bg-white/95 shadow-md backdrop-blur-md py-8 text-gray-700">
+    <footer className="mt-auto border-t border-gray-200 bg-gray-50 shadow-md py-8 text-gray-700">
       <div className="mx-auto grid max-w-7xl grid-cols-1 gap-8 px-4 sm:px-6 md:grid-cols-2 lg:grid-cols-4 lg:px-8">
         <div className="flex flex-col gap-4">
           <div className="flex items-center gap-2">
