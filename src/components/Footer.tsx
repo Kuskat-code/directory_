@@ -1,24 +1,14 @@
 import Link from 'next/link';
-import { Stethoscope } from 'lucide-react';
 import { MEDICAL_SPECIALTIES } from '@/src/lib/constants';
 
 export default function Footer() {
   return (
-    <footer className="mt-auto bg-text py-14 text-white">
-      <div className="mx-auto grid max-w-7xl grid-cols-1 gap-10 px-4 sm:px-6 md:grid-cols-2 lg:grid-cols-4 lg:px-8">
+    <footer className="mt-auto border-t border-slate-200/20 bg-[#0f172a] py-8 text-white">
+      <div className="mx-auto grid max-w-7xl grid-cols-1 gap-8 px-4 sm:px-6 md:grid-cols-2 lg:grid-cols-4 lg:px-8">
         <div className="flex flex-col gap-4">
           <div className="flex items-center gap-2">
-            <span className="flex h-9 w-9 items-center justify-center rounded-[var(--radius-button)] gradient-primary">
-              <Stethoscope className="h-5 w-5 text-white" aria-hidden="true" />
-            </span>
             <span className="text-xl font-bold">Directorio </span>
           </div>
-          <p className="text-sm text-white/60">
-            El directorio medico de referencia en El Salvador. Conectamos pacientes con especialistas verificados.
-          </p>
-          <p className="mt-2 text-xs text-white/40">
-            &copy; {new Date().getFullYear()} MedDirectorio El Salvador. Todos los derechos reservados.
-          </p>
         </div>
 
         <div>
@@ -52,6 +42,23 @@ export default function Footer() {
             <li><Link href="/directorio" className="transition-colors hover:text-white">Buscar especialistas</Link></li>
           </ul>
         </div>
+      </div>
+
+      <div className="mx-auto mt-8 max-w-7xl border-t border-slate-700 px-4 pt-6 text-center sm:px-6 lg:px-8">
+        <p className="text-xs text-slate-400">
+          &copy; 2026 El Salvador. Todos los derechos reservados.
+        </p>
+        <p className="text-xs text-slate-400">
+          Powered by{' '}
+          <a
+            href="https://kuskat-code.github.io/Portfolio-Kuskat/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="transition-colors hover:text-white"
+          >
+            Kuskat Labs
+          </a>
+        </p>
       </div>
     </footer>
   );
