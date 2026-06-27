@@ -50,18 +50,18 @@ const SPECIALTY_ICON_COLOR: Record<string, string> = {
 
 // Fixed (seeded) position/size/animation combos to avoid per-render layout shifts
 const FLOAT_SEEDS = [
-  { top: '6%', left: '5%', size: 'h-10 w-10', opacity: 'opacity-30', delay: '0s', duration: '4.5s' },
-  { top: '14%', left: '82%', size: 'h-8 w-8', opacity: 'opacity-30', delay: '1.2s', duration: '5.2s' },
-  { top: '30%', left: '42%', size: 'h-12 w-12', opacity: 'opacity-30', delay: '0.6s', duration: '6s' },
-  { top: '46%', left: '10%', size: 'h-7 w-7', opacity: 'opacity-30', delay: '2.1s', duration: '4s' },
-  { top: '56%', left: '72%', size: 'h-11 w-11', opacity: 'opacity-30', delay: '1.8s', duration: '5.5s' },
-  { top: '70%', left: '28%', size: 'h-6 w-6', opacity: 'opacity-30', delay: '0.3s', duration: '3.5s' },
-  { top: '82%', left: '86%', size: 'h-9 w-9', opacity: 'opacity-30', delay: '2.6s', duration: '4.8s' },
-  { top: '20%', left: '60%', size: 'h-8 w-8', opacity: 'opacity-30', delay: '1.0s', duration: '5s' },
-  { top: '88%', left: '50%', size: 'h-10 w-10', opacity: 'opacity-30', delay: '0.9s', duration: '6s' },
-  { top: '38%', left: '90%', size: 'h-7 w-7', opacity: 'opacity-30', delay: '2.3s', duration: '3.8s' },
-  { top: '64%', left: '3%', size: 'h-9 w-9', opacity: 'opacity-30', delay: '1.5s', duration: '5.3s' },
-  { top: '4%', left: '46%', size: 'h-8 w-8', opacity: 'opacity-30', delay: '0.4s', duration: '4.2s' },
+  { top: '3%', left: '8%', size: 'h-10 w-10', opacity: 'opacity-40', delay: '0s', duration: '4.5s' },
+  { top: '8%', left: '55%', size: 'h-8 w-8', opacity: 'opacity-35', delay: '1.2s', duration: '5.2s' },
+  { top: '15%', left: '88%', size: 'h-12 w-12', opacity: 'opacity-40', delay: '0.6s', duration: '6s' },
+  { top: '25%', left: '20%', size: 'h-7 w-7', opacity: 'opacity-35', delay: '2.1s', duration: '4s' },
+  { top: '35%', left: '70%', size: 'h-11 w-11', opacity: 'opacity-40', delay: '1.8s', duration: '5.5s' },
+  { top: '45%', left: '40%', size: 'h-9 w-9', opacity: 'opacity-35', delay: '0.3s', duration: '3.5s' },
+  { top: '55%', left: '5%', size: 'h-8 w-8', opacity: 'opacity-40', delay: '2.6s', duration: '4.8s' },
+  { top: '60%', left: '80%', size: 'h-10 w-10', opacity: 'opacity-35', delay: '1.0s', duration: '5s' },
+  { top: '70%', left: '30%', size: 'h-7 w-7', opacity: 'opacity-40', delay: '0.9s', duration: '6s' },
+  { top: '75%', left: '62%', size: 'h-9 w-9', opacity: 'opacity-35', delay: '2.3s', duration: '3.8s' },
+  { top: '85%', left: '15%', size: 'h-11 w-11', opacity: 'opacity-40', delay: '1.5s', duration: '5.3s' },
+  { top: '90%', left: '78%', size: 'h-8 w-8', opacity: 'opacity-35', delay: '0.4s', duration: '4.2s' },
 ];
 
 export default function DirectorioContent() {
