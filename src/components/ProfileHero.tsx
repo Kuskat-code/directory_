@@ -102,7 +102,7 @@ export default function ProfileHero({
                   />
                 </div>
                 <div>
-                  <label className="mb-1 block text-xs font-semibold text-text-muted">Anos de experiencia</label>
+                  <label className="mb-1 block text-xs font-semibold text-text-muted">Años de experiencia</label>
                   <input
                     type="number"
                     min={0}
@@ -146,7 +146,7 @@ export default function ProfileHero({
                   <MapPin className="h-3.5 w-3.5" aria-hidden="true" />
                   {profile.location}
                 </span>
-                <span className="flex items-center gap-1">{profile.experience} anos de experiencia</span>
+                <span className="flex items-center gap-1">{profile.experience} años de experiencia</span>
                 <span className="flex items-center gap-1">
                   <Star className="h-3.5 w-3.5 fill-amber-400 text-amber-400" aria-hidden="true" />
                   {doctor.rating.toFixed(1)} ({doctor.reviews} Resenas)

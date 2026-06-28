@@ -5,23 +5,23 @@ import { AnimatePresence, motion } from 'framer-motion';
 import {
   Briefcase,
   CheckCircle2,
+  Clock,
   Crown,
   FileText,
   Image as ImageIcon,
   Images,
-  Lock,
   Mail,
   MapPin,
   Phone,
   Plus,
   Sparkles,
-  Stethoscope,
   Trash2,
   User,
   X,
 } from 'lucide-react';
 import type { EditableProfile, ProfileService, SpecialtyColorScheme } from '../types';
 import { ImageUploader } from './ImageUploader';
+import { HoursSection } from './hours-section';
 import { getSpecialtyColors } from '../specialty-colors';
 import { MEDICAL_SPECIALTIES } from '@/src/lib/constants';
 
@@ -32,7 +32,7 @@ const FALLBACK_IMG =
 
 export type SaveStatus = 'idle' | 'saving' | 'saved' | 'error';
 
-type TabId = 'perfil' | 'resumen' | 'banner' | 'galeria' | 'servicios';
+type TabId = 'perfil' | 'resumen' | 'horarios' | 'banner' | 'galeria' | 'servicios';
 
 interface TabDef {
   id: TabId;
@@ -44,6 +44,7 @@ interface TabDef {
 const TABS: TabDef[] = [
   { id: 'perfil', label: 'Perfil', Icon: User },
   { id: 'resumen', label: 'Resumen', Icon: FileText },
+  { id: 'horarios', label: 'Horarios', Icon: Clock },
   { id: 'banner', label: 'Banner', Icon: ImageIcon, premium: true },
   { id: 'galeria', label: 'Galería', Icon: Images },
   { id: 'servicios', label: 'Servicios', Icon: Briefcase },
@@ -236,7 +237,10 @@ export function ProfileEditorModal({
                   {activeTab === 'resumen' && (
                     <ResumenTab draft={draft} onChange={onChange} />
                   )}
-                  {activeTab === 'banner' && <BannerTab draft={draft} />}
+                  {activeTab === 'horarios' && (
+                    <HorariosTab draft={draft} colors={colors} onChange={onChange} />
+                  )}
+                  {activeTab === 'banner' && <BannerTab draft={draft} onChange={onChange} />}
                   {activeTab === 'galeria' && (
                     <GaleriaTab draft={draft} onChange={onChange} />
                   )}
@@ -449,9 +453,36 @@ function ResumenTab({
   );
 }
 
+// ─── Tab: Horarios ─────────────────────────────────────────────────────────────
+
+function HorariosTab({
+  draft,
+  colors,
+  onChange,
+}: {
+  draft: EditableProfile;
+  colors: SpecialtyColorScheme;
+  onChange: (u: Partial<EditableProfile>) => void;
+}) {
+  return (
+    <HoursSection
+      schedule={draft.schedule}
+      isEditing
+      colors={colors}
+      onChange={onChange}
+    />
+  );
+}
+
 // ─── Tab: Banner (Premium) ────────────────────────────────────────────────────
 
-function BannerTab({ draft }: { draft: EditableProfile }) {
+function BannerTab({
+  draft,
+  onChange,
+}: {
+  draft: EditableProfile;
+  onChange: (u: Partial<EditableProfile>) => void;
+}) {
   return (
     <Card>
       <div className="space-y-4">
@@ -461,29 +492,26 @@ function BannerTab({ draft }: { draft: EditableProfile }) {
           <PremiumBadge />
         </div>
 
-        {/* Dimmed preview with lock overlay */}
+        {/* Banner preview */}
         <div className="relative overflow-hidden rounded-[var(--radius-card)] border border-border/60">
           <img
             src={draft.coverImage}
             alt="Banner actual del perfil"
-            className="h-40 w-full object-cover opacity-50"
+            className="h-40 w-full object-cover"
           />
-          <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-text/20 backdrop-blur-[1px]">
-            <span className="flex h-9 w-9 items-center justify-center rounded-full bg-white/80 shadow-sm ring-1 ring-border/40">
-              <Lock className="h-4 w-4 text-text-muted" aria-hidden="true" />
-            </span>
-            <p className="rounded-full bg-white/80 px-3 py-1 text-[11px] font-medium text-text-muted backdrop-blur-sm">
-              Solo lectura · versión gratuita
-            </p>
-          </div>
         </div>
+
+        <ImageUploader
+          value={draft.coverImage}
+          onChange={(coverImage) => onChange({ coverImage })}
+          label="Cambiar imagen de portada"
+          showUrlInput
+        />
 
         <p className="text-xs leading-relaxed text-text-muted">
           Sube una imagen propia para personalizar el encabezado de tu perfil público y
-          destacar tu consulta o clínica. Disponible exclusivamente en la versión Premium.
+          destacar tu consulta o clínica.
         </p>
-
-        <PremiumUpgradeButton />
       </div>
     </Card>
   );

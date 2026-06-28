@@ -137,7 +137,7 @@ export default function ProfileContent() {
             </div>
             <ProfileSidebar
               profile={profile}
-              isEditing={false}
+              isEditing={isEditing}
               onChange={updateDraft}
             />
           </div>

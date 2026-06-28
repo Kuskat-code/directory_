@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import {
@@ -27,25 +28,21 @@ const iconMap = {
   'heart-handshake': HeartHandshake,
 } as const;
 
-// Duplicamos los elementos para crear el efecto de bucle infinito e idéntico
 const DOUBLE_SPECIALTIES = [...LANDING_SPECIALTIES, ...LANDING_SPECIALTIES];
 
 export default function SpecialtiesSection() {
+  const [isPaused, setIsPaused] = useState(false);
+
   return (
     <section
       id="especialidades"
       aria-labelledby="specialties-heading"
       className="relative overflow-hidden bg-white px-4 py-20 md:py-28"
     >
-      {/* Inyección de Estilos CSS para el efecto Marquee Infinito */}
       <style jsx global>{`
         @keyframes marquee {
-          0% {
-            transform: translateX(0%);
-          }
-          100% {
-            transform: translateX(-50%);
-          }
+          0% { transform: translateX(0%); }
+          100% { transform: translateX(-50%); }
         }
         .animate-marquee-infinite {
           animation: marquee 30s linear infinite;
@@ -53,7 +50,6 @@ export default function SpecialtiesSection() {
       `}</style>
 
       <div className="mx-auto max-w-7xl">
-        {/* Cabecera de la sección */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -77,8 +73,6 @@ export default function SpecialtiesSection() {
           </div>
         </motion.div>
 
-        {/* Contenedor del Carrusel Cadena */}
-        {/* La clase 'mask-image' difumina los bordes izquierdo y derecho para un acabado más elegante */}
         <div
           className="relative w-full overflow-hidden py-4"
           style={{
@@ -86,7 +80,12 @@ export default function SpecialtiesSection() {
             WebkitMaskImage: 'linear-gradient(to right, transparent, white 15%, white 85%, transparent)'
           }}
         >
-          <div className="animate-marquee-infinite flex gap-4 md:gap-6 w-max hover:[animation-play-state:paused] transition-all">
+          <div
+            className="animate-marquee-infinite flex w-max gap-4 transition-all md:gap-6"
+            style={{ animationPlayState: isPaused ? 'paused' : 'running' }}
+            onMouseEnter={() => setIsPaused(true)}
+            onMouseLeave={() => setIsPaused(false)}
+          >
             {DOUBLE_SPECIALTIES.map((spec, i) => {
               const Icon = iconMap[spec.icon as keyof typeof iconMap] || Stethoscope;
               return (

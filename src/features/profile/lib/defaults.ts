@@ -48,7 +48,7 @@ export function buildDefaultProfile(
     experience: doctor.experience,
     bio:
       doctor.bio ??
-      `Especialista en ${doctor.specialty} con ${doctor.experience} años de experiencia. Atención personalizada y compromiso con la salud de sus pacientes.`,
+      `Especialista en ${doctor.specialty} con ${doctor.experience} años de experiencia.  Atención personalizada y compromiso con la salud de sus pacientes.`,
     languages: doctor.languages ?? ['Español'],
     phone: doctor.phone,
     email: doctor.email,

@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
-import { Calendar, MapPin } from 'lucide-react';
+import { Calendar, MapPin, Crown } from 'lucide-react';
 import type { Doctor, DoctorAvailability } from '@/src/lib/constants';
 import { Badge } from '@/src/components/ui/Badge';
 import { Card } from '@/src/components/ui/Card';
@@ -99,6 +99,11 @@ export default function DoctorCard({ doctor, index = 0 }: Props) {
       >
         {/* Cabecera superior de la Card */}
         <div className="h-28 w-full relative overflow-hidden">
+          {doctor.isPremium && (
+            <div className="absolute top-3 right-3 bg-white/80 backdrop-blur-sm p-1 rounded-full shadow-sm z-10">
+              <Crown className="h-4 w-4 text-amber-500 fill-amber-400" />
+            </div>
+          )}
           {doctor.coverImage ? (
             <img
               src={doctor.coverImage}
