@@ -96,7 +96,6 @@ export interface Doctor {
   certifications?: string[];
   languages?: string[];
   isPremium?: boolean;
-  coverImage?: string;
 }
 
 export const EXAMPLE_DOCTORS: Doctor[] = [

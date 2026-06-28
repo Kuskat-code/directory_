@@ -5,7 +5,6 @@ import Image from 'next/image';
 import { motion } from 'framer-motion';
 import { Calendar, MapPin, Crown } from 'lucide-react';
 import type { Doctor, DoctorAvailability } from '@/src/lib/constants';
-import { Badge } from '@/src/components/ui/Badge';
 import { Card } from '@/src/components/ui/Card';
 
 interface Props {
@@ -134,9 +133,9 @@ export default function DoctorCard({ doctor, index = 0 }: Props) {
 
           <h3 className="text-lg font-bold text-text mb-1.5">{doctor.name}</h3>
 
-          <Badge variant="default" className={style.badgeClass}>
+          <span className={`inline-flex items-center rounded-[var(--radius-pill)] px-3 py-1 text-xs font-semibold transition-colors duration-300 transition-premium ${style.badgeClass}`}>
             {doctor.specialty}
-          </Badge>
+          </span>
 
           <div className="mt-4 w-full space-y-2">
             {/* Ubicación */}
