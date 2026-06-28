@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { Button } from '@/src/components/ui/Button';
-import { createClient } from '@/src/lib/supabase/client';
+import { getCurrentUserSession, signOutAction } from '@/src/features/profile/profile.actions';
 
 const navLinks = [
   { label: 'Inicio', href: '/' },
@@ -28,7 +28,6 @@ export default function Header() {
   // Auth States
   const [user, setUser] = useState<any>(null);
   const [profileAvatar, setProfileAvatar] = useState<string | null>(null);
-  const supabase = createClient();
 
   const isHeroPage = pathname === '/';
   const hasSolidBg = scrolled || !isHeroPage || menuOpen;
@@ -55,55 +54,23 @@ export default function Header() {
     };
   }, [menuOpen]);
 
-  // Auth Hook
+  // Auth Hook (Safe server-side session loading)
   useEffect(() => {
-    async function getSession() {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (session?.user) {
-        setUser(session.user);
-        const { data: doctorData } = await supabase
-          .from('doctors')
-          .select('avatar')
-          .eq('id', session.user.id)
-          .single();
-        if (doctorData?.avatar) {
-          setProfileAvatar(doctorData.avatar);
-        } else {
-          setProfileAvatar(`https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(session.user.user_metadata?.name || 'Doctor')}`);
-        }
+    async function loadSession() {
+      const response = await getCurrentUserSession();
+      if (response.success && response.data) {
+        setUser(response.data);
+        setProfileAvatar(response.data.avatar);
       } else {
         setUser(null);
         setProfileAvatar(null);
       }
     }
-    void getSession();
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      if (session?.user) {
-        setUser(session.user);
-        const { data: doctorData } = await supabase
-          .from('doctors')
-          .select('avatar')
-          .eq('id', session.user.id)
-          .single();
-        if (doctorData?.avatar) {
-          setProfileAvatar(doctorData.avatar);
-        } else {
-          setProfileAvatar(`https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(session.user.user_metadata?.name || 'Doctor')}`);
-        }
-      } else {
-        setUser(null);
-        setProfileAvatar(null);
-      }
-    });
-
-    return () => {
-      subscription.unsubscribe();
-    };
-  }, []);
+    void loadSession();
+  }, [pathname]);
 
   const handleSignOut = async () => {
-    await supabase.auth.signOut();
+    await signOutAction();
     router.push('/');
     router.refresh();
   };
@@ -151,7 +118,7 @@ export default function Header() {
                   title="Ver mi perfil"
                 >
                   <img
-                    src={profileAvatar || `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(user.user_metadata?.name || 'Doctor')}`}
+                    src={profileAvatar || `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(user.name || 'Doctor')}`}
                     className="h-full w-full object-cover"
                     alt="Foto de perfil"
                   />
@@ -249,7 +216,7 @@ export default function Header() {
                   >
                     <div className="h-10 w-10 overflow-hidden rounded-full ring-2 ring-teal-500">
                       <img
-                        src={profileAvatar || `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(user.user_metadata?.name || 'Doctor')}`}
+                        src={profileAvatar || `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(user.name || 'Doctor')}`}
                         className="h-full w-full object-cover"
                         alt="Foto de perfil"
                       />

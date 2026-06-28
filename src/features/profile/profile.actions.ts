@@ -333,3 +333,45 @@ export async function signInAction(input: {
 
   return { success: true, data: { userId: data.user.id } };
 }
+
+export interface UserSessionData {
+  id: string;
+  name: string;
+  email: string;
+  avatar: string | null;
+}
+
+export async function getCurrentUserSession(): Promise<ActionResponse<UserSessionData | null>> {
+  const supabase = await createClient();
+  
+  const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+  if (sessionError || !session?.user) {
+    return { success: true, data: null };
+  }
+
+  // Si hay sesión, buscamos el avatar de la tabla doctors
+  const { data: doctorData } = await supabase
+    .from('doctors')
+    .select('avatar, name')
+    .eq('id', session.user.id)
+    .single();
+
+  return {
+    success: true,
+    data: {
+      id: session.user.id,
+      name: doctorData?.name || session.user.user_metadata?.name || 'Doctor',
+      email: session.user.email || '',
+      avatar: doctorData?.avatar || null,
+    },
+  };
+}
+
+export async function signOutAction(): Promise<ActionResponse<void>> {
+  const supabase = await createClient();
+  const { error } = await supabase.auth.signOut();
+  if (error) {
+    return { success: false, error: error.message };
+  }
+  return { success: true, data: undefined };
+}
