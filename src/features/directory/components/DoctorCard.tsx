@@ -120,7 +120,7 @@ export default function DoctorCard({ doctor, index = 0 }: Props) {
           <div className="absolute top-0 -translate-y-1/2 left-1/2 -translate-x-1/2 z-10">
             <div className="relative h-20 w-20 overflow-hidden rounded-full border-4 border-white bg-secondary shadow-md">
               <Image
-                src={doctor.avatar}
+                src={doctor.avatar || `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(doctor.name)}`}
                 alt={`Foto de ${doctor.name}`}
                 width={80}
                 height={80}
