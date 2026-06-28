@@ -54,7 +54,7 @@ export default function Header() {
     };
   }, [menuOpen]);
 
-  // Auth Hook (Safe server-side session loading)
+  // Auth Hook (Safe server-side session loading, reactive to searchParams and pathname)
   useEffect(() => {
     async function loadSession() {
       const response = await getCurrentUserSession();
@@ -71,7 +71,9 @@ export default function Header() {
 
   const handleSignOut = async () => {
     await signOutAction();
-    router.push('/');
+    // Limpiamos los estados de inmediato para reactividad instantánea en pantalla
+    setUser(null);
+    setProfileAvatar(null);
     router.refresh();
   };
 
@@ -123,43 +125,24 @@ export default function Header() {
                     alt="Foto de perfil"
                   />
                 </Link>
-                {hasSolidBg && !menuOpen ? (
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    className="whitespace-nowrap"
-                    onClick={handleSignOut}
-                  >
-                    Cerrar sesión
-                  </Button>
-                ) : (
-                  <button
-                    type="button"
-                    onClick={handleSignOut}
-                    className="rounded-lg border border-gray-300 px-5 py-2.5 text-[1.05rem] font-semibold whitespace-nowrap text-gray-700 transition-all duration-300 hover:bg-gray-50"
-                  >
-                    Cerrar sesión
-                  </button>
-                )}
+                <Button
+                  size="md"
+                  variant="outline"
+                  className={`whitespace-nowrap border-gray-300 text-gray-700 hover:bg-gray-50`}
+                  onClick={handleSignOut}
+                >
+                  Cerrar sesión
+                </Button>
               </div>
             ) : (
-              hasSolidBg && !menuOpen ? (
-                <Button
-                  size="sm"
-                  className="whitespace-nowrap"
-                  onClick={() => router.push('?auth=login')}
-                >
-                  Iniciar sesión
-                </Button>
-              ) : (
-                <button
-                  type="button"
-                  onClick={() => router.push('?auth=login')}
-                  className="rounded-lg border border-gray-300 px-5 py-2.5 text-[1.05rem] font-semibold whitespace-nowrap text-gray-700 transition-all duration-300 hover:bg-gray-50"
-                >
-                  Iniciar sesión
-                </button>
-              )
+              <Button
+                size="md"
+                variant={hasSolidBg ? 'primary' : 'outline'}
+                className={`whitespace-nowrap ${!hasSolidBg ? 'border-gray-300 text-gray-700 hover:bg-gray-50 bg-white/20' : ''}`}
+                onClick={() => router.push('?auth=login')}
+              >
+                Iniciar sesión
+              </Button>
             )}
           </div>
 
