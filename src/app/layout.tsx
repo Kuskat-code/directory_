@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
+import { Suspense } from "react";
 import "./globals.css";
+import AuthModal from "@/src/components/AuthModal";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -21,7 +23,12 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="es" data-scroll-behavior="smooth" className={inter.variable} suppressHydrationWarning>
-      <body className="min-h-screen">{children}</body>
+      <body className="min-h-screen">
+        {children}
+        <Suspense fallback={null}>
+          <AuthModal />
+        </Suspense>
+      </body>
     </html>
   );
 }

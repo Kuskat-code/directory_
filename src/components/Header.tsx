@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { Button } from '@/src/components/ui/Button';
+import { createClient } from '@/src/lib/supabase/client';
 
 const navLinks = [
   { label: 'Inicio', href: '/' },
@@ -23,6 +24,11 @@ export default function Header() {
   const router = useRouter();
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+
+  // Auth States
+  const [user, setUser] = useState<any>(null);
+  const [profileAvatar, setProfileAvatar] = useState<string | null>(null);
+  const supabase = createClient();
 
   const isHeroPage = pathname === '/';
   const hasSolidBg = scrolled || !isHeroPage || menuOpen;
@@ -48,6 +54,59 @@ export default function Header() {
       document.body.style.overflow = '';
     };
   }, [menuOpen]);
+
+  // Auth Hook
+  useEffect(() => {
+    async function getSession() {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session?.user) {
+        setUser(session.user);
+        const { data: doctorData } = await supabase
+          .from('doctors')
+          .select('avatar')
+          .eq('id', session.user.id)
+          .single();
+        if (doctorData?.avatar) {
+          setProfileAvatar(doctorData.avatar);
+        } else {
+          setProfileAvatar(`https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(session.user.user_metadata?.name || 'Doctor')}`);
+        }
+      } else {
+        setUser(null);
+        setProfileAvatar(null);
+      }
+    }
+    void getSession();
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (session?.user) {
+        setUser(session.user);
+        const { data: doctorData } = await supabase
+          .from('doctors')
+          .select('avatar')
+          .eq('id', session.user.id)
+          .single();
+        if (doctorData?.avatar) {
+          setProfileAvatar(doctorData.avatar);
+        } else {
+          setProfileAvatar(`https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(session.user.user_metadata?.name || 'Doctor')}`);
+        }
+      } else {
+        setUser(null);
+        setProfileAvatar(null);
+      }
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, []);
+
+  const handleSignOut = async () => {
+    await supabase.auth.signOut();
+    router.push('/');
+    router.refresh();
+  };
 
   return (
     <header
@@ -84,22 +143,56 @@ export default function Header() {
           </ul>
 
           <div className="absolute right-6 hidden md:block">
-            {hasSolidBg && !menuOpen ? (
-              <Button
-                size="sm"
-                className="whitespace-nowrap"
-                onClick={() => router.push('/perfil')}
-              >
-                Iniciar sesión
-              </Button>
+            {user ? (
+              <div className="flex items-center gap-4">
+                <Link
+                  href={`/perfil?id=${user.id}`}
+                  className="h-10 w-10 overflow-hidden rounded-full ring-2 ring-teal-500 hover:ring-teal-600 transition-all shadow-sm active:scale-95"
+                  title="Ver mi perfil"
+                >
+                  <img
+                    src={profileAvatar || `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(user.user_metadata?.name || 'Doctor')}`}
+                    className="h-full w-full object-cover"
+                    alt="Foto de perfil"
+                  />
+                </Link>
+                {hasSolidBg && !menuOpen ? (
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="whitespace-nowrap"
+                    onClick={handleSignOut}
+                  >
+                    Cerrar sesión
+                  </Button>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={handleSignOut}
+                    className="rounded-lg border border-gray-300 px-5 py-2.5 text-[1.05rem] font-semibold whitespace-nowrap text-gray-700 transition-all duration-300 hover:bg-gray-50"
+                  >
+                    Cerrar sesión
+                  </button>
+                )}
+              </div>
             ) : (
-              <button
-                type="button"
-                onClick={() => router.push('/perfil')}
-                className="rounded-lg border border-gray-300 px-5 py-2.5 text-[1.05rem] font-semibold whitespace-nowrap text-gray-700 transition-all duration-300 hover:bg-gray-50"
-              >
-                Iniciar sesión
-              </button>
+              hasSolidBg && !menuOpen ? (
+                <Button
+                  size="sm"
+                  className="whitespace-nowrap"
+                  onClick={() => router.push('?auth=login')}
+                >
+                  Iniciar sesión
+                </Button>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => router.push('?auth=login')}
+                  className="rounded-lg border border-gray-300 px-5 py-2.5 text-[1.05rem] font-semibold whitespace-nowrap text-gray-700 transition-all duration-300 hover:bg-gray-50"
+                >
+                  Iniciar sesión
+                </button>
+              )
             )}
           </div>
 
@@ -146,17 +239,50 @@ export default function Header() {
                 </li>
               );
             })}
-            <li>
-              <Button
-                className="w-full"
-                onClick={() => {
-                  setMenuOpen(false);
-                  router.push('/perfil');
-                }}
-              >
-                Iniciar sesión
-              </Button>
-            </li>
+            {user ? (
+              <>
+                <li className="flex items-center gap-3 py-2 border-t border-gray-100">
+                  <Link
+                    href={`/perfil?id=${user.id}`}
+                    onClick={() => setMenuOpen(false)}
+                    className="flex items-center gap-3 font-semibold text-gray-700"
+                  >
+                    <div className="h-10 w-10 overflow-hidden rounded-full ring-2 ring-teal-500">
+                      <img
+                        src={profileAvatar || `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(user.user_metadata?.name || 'Doctor')}`}
+                        className="h-full w-full object-cover"
+                        alt="Foto de perfil"
+                      />
+                    </div>
+                    <span>Mi Perfil</span>
+                  </Link>
+                </li>
+                <li>
+                  <Button
+                    className="w-full"
+                    variant="outline"
+                    onClick={() => {
+                      setMenuOpen(false);
+                      handleSignOut();
+                    }}
+                  >
+                    Cerrar sesión
+                  </Button>
+                </li>
+              </>
+            ) : (
+              <li>
+                <Button
+                  className="w-full"
+                  onClick={() => {
+                    setMenuOpen(false);
+                    router.push('?auth=login');
+                  }}
+                >
+                  Iniciar sesión
+                </Button>
+              </li>
+            )}
           </ul>
         </div>
       </nav>

@@ -55,7 +55,7 @@ export default function HeroSection() {
               </span>
             </Link>
             <Link
-              href="/registro"
+              href="?auth=register"
               className="inline-flex items-center rounded-lg border border-gray-300 px-6 py-3 font-semibold text-gray-700 transition-all duration-300 ease-out hover:-translate-y-0.5 hover:border-teal-500 hover:text-teal-600 hover:shadow-md active:scale-95 active:shadow-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 focus-visible:ring-offset-2"
             >
               ¿Eres médico? Regístrate

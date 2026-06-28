@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import {
   Briefcase,
@@ -71,6 +71,17 @@ export function ProfileEditorModal({
   onCancel,
   onChange,
 }: ProfileEditorModalProps) {
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [isOpen]);
+
   const [activeTab, setActiveTab] = useState<TabId>('perfil');
 
   // Derive accent colors from the current specialty being edited
