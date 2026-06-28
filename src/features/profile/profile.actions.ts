@@ -253,7 +253,7 @@ export async function getDoctorsList(): Promise<ActionResponse<Doctor[]>> {
   console.log('getDoctorsList: Fetching doctors from Supabase...');
   const { data, error } = await publicSupabase
     .from('doctors')
-    .select('id, name, specialty, location, phone, email, avatar, cover_image, rating, reviews, experience, availability, bio, certifications, languages');
+    .select('id, name, specialty, location, phone, email, avatar, cover_image, rating, reviews, experience, availability, bio, languages');
 
   if (error) {
     console.error('getDoctorsList database error:', error);
@@ -276,7 +276,7 @@ export async function getDoctorsList(): Promise<ActionResponse<Doctor[]>> {
     experience: d.experience !== null && d.experience !== undefined ? Number(d.experience) : 1,
     availability: d.availability || 'available',
     bio: d.bio || undefined,
-    certifications: d.certifications || undefined,
+    certifications: undefined,
     languages: d.languages || undefined,
   }));
 
