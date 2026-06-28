@@ -1,9 +1,12 @@
 'use client';
 
+import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Calendar, Clock, MapPin, MessageCircle, Plus, Trash2 } from 'lucide-react';
 import { Button } from '@/src/components/ui/Button';
+import AppointmentModal from '@/src/components/AppointmentModal';
 import type { EditableProfile, ProfileScheduleItem } from '@/src/features/profile/types';
+import type { AppointmentData } from '@/src/components/AppointmentModal';
 
 const EASE = [0.4, 0, 0.2, 1] as const;
 
@@ -42,9 +45,14 @@ export default function ProfileSidebar({
   isEditing = false,
   onChange,
 }: ProfileSidebarProps) {
+  const [showAppointment, setShowAppointment] = useState(false);
   const address = `${profile.location}, El Salvador`;
   const btnColorClass =
     SPECIALTY_BTN_CLASS[profile.specialty] ?? 'bg-teal-600 hover:bg-teal-700';
+
+  const handleAppointmentConfirm = (data: AppointmentData) => {
+    console.log('Cita agendada:', data);
+  };
 
   const updateScheduleItem = (index: number, field: keyof ProfileScheduleItem, value: string | boolean) => {
     if (!onChange) return;
@@ -74,6 +82,14 @@ export default function ProfileSidebar({
     }`;
 
   return (
+    <>
+      <AppointmentModal
+        isOpen={showAppointment}
+        doctorName={profile.name}
+        specialty={profile.specialty}
+        onClose={() => setShowAppointment(false)}
+        onConfirm={handleAppointmentConfirm}
+      />
     <div className="space-y-6">
       <motion.section
         custom={0}
@@ -113,6 +129,7 @@ export default function ProfileSidebar({
           <div className="space-y-3">
             <button
               type="button"
+              onClick={() => setShowAppointment(true)}
               className={`flex w-full items-center justify-center gap-2 rounded-[var(--radius-button)] px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 ${btnColorClass}`}
             >
               <Calendar className="h-4 w-4" aria-hidden="true" />
@@ -233,5 +250,6 @@ export default function ProfileSidebar({
         <p className="text-xs font-medium leading-relaxed text-text-muted">{address}</p>
       </motion.section>
     </div>
+    </>
   );
 }

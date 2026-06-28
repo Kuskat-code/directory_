@@ -94,6 +94,8 @@ export interface Doctor {
   bio?: string;
   certifications?: string[];
   languages?: string[];
+  isPremium?: boolean;
+  coverImage?: string;
 }
 
 export const EXAMPLE_DOCTORS: Doctor[] = [
@@ -109,6 +111,8 @@ export const EXAMPLE_DOCTORS: Doctor[] = [
     reviews: 45,
     experience: 15,
     availability: 'available',
+    isPremium: true,
+    coverImage: 'https://images.unsplash.com/photo-1628348070889-cb656235b4eb?q=80&w=800',
     bio: 'Cardiólogo con más de 15 años de trayectoria en el diagnóstico y tratamiento de enfermedades cardiovasculares.',
     certifications: ['Universidad de El Salvador', 'UNAM - Cardiología'],
     languages: ['Español', 'Inglés'],
@@ -157,6 +161,8 @@ export const EXAMPLE_DOCTORS: Doctor[] = [
     reviews: 29,
     experience: 8,
     availability: 'available',
+    isPremium: true,
+    coverImage: 'https://images.unsplash.com/photo-1559757175-5700dde675bc?q=80&w=800',
     bio: 'Neuróloga dedicada al estudio y tratamiento de trastornos del sistema nervioso central y periférico.',
     certifications: ['Universidad Centroamericana', 'Hospital de Diagnóstico'],
     languages: ['Español', 'Inglés'],
@@ -237,6 +243,8 @@ export const EXAMPLE_DOCTORS: Doctor[] = [
     reviews: 41,
     experience: 16,
     availability: 'available',
+    isPremium: true,
+    coverImage: 'https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?q=80&w=800',
     bio: 'Cardiólogo intervencionista especializado en cateterismo cardíaco y hemodinamia.',
     certifications: ['Universidad de El Salvador', 'Hospital Nacional'],
     languages: ['Español', 'Inglés'],
