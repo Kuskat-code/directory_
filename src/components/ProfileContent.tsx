@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Pencil } from 'lucide-react';
 import { useSearchParams } from 'next/navigation';
@@ -11,12 +11,28 @@ import ProfileSidebar from '@/src/components/ProfileSidebar';
 import { buildDefaultProfile } from '@/src/features/profile/lib/defaults';
 import { useProfileEditor } from '@/src/features/profile/hooks/use-profile-editor';
 import { ProfileEditorModal } from '@/src/features/profile/components/ProfileEditorModal';
+import { getCurrentUserSession } from '@/src/features/profile/profile.actions';
 
 const EASE = [0.4, 0, 0.2, 1] as const;
 
 export default function ProfileContent() {
   const searchParams = useSearchParams();
   const doctorId = searchParams.get('id') ?? '';
+
+  // Auth State
+  const [currentUser, setCurrentUser] = useState<any>(null);
+
+  useEffect(() => {
+    async function loadUser() {
+      const response = await getCurrentUserSession();
+      if (response.success && response.data) {
+        setCurrentUser(response.data);
+      } else {
+        setCurrentUser(null);
+      }
+    }
+    void loadUser();
+  }, []);
 
   const isMockDoctor = useMemo(
     () => EXAMPLE_DOCTORS.some((d) => d.id === doctorId),
@@ -71,6 +87,8 @@ export default function ProfileContent() {
     [profile.specialty, profile.experience, profile.languages],
   );
 
+  const isOwner = currentUser && currentUser.id === doctorId;
+
   if (!isLoaded) {
     return (
       <div className="flex items-center justify-center py-32">
@@ -107,17 +125,19 @@ export default function ProfileContent() {
 
         {/* ── Page body ─────────────────────────────────────────── */}
         <div className="relative z-10 mx-auto -mt-14 max-w-7xl px-4 pb-16 sm:px-6 lg:px-8">
-          {/* Edit button */}
-          <div className="mb-6 flex justify-end">
-            <button
-              type="button"
-              onClick={startEditing}
-              className="inline-flex items-center gap-2 rounded-[var(--radius-button)] border border-border bg-white/95 px-4 py-2 text-sm font-semibold text-text shadow-sm backdrop-blur-sm transition-colors hover:border-primary/50 hover:text-primary"
-            >
-              <Pencil className="h-4 w-4" aria-hidden="true" />
-              Personalizar perfil
-            </button>
-          </div>
+          {/* Edit button - only render if user is logged in and owns this profile */}
+          {isOwner && (
+            <div className="mb-6 flex justify-end">
+              <button
+                type="button"
+                onClick={startEditing}
+                className="inline-flex items-center gap-2 rounded-[var(--radius-button)] border border-border bg-white/95 px-4 py-2 text-sm font-semibold text-text shadow-sm backdrop-blur-sm transition-colors hover:border-primary/50 hover:text-primary"
+              >
+                <Pencil className="h-4 w-4" aria-hidden="true" />
+                Personalizar perfil
+              </button>
+            </div>
+          )}
 
           <div className="grid grid-cols-1 items-start gap-8 lg:grid-cols-3">
             <div className="space-y-6 lg:col-span-2">
