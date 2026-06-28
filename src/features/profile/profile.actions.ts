@@ -1,6 +1,7 @@
 'use server';
 
 import { createClient } from '@/src/lib/supabase/server';
+import { publicSupabase } from '@/src/lib/supabase/public';
 import type { ActionResponse, EditableProfile } from './types';
 import {
   updateBasicInfoSchema,
@@ -213,12 +214,11 @@ export async function getDoctorProfile(
     return { success: false, error: 'ID de doctor inválido' };
   }
 
-  const supabase = await createClient();
-  const { data, error } = await supabase
+  const { data, error } = await publicSupabase
     .from('doctors')
     .select('*')
     .eq('id', doctorId)
-    .maybeSingle(); // maybeSingle no da error si no se encuentra la fila
+    .maybeSingle();
 
   if (error) {
     return { success: false, error: error.message };
@@ -250,9 +250,8 @@ export async function getDoctorProfile(
 import type { Doctor } from '@/src/lib/constants';
 
 export async function getDoctorsList(): Promise<ActionResponse<Doctor[]>> {
-  const supabase = await createClient();
   console.log('getDoctorsList: Fetching doctors from Supabase...');
-  const { data, error } = await supabase
+  const { data, error } = await publicSupabase
     .from('doctors')
     .select('*');
 

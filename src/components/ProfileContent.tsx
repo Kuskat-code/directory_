@@ -124,7 +124,7 @@ export default function ProfileContent() {
         </motion.div>
 
         {/* ── Page body ─────────────────────────────────────────── */}
-        <div className="relative z-10 mx-auto -mt-14 max-w-7xl px-4 pb-16 sm:px-6 lg:px-8">
+        <div className={`relative z-10 mx-auto max-w-7xl px-4 pb-16 sm:px-6 lg:px-8 ${isOwner ? '-mt-14' : '-mt-4'}`}>
           {/* Edit button - only render if user is logged in and owns this profile */}
           {isOwner && (
             <div className="mb-6 flex justify-end">
