@@ -32,6 +32,11 @@ export default function ProfileContent() {
       }
     }
     void loadUser();
+
+    window.addEventListener('auth-change', loadUser);
+    return () => {
+      window.removeEventListener('auth-change', loadUser);
+    };
   }, []);
 
   const isMockDoctor = useMemo(
