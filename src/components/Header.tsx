@@ -54,7 +54,7 @@ export default function Header() {
     };
   }, [menuOpen]);
 
-  // Auth Hook (Safe server-side session loading, reactive to searchParams and pathname)
+  // Auth Hook (Safe server-side session loading, reactive to pathname and auth-change events)
   useEffect(() => {
     async function loadSession() {
       const response = await getCurrentUserSession();
@@ -67,6 +67,11 @@ export default function Header() {
       }
     }
     void loadSession();
+
+    window.addEventListener('auth-change', loadSession);
+    return () => {
+      window.removeEventListener('auth-change', loadSession);
+    };
   }, [pathname]);
 
   const handleSignOut = async () => {
@@ -125,24 +130,26 @@ export default function Header() {
                     alt="Foto de perfil"
                   />
                 </Link>
-                <Button
-                  size="md"
-                  variant="outline"
-                  className={`whitespace-nowrap border-gray-300 text-gray-700 hover:bg-gray-50`}
+                <button
+                  type="button"
+                  className="inline-flex items-center justify-center rounded-[var(--radius-button)] px-5 py-2.5 text-sm font-semibold whitespace-nowrap transition-all duration-300 transition-premium active:scale-[0.98] border border-gray-300 text-gray-700 hover:bg-gray-50 bg-white/20"
                   onClick={handleSignOut}
                 >
                   Cerrar sesión
-                </Button>
+                </button>
               </div>
             ) : (
-              <Button
-                size="md"
-                variant={hasSolidBg ? 'primary' : 'outline'}
-                className={`whitespace-nowrap ${!hasSolidBg ? 'border-gray-300 text-gray-700 hover:bg-gray-50 bg-white/20' : ''}`}
+              <button
+                type="button"
+                className={`inline-flex items-center justify-center rounded-[var(--radius-button)] px-5 py-2.5 text-sm font-semibold whitespace-nowrap transition-all duration-300 transition-premium active:scale-[0.98] border ${
+                  hasSolidBg
+                    ? 'bg-teal-600 text-white border-teal-600 hover:bg-teal-700 shadow-md hover:shadow-lg'
+                    : 'border-gray-300 text-gray-700 hover:bg-gray-50 bg-white/20'
+                }`}
                 onClick={() => router.push('?auth=login')}
               >
                 Iniciar sesión
-              </Button>
+              </button>
             )}
           </div>
 

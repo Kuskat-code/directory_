@@ -118,7 +118,7 @@ function NewsCard({ item, index }: { item: NewsItem; index: number }) {
           <time dateTime={item.date} className="text-xs text-slate-400">
             {item.date}
           </time>
-          <span className="text-xs font-medium text-blue-600">
+          <span className="text-xs font-medium text-teal-600">
             Leer más →
           </span>
         </div>
@@ -196,9 +196,6 @@ export default function NewsCarousel() {
           className="mb-10 flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-end"
         >
           <div>
-            <span className="mb-2 inline-block rounded-full bg-blue-50 px-3 py-1 text-xs font-semibold uppercase tracking-wider text-blue-600">
-              Novedades
-            </span>
             <h2 className="text-3xl font-bold text-slate-900 sm:text-4xl">
               Últimas noticias médicas
             </h2>
@@ -252,7 +249,7 @@ export default function NewsCarousel() {
               }}
               className={`rounded-full transition-all duration-300 ${
                 i === page
-                  ? 'h-2 w-7 bg-blue-500'
+                  ? 'h-2 w-7 bg-teal-600'
                   : 'h-2 w-2 bg-slate-300 hover:bg-slate-400'
               }`}
             />
