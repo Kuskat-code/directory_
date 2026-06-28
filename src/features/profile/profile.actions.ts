@@ -343,8 +343,8 @@ export interface UserSessionData {
 export async function getCurrentUserSession(): Promise<ActionResponse<UserSessionData | null>> {
   const supabase = await createClient();
   
-  const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-  if (sessionError || !session?.user) {
+  const { data: { user }, error: userError } = await supabase.auth.getUser();
+  if (userError || !user) {
     return { success: true, data: null };
   }
 
@@ -352,15 +352,15 @@ export async function getCurrentUserSession(): Promise<ActionResponse<UserSessio
   const { data: doctorData } = await supabase
     .from('doctors')
     .select('avatar, name')
-    .eq('id', session.user.id)
+    .eq('id', user.id)
     .single();
 
   return {
     success: true,
     data: {
-      id: session.user.id,
-      name: doctorData?.name || session.user.user_metadata?.name || 'Doctor',
-      email: session.user.email || '',
+      id: user.id,
+      name: doctorData?.name || user.user_metadata?.name || 'Doctor',
+      email: user.email || '',
       avatar: doctorData?.avatar || null,
     },
   };
