@@ -253,7 +253,7 @@ export async function getDoctorsList(): Promise<ActionResponse<Doctor[]>> {
   console.log('getDoctorsList: Fetching doctors from Supabase...');
   const { data, error } = await publicSupabase
     .from('doctors')
-    .select('*');
+    .select('id, name, specialty, location, phone, email, avatar, cover_image, rating, reviews, experience, availability, bio, certifications, languages');
 
   if (error) {
     console.error('getDoctorsList database error:', error);
