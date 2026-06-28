@@ -1,10 +1,7 @@
 'use server';
 
-// Supabase calls are bypassed while the payment gateway and auth are not yet
-// connected. All actions validate input with Zod and return an immediate local
-// success so the UI save flow works end-to-end without a real database.
-
-import type { ActionResponse } from './types';
+import { createClient } from '@/src/lib/supabase/server';
+import type { ActionResponse, EditableProfile } from './types';
 import {
   updateBasicInfoSchema,
   updateSummarySchema,
@@ -20,6 +17,21 @@ import {
   type UpdateAvatarInput,
 } from './validation';
 
+async function verifyOwnership(doctorId: string, supabase: any): Promise<string | null> {
+  const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(doctorId);
+  if (!isUuid) {
+    // Si no es UUID (ID de prueba de ejemplo local '1', '2', etc.), 
+    // permitimos la actualización temporal para desarrollo local sin sesión.
+    return null;
+  }
+
+  const { data: { user }, error: authError } = await supabase.auth.getUser();
+  if (authError || !user || user.id !== doctorId) {
+    return 'Acceso no autorizado: Debes iniciar sesión y ser propietario de este perfil.';
+  }
+  return null;
+}
+
 export async function updateBasicInfo(
   input: unknown,
 ): Promise<ActionResponse<UpdateBasicInfoInput>> {
@@ -27,6 +39,29 @@ export async function updateBasicInfo(
   if (!result.success) {
     return { success: false, error: result.error.issues[0]?.message ?? 'Datos inválidos' };
   }
+
+  const supabase = await createClient();
+  const errorMsg = await verifyOwnership(result.data.doctorId, supabase);
+  if (errorMsg) {
+    return { success: false, error: errorMsg };
+  }
+
+  const { error } = await supabase
+    .from('doctors')
+    .upsert({
+      id: result.data.doctorId,
+      name: result.data.name,
+      specialty: result.data.specialty,
+      location: result.data.location,
+      experience: result.data.experience,
+      phone: result.data.phone,
+      email: result.data.email,
+    });
+
+  if (error) {
+    return { success: false, error: error.message };
+  }
+
   return { success: true, data: result.data };
 }
 
@@ -37,6 +72,25 @@ export async function updateSummary(
   if (!result.success) {
     return { success: false, error: result.error.issues[0]?.message ?? 'Datos inválidos' };
   }
+
+  const supabase = await createClient();
+  const errorMsg = await verifyOwnership(result.data.doctorId, supabase);
+  if (errorMsg) {
+    return { success: false, error: errorMsg };
+  }
+
+  const { error } = await supabase
+    .from('doctors')
+    .upsert({
+      id: result.data.doctorId,
+      bio: result.data.bio,
+      languages: result.data.languages,
+    });
+
+  if (error) {
+    return { success: false, error: error.message };
+  }
+
   return { success: true, data: result.data };
 }
 
@@ -47,6 +101,24 @@ export async function updateSchedule(
   if (!result.success) {
     return { success: false, error: result.error.issues[0]?.message ?? 'Datos inválidos' };
   }
+
+  const supabase = await createClient();
+  const errorMsg = await verifyOwnership(result.data.doctorId, supabase);
+  if (errorMsg) {
+    return { success: false, error: errorMsg };
+  }
+
+  const { error } = await supabase
+    .from('doctors')
+    .upsert({
+      id: result.data.doctorId,
+      schedule: result.data.schedule,
+    });
+
+  if (error) {
+    return { success: false, error: error.message };
+  }
+
   return { success: true, data: result.data };
 }
 
@@ -57,6 +129,24 @@ export async function updateServices(
   if (!result.success) {
     return { success: false, error: result.error.issues[0]?.message ?? 'Datos inválidos' };
   }
+
+  const supabase = await createClient();
+  const errorMsg = await verifyOwnership(result.data.doctorId, supabase);
+  if (errorMsg) {
+    return { success: false, error: errorMsg };
+  }
+
+  const { error } = await supabase
+    .from('doctors')
+    .upsert({
+      id: result.data.doctorId,
+      services: result.data.services,
+    });
+
+  if (error) {
+    return { success: false, error: error.message };
+  }
+
   return { success: true, data: result.data };
 }
 
@@ -67,6 +157,24 @@ export async function updateGallery(
   if (!result.success) {
     return { success: false, error: result.error.issues[0]?.message ?? 'Datos inválidos' };
   }
+
+  const supabase = await createClient();
+  const errorMsg = await verifyOwnership(result.data.doctorId, supabase);
+  if (errorMsg) {
+    return { success: false, error: errorMsg };
+  }
+
+  const { error } = await supabase
+    .from('doctors')
+    .upsert({
+      id: result.data.doctorId,
+      gallery_images: result.data.galleryImages,
+    });
+
+  if (error) {
+    return { success: false, error: error.message };
+  }
+
   return { success: true, data: result.data };
 }
 
@@ -77,5 +185,101 @@ export async function updateAvatar(
   if (!result.success) {
     return { success: false, error: result.error.issues[0]?.message ?? 'Datos inválidos' };
   }
+
+  const supabase = await createClient();
+  const errorMsg = await verifyOwnership(result.data.doctorId, supabase);
+  if (errorMsg) {
+    return { success: false, error: errorMsg };
+  }
+
+  const { error } = await supabase
+    .from('doctors')
+    .upsert({
+      id: result.data.doctorId,
+      avatar: result.data.avatar,
+    });
+
+  if (error) {
+    return { success: false, error: error.message };
+  }
+
   return { success: true, data: result.data };
+}
+
+export async function getDoctorProfile(
+  doctorId: string,
+): Promise<ActionResponse<Partial<EditableProfile> | null>> {
+  if (!doctorId) {
+    return { success: false, error: 'ID de doctor inválido' };
+  }
+
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from('doctors')
+    .select('*')
+    .eq('id', doctorId)
+    .maybeSingle(); // maybeSingle no da error si no se encuentra la fila
+
+  if (error) {
+    return { success: false, error: error.message };
+  }
+
+  if (!data) {
+    return { success: true, data: null };
+  }
+
+  const profile: Partial<EditableProfile> = {
+    name: data.name || undefined,
+    specialty: data.specialty || undefined,
+    location: data.location || undefined,
+    experience: data.experience !== null ? Number(data.experience) : undefined,
+    phone: data.phone || undefined,
+    email: data.email || undefined,
+    bio: data.bio || undefined,
+    languages: data.languages || undefined,
+    services: data.services || undefined,
+    schedule: data.schedule || undefined,
+    galleryImages: data.gallery_images || undefined,
+    avatar: data.avatar || undefined,
+    coverImage: data.cover_image || undefined,
+  };
+
+  return { success: true, data: profile };
+}
+
+import type { Doctor } from '@/src/lib/constants';
+
+export async function getDoctorsList(): Promise<ActionResponse<Doctor[]>> {
+  const supabase = await createClient();
+  console.log('getDoctorsList: Fetching doctors from Supabase...');
+  const { data, error } = await supabase
+    .from('doctors')
+    .select('*');
+
+  if (error) {
+    console.error('getDoctorsList database error:', error);
+    return { success: false, error: error.message };
+  }
+
+  console.log('getDoctorsList: Retrieved doctors count:', data?.length);
+
+  const list: Doctor[] = data.map((d) => ({
+    id: d.id,
+    name: d.name,
+    specialty: d.specialty,
+    location: d.location,
+    phone: d.phone,
+    email: d.email,
+    avatar: d.avatar,
+    coverImage: d.cover_image || undefined,
+    rating: d.rating !== null && d.rating !== undefined ? Number(d.rating) : 5.0,
+    reviews: d.reviews !== null && d.reviews !== undefined ? Number(d.reviews) : 1,
+    experience: d.experience !== null && d.experience !== undefined ? Number(d.experience) : 1,
+    availability: d.availability || 'available',
+    bio: d.bio || undefined,
+    certifications: d.certifications || undefined,
+    languages: d.languages || undefined,
+  }));
+
+  return { success: true, data: list };
 }

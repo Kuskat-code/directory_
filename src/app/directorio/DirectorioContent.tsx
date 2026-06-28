@@ -1,29 +1,50 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { SlidersHorizontal } from 'lucide-react';
-import { EXAMPLE_DOCTORS, MEDICAL_SPECIALTIES, EL_SALVADOR_DEPARTMENTS_ORIENTE } from '@/src/lib/constants';
+import { EXAMPLE_DOCTORS, MEDICAL_SPECIALTIES, EL_SALVADOR_DEPARTMENTS_ORIENTE, type Doctor } from '@/src/lib/constants';
 import Header from '@/src/components/Header';
 import Footer from '@/src/components/Footer';
 import DoctorCard from '@/src/features/directory/components/DoctorCard';
 import { SectionContainer } from '@/src/components/ui/SectionContainer';
 import { Button } from '@/src/components/ui/Button';
+import { getDoctorsList } from '@/src/features/profile/profile.actions';
 
 export default function DirectorioContent() {
   const searchParams = useSearchParams();
+  const [doctors, setDoctors] = useState<Doctor[]>([]);
   const [specialty, setSpecialty] = useState(searchParams.get('specialty') || '');
   const [location, setLocation] = useState(searchParams.get('location') || '');
   const [minRating, setMinRating] = useState(0);
 
+  useEffect(() => {
+    async function loadDoctors() {
+      console.log('DirectorioContent: Loading doctors...');
+      try {
+        const response = await getDoctorsList();
+        console.log('DirectorioContent: getDoctorsList response:', response);
+        if (response.success) {
+          setDoctors(response.data);
+        } else {
+          const errorResponse = response as { success: false; error: string };
+          console.error('DirectorioContent: getDoctorsList returned error:', errorResponse.error);
+        }
+      } catch (err) {
+        console.error('DirectorioContent: Exception fetching doctors:', err);
+      }
+    }
+    void loadDoctors();
+  }, []);
+
   const filtered = useMemo(() => {
-    return EXAMPLE_DOCTORS.filter((d) => {
+    return doctors.filter((d) => {
       if (specialty && d.specialty !== specialty) return false;
       if (location && !d.location.toLowerCase().includes(location.toLowerCase())) return false;
       if (d.rating < minRating) return false;
       return true;
     });
-  }, [specialty, location, minRating]);
+  }, [doctors, specialty, location, minRating]);
 
   const clearFilters = () => {
     setSpecialty('');

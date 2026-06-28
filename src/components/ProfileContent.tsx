@@ -4,7 +4,7 @@ import { useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { Pencil } from 'lucide-react';
 import { useSearchParams } from 'next/navigation';
-import { EXAMPLE_DOCTORS } from '@/src/lib/constants';
+import { EXAMPLE_DOCTORS, type Doctor, type DoctorAvailability } from '@/src/lib/constants';
 import ProfileHero from '@/src/components/ProfileHero';
 import ProfileDetails from '@/src/components/ProfileDetails';
 import ProfileSidebar from '@/src/components/ProfileSidebar';
@@ -16,14 +16,37 @@ const EASE = [0.4, 0, 0.2, 1] as const;
 
 export default function ProfileContent() {
   const searchParams = useSearchParams();
-  const doctorId = searchParams.get('id') ?? EXAMPLE_DOCTORS[0].id;
+  const doctorId = searchParams.get('id') ?? '';
 
-  const baseDoctor = useMemo(
-    () => EXAMPLE_DOCTORS.find((d) => d.id === doctorId) ?? EXAMPLE_DOCTORS[0],
+  const isMockDoctor = useMemo(
+    () => EXAMPLE_DOCTORS.some((d) => d.id === doctorId),
     [doctorId],
   );
 
-  const defaultProfile = useMemo(() => buildDefaultProfile(baseDoctor), [baseDoctor]);
+  const baseDoctor = useMemo<Doctor>(
+    () => EXAMPLE_DOCTORS.find((d) => d.id === doctorId) ?? {
+      id: doctorId,
+      name: 'Especialista',
+      specialty: 'Medicina General',
+      location: 'San Miguel',
+      phone: '',
+      email: '',
+      avatar: `https://api.dicebear.com/7.x/initials/svg?seed=Especialista`,
+      rating: 5.0,
+      reviews: 0,
+      experience: 0,
+      availability: 'available' as DoctorAvailability,
+      bio: '',
+      certifications: [] as string[],
+      languages: ['Español'],
+    },
+    [doctorId],
+  );
+
+  const defaultProfile = useMemo(
+    () => buildDefaultProfile(baseDoctor, isMockDoctor),
+    [baseDoctor, isMockDoctor],
+  );
 
   const {
     profile,

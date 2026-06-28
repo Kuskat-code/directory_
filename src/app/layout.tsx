@@ -20,7 +20,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="es" data-scroll-behavior="smooth" className={inter.variable}>
+    <html lang="es" data-scroll-behavior="smooth" className={inter.variable} suppressHydrationWarning>
       <body className="min-h-screen">{children}</body>
     </html>
   );

@@ -87,6 +87,7 @@ export interface Doctor {
   phone: string;
   email: string;
   avatar: string;
+  coverImage?: string;
   rating: number;
   reviews: number;
   experience: number;

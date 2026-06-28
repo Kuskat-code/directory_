@@ -9,6 +9,7 @@ import {
   updateSchedule,
   updateServices,
   updateGallery,
+  getDoctorProfile,
 } from '../profile.actions';
 
 export type SaveStatus = 'idle' | 'saving' | 'saved' | 'error';
@@ -25,22 +26,51 @@ export function useProfileEditor(doctorId: string, defaults: EditableProfile) {
   defaultsRef.current = defaults;
 
   useEffect(() => {
+    let active = true;
     setIsLoaded(false);
-    const base = defaultsRef.current;
-    try {
-      const stored = localStorage.getItem(PROFILE_STORAGE_KEY(doctorId));
-      const merged = stored
-        ? { ...base, ...(JSON.parse(stored) as Partial<EditableProfile>) }
-        : base;
-      setProfile(merged);
-      setDraft(merged);
-    } catch {
-      setProfile(base);
-      setDraft(base);
-    } finally {
-      setIsLoaded(true);
-      setIsEditing(false);
+
+    async function loadProfile() {
+      const base = defaultsRef.current;
+      let dbProfile: Partial<EditableProfile> | null = null;
+
+      try {
+        const response = await getDoctorProfile(doctorId);
+        if (response.success && response.data) {
+          dbProfile = response.data;
+        }
+      } catch (err) {
+        console.error('Error fetching profile from Supabase:', err);
+      }
+
+      if (!active) return;
+
+      try {
+        // Fallback secundario a localStorage por si se guardaron cambios locales
+        const stored = localStorage.getItem(PROFILE_STORAGE_KEY(doctorId));
+        const localData = stored ? (JSON.parse(stored) as Partial<EditableProfile>) : null;
+
+        const merged = {
+          ...base,
+          ...(localData || {}),
+          ...(dbProfile || {}),
+        };
+
+        setProfile(merged);
+        setDraft(merged);
+      } catch {
+        setProfile(base);
+        setDraft(base);
+      } finally {
+        setIsLoaded(true);
+        setIsEditing(false);
+      }
     }
+
+    void loadProfile();
+
+    return () => {
+      active = false;
+    };
   }, [doctorId]);
 
   const startEditing = useCallback(() => {

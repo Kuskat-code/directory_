@@ -37,12 +37,10 @@ const DEFAULT_SCHEDULE: ProfileScheduleItem[] = [
 
 export function buildDefaultProfile(
   doctor: Doctor,
-  services: ProfileService[] = DEFAULT_SERVICES,
-  schedule: ProfileScheduleItem[] = DEFAULT_SCHEDULE,
-  galleryImages: string[] = DEFAULT_GALLERY,
+  isMock: boolean = false,
 ): EditableProfile {
   return {
-    avatar: doctor.avatar,
+    avatar: doctor.avatar || `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(doctor.name)}`,
     coverImage: DEFAULT_COVER,
     name: doctor.name,
     specialty: doctor.specialty,
@@ -50,13 +48,13 @@ export function buildDefaultProfile(
     experience: doctor.experience,
     bio:
       doctor.bio ??
-      `Especialista en ${doctor.specialty} con ${doctor.experience} anos de experiencia. Atencion personalizada y compromiso con la salud de sus pacientes.`,
-    languages: doctor.languages ?? [],
+      `Especialista en ${doctor.specialty} con ${doctor.experience} años de experiencia. Atención personalizada y compromiso con la salud de sus pacientes.`,
+    languages: doctor.languages ?? ['Español'],
     phone: doctor.phone,
     email: doctor.email,
-    services,
-    schedule,
-    galleryImages,
+    services: isMock ? DEFAULT_SERVICES : [],
+    schedule: isMock ? DEFAULT_SCHEDULE : [],
+    galleryImages: isMock ? DEFAULT_GALLERY : [],
   };
 }
 

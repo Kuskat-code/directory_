@@ -68,3 +68,7 @@ __pycache__/
 *.njsproj
 *.sln
 *.swp
+
+# database
+
+schema.sql
