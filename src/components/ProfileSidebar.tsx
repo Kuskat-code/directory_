@@ -2,9 +2,9 @@
 
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Calendar, Clock, MapPin, MessageCircle, Plus, Trash2 } from 'lucide-react';
-import { Button } from '@/src/components/ui/Button';
+import { Calendar, Clock, MapPin, Plus, Trash2 } from 'lucide-react';
 import AppointmentModal from '@/src/components/AppointmentModal';
+import { getSpecialtyBadgeColors } from '@/src/lib/specialty-badge-colors';
 import type { EditableProfile, ProfileScheduleItem } from '@/src/features/profile/types';
 import type { AppointmentData } from '@/src/components/AppointmentModal';
 
@@ -25,21 +25,6 @@ interface ProfileSidebarProps {
   onChange?: (updates: Partial<EditableProfile>) => void;
 }
 
-const SPECIALTY_BTN_CLASS: Record<string, string> = {
-  'Psiquiatría':        'bg-purple-600 hover:bg-purple-700',
-  'Psiquiatria':        'bg-purple-600 hover:bg-purple-700',
-  'Cardiología':        'bg-red-600 hover:bg-red-700',
-  'Cardiologia':        'bg-red-600 hover:bg-red-700',
-  'Pediatría':          'bg-orange-500 hover:bg-orange-600',
-  'Pediatria':          'bg-orange-500 hover:bg-orange-600',
-  'Neurología':         'bg-indigo-600 hover:bg-indigo-700',
-  'Neurologia':         'bg-indigo-600 hover:bg-indigo-700',
-  'Dermatología':       'bg-pink-600 hover:bg-pink-700',
-  'Dermatologia':       'bg-pink-600 hover:bg-pink-700',
-  'Ginecología':        'bg-rose-500 hover:bg-rose-600',
-  'Ginecologia':        'bg-rose-500 hover:bg-rose-600',
-};
-
 export default function ProfileSidebar({
   profile,
   isEditing = false,
@@ -47,8 +32,7 @@ export default function ProfileSidebar({
 }: ProfileSidebarProps) {
   const [showAppointment, setShowAppointment] = useState(false);
   const address = `${profile.location}, El Salvador`;
-  const btnColorClass =
-    SPECIALTY_BTN_CLASS[profile.specialty] ?? 'bg-teal-600 hover:bg-teal-700';
+  const specialtyColor = getSpecialtyBadgeColors(profile.specialty);
 
   const handleAppointmentConfirm = (data: AppointmentData) => {
     console.log('Cita agendada:', data);
@@ -130,15 +114,27 @@ export default function ProfileSidebar({
             <button
               type="button"
               onClick={() => setShowAppointment(true)}
-              className={`flex w-full items-center justify-center gap-2 rounded-[var(--radius-button)] px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 ${btnColorClass}`}
+              className={`flex w-full items-center justify-center gap-2 rounded-[var(--radius-button)] px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 ${specialtyColor.button}`}
             >
               <Calendar className="h-4 w-4" aria-hidden="true" />
               Agendar Cita
             </button>
-            <Button variant="accent" className="w-full">
-              <MessageCircle className="h-4 w-4" aria-hidden="true" />
+            <button
+              type="button"
+              className="flex w-full items-center justify-center gap-2 rounded-[var(--radius-button)] bg-[#25D366] px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-[#1ebe5d] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="currentColor"
+                className="h-5 w-5"
+                aria-hidden="true"
+              >
+                <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z" />
+                <path d="M12 0C5.373 0 0 5.373 0 12c0 2.123.554 4.118 1.528 5.852L0 24l6.335-1.508A11.945 11.945 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.818a9.818 9.818 0 01-5.006-1.371l-.36-.214-3.724.886.938-3.617-.234-.373A9.818 9.818 0 1112 21.818z" />
+              </svg>
               Contactar WhatsApp
-            </Button>
+            </button>
           </div>
         )}
       </motion.section>
@@ -211,9 +207,17 @@ export default function ProfileSidebar({
               ) : (
                 <>
                   <span className="font-medium text-text-muted">{item.days}</span>
-                  <span className={`font-bold ${item.closed ? 'text-warning' : 'text-text'}`}>
-                    {item.hours}
-                  </span>
+                  {item.closed ? (
+                    <span className="flex items-center gap-2">
+                      <span className="relative flex h-2.5 w-2.5">
+                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-500 opacity-75"></span>
+                        <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-red-600"></span>
+                      </span>
+                      <span className="font-semibold text-red-600">{item.hours}</span>
+                    </span>
+                  ) : (
+                    <span className="font-bold text-text">{item.hours}</span>
+                  )}
                 </>
               )}
             </div>
