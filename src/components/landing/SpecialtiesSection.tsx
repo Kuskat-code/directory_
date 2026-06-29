@@ -28,7 +28,6 @@ const iconMap = {
   'heart-handshake': HeartHandshake,
 } as const;
 
-// Duplicamos los elementos para crear el efecto de bucle infinito e idéntico
 const DOUBLE_SPECIALTIES = [...LANDING_SPECIALTIES, ...LANDING_SPECIALTIES];
 
 export default function SpecialtiesSection() {
@@ -40,15 +39,10 @@ export default function SpecialtiesSection() {
       aria-labelledby="specialties-heading"
       className="relative overflow-hidden bg-white px-4 py-20 md:py-28"
     >
-      {/* Inyección de Estilos CSS para el efecto Marquee Infinito */}
       <style jsx global>{`
         @keyframes marquee {
-          0% {
-            transform: translateX(0%);
-          }
-          100% {
-            transform: translateX(-50%);
-          }
+          0% { transform: translateX(0%); }
+          100% { transform: translateX(-50%); }
         }
         .animate-marquee-infinite {
           animation: marquee 30s linear infinite;
@@ -56,7 +50,6 @@ export default function SpecialtiesSection() {
       `}</style>
 
       <div className="mx-auto max-w-7xl">
-        {/* Cabecera de la sección */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -65,6 +58,9 @@ export default function SpecialtiesSection() {
           className="mb-12 flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-end px-4"
         >
           <div>
+            <span className="mb-2 inline-block rounded-full bg-blue-50 px-3 py-1 text-xs font-semibold uppercase tracking-wider text-primary">
+              Especialidades
+            </span>
             <h2
               id="specialties-heading"
               className="text-heading font-bold text-text text-3xl md:text-4xl"
@@ -77,8 +73,6 @@ export default function SpecialtiesSection() {
           </div>
         </motion.div>
 
-        {/* Contenedor del Carrusel Cadena */}
-        {/* La clase 'mask-image' difumina los bordes izquierdo y derecho para un acabado más elegante */}
         <div
           className="relative w-full overflow-hidden py-4"
           style={{
