@@ -83,7 +83,21 @@ export default function Header() {
             })}
           </ul>
 
-          <div className="absolute right-6 hidden md:block">
+          {/* Botones de acción (Escritorio) */}
+          <div className="absolute right-6 hidden md:flex items-center gap-3">
+            {/* Botón Acceso Admin Temporal */}
+            <button
+              type="button"
+              onClick={() => router.push('/admin')}
+              className={`rounded-lg px-4 py-2 text-sm font-semibold transition-all duration-300 ${
+                hasSolidBg && !menuOpen
+                  ? 'bg-slate-800 text-white hover:bg-slate-700 shadow-sm'
+                  : 'border border-white/30 bg-black/10 text-white backdrop-blur-sm hover:bg-black/20'
+              }`}
+            >
+              Portal Admin ⚙️
+            </button>
+
             {hasSolidBg && !menuOpen ? (
               <Button
                 size="sm"
@@ -96,7 +110,7 @@ export default function Header() {
               <button
                 type="button"
                 onClick={() => router.push('/perfil')}
-                className="rounded-lg border border-gray-300 px-5 py-2.5 text-[1.05rem] font-semibold whitespace-nowrap text-gray-700 transition-all duration-300 hover:bg-gray-50"
+                className="rounded-lg border border-gray-300 px-5 py-2.5 text-[1.05rem] font-semibold whitespace-nowrap text-gray-700 transition-all duration-300 hover:bg-gray-50 md:border-white md:text-white md:hover:bg-white/10"
               >
                 Iniciar sesión
               </button>
@@ -123,6 +137,7 @@ export default function Header() {
           </button>
         </div>
 
+        {/* Menú Desplegable (Móvil) */}
         <div
           id="mobile-nav"
           className={`overflow-hidden transition-all duration-300 ease-in-out md:hidden ${
@@ -146,7 +161,19 @@ export default function Header() {
                 </li>
               );
             })}
-            <li>
+            <li className="flex flex-col gap-2 pt-2 border-t border-gray-100">
+              {/* Botón Admin en Móvil */}
+              <button
+                type="button"
+                className="w-full rounded-xl bg-slate-800 py-3 text-center text-sm font-semibold text-white transition-all hover:bg-slate-700"
+                onClick={() => {
+                  setMenuOpen(false);
+                  router.push('/admin');
+                }}
+              >
+                Portal Admin ⚙️
+              </button>
+              
               <Button
                 className="w-full"
                 onClick={() => {
