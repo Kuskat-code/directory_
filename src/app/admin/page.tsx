@@ -5,10 +5,26 @@ import { ArrowLeft, Download, UserPlus } from 'lucide-react';
 import { AdminStats } from '@/src/features/admin/components/AdminStats';
 import { AdminNavTabs } from '@/src/features/admin/components/AdminNavTabs';
 import { AdminDirectoryTable } from '@/src/features/admin/components/AdminDirectoryTable';
+import { AdminCategoriesTab } from '@/src/features/admin/components/AdminCategoriesTab';
+import { AdminModerationTab } from '@/src/features/admin/components/AdminModerationTab';
+import { AdminBillingTab } from '@/src/features/admin/components/AdminBillingTab';
+import { AdminLogsTab } from '@/src/features/admin/components/AdminLogsTab';
 import { AdminModerationCard } from '@/src/features/admin/components/AdminModerationCard';
+
+const TAB_TITLES: Record<string, { heading: string; subheading: string }> = {
+  users:      { heading: 'Vista General de Usuarios', subheading: 'Monitorea el estado del sistema, listados profesionales y elementos de moderación activos.' },
+  categories: { heading: 'Categorías del Directorio', subheading: 'Gestiona las categorías profesionales disponibles en la plataforma.' },
+  moderation: { heading: 'Moderación y Aprobaciones', subheading: 'Revisa perfiles pendientes, reseñas reportadas y solicitudes de verificación.' },
+  billing:    { heading: 'Facturación y Pagos', subheading: 'Historial de transacciones y estado de suscripciones en la plataforma.' },
+  logs:       { heading: 'Registro del Sistema', subheading: 'Auditoría de eventos, accesos y errores registrados por la plataforma.' },
+};
+
+const WIDE_TABS = new Set(['moderation', 'logs']);
 
 export default function AdminDashboard() {
   const [activeTab, setActiveTab] = useState('users');
+  const { heading, subheading } = TAB_TITLES[activeTab] ?? TAB_TITLES.users;
+  const isWide = WIDE_TABS.has(activeTab);
 
   return (
     <div className="min-h-screen bg-slate-50 font-sans text-gray-700 pt-8 pb-16">
@@ -33,8 +49,8 @@ export default function AdminDashboard() {
                 Admin
               </span>
             </div>
-            <h1 className="text-2xl font-bold tracking-tight text-gray-900">Vista General de Usuarios</h1>
-            <p className="text-sm text-gray-400 mt-1">Monitorea el estado del sistema, listados profesionales y elementos de moderación activos.</p>
+            <h1 className="text-2xl font-bold tracking-tight text-gray-900 transition-all duration-200">{heading}</h1>
+            <p className="text-sm text-gray-400 mt-1 transition-all duration-200">{subheading}</p>
           </div>
           <div className="flex items-center gap-2.5 shrink-0">
             <button className="flex items-center gap-2 px-4 py-2 text-sm font-semibold border border-gray-200 rounded-lg bg-white hover:bg-gray-50 transition-colors shadow-sm text-gray-600">
@@ -55,19 +71,20 @@ export default function AdminDashboard() {
         <AdminNavTabs activeTab={activeTab} setActiveTab={setActiveTab} />
 
         {/* Contenedor Principal */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-2">
-            {activeTab === 'users' && <AdminDirectoryTable />}
-            {activeTab !== 'users' && (
-              <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-12 text-center text-gray-400 text-sm">
-                Sección de <span className="font-medium text-gray-600">{activeTab}</span> en desarrollo...
-              </div>
-            )}
+        <div className={`grid grid-cols-1 gap-6 ${isWide ? '' : 'lg:grid-cols-3'}`}>
+          <div className={isWide ? '' : 'lg:col-span-2'}>
+            {activeTab === 'users'      && <AdminDirectoryTable />}
+            {activeTab === 'categories' && <AdminCategoriesTab />}
+            {activeTab === 'moderation' && <AdminModerationTab />}
+            {activeTab === 'billing'    && <AdminBillingTab />}
+            {activeTab === 'logs'       && <AdminLogsTab />}
           </div>
 
-          <div className="space-y-6">
-            <AdminModerationCard />
-          </div>
+          {!isWide && (
+            <div className="space-y-6">
+              <AdminModerationCard />
+            </div>
+          )}
         </div>
 
       </div>
