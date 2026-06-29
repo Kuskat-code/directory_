@@ -3,8 +3,11 @@
 import Link from 'next/link';
 import { useState } from 'react';
 import { motion } from 'framer-motion';
+import { AnimatedWord } from '@/src/components/ui/animated-word';
 
 const EASE = [0.4, 0, 0.2, 1] as const;
+
+const flipWords = ['Consulta', 'Encuentra', 'Agenda', 'Contacta'];
 
 const videos = [
   '/videos/consultorio.mp4',
@@ -28,18 +31,24 @@ export default function HeroSection() {
             Oriente de El Salvador
           </span>
 
-          <h1
-            id="hero-heading"
-            className="text-5xl leading-tight font-bold text-gray-900 md:text-6xl"
-          >
-            Directorio Médico
-            <br />
-            <span className="text-teal-600">Profesional</span>
-          </h1>
+          <div className="flex max-w-xl flex-col gap-2">
+            <h1
+              id="hero-heading"
+              className="text-4xl leading-tight font-bold text-gray-900 md:text-5xl"
+            >
+              Directorio Médico{' '}
+              <span className="text-teal-600">Profesional</span>
+            </h1>
 
-          <p className="max-w-md text-lg text-gray-500">
-            Encuentra especialistas verificados cerca de ti.
-          </p>
+            <p className="mt-3 text-base font-medium text-gray-700">
+              <AnimatedWord
+                words={flipWords}
+                duration={1800}
+                className="font-bold text-teal-600"
+              />
+              {' '}al especialista que necesitas hoy.
+            </p>
+          </div>
 
           <div className="mt-2 flex flex-wrap gap-4">
             <Link
