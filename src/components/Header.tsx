@@ -95,7 +95,7 @@ export default function Header() {
                   : 'border border-white/30 bg-black/10 text-white backdrop-blur-sm hover:bg-black/20'
               }`}
             >
-              Portal Admin ⚙️
+              Portal Admin 
             </button>
 
             {hasSolidBg && !menuOpen ? (
@@ -171,7 +171,7 @@ export default function Header() {
                   router.push('/admin');
                 }}
               >
-                Portal Admin ⚙️
+                Portal Admin 
               </button>
               
               <Button
