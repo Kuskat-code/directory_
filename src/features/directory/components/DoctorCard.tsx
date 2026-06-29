@@ -6,6 +6,7 @@ import Image from 'next/image';
 import { motion } from 'framer-motion';
 import { Calendar, Crown, MapPin, Stethoscope } from 'lucide-react';
 import type { Doctor } from '@/src/lib/constants';
+import { getSpecialtyBadgeColors } from '@/src/lib/specialty-badge-colors';
 import { Card } from '@/src/components/ui/Card';
 import AppointmentModal from '@/src/components/AppointmentModal';
 import type { AppointmentData } from '@/src/components/AppointmentModal';
@@ -16,21 +17,6 @@ interface Props {
 }
 
 const EASE = [0.4, 0, 0.2, 1] as const;
-
-const SPECIALTY_COLORS: Record<string, { bg: string; text: string; button: string; gradientFrom: string; gradientTo: string }> = {
-  'Medicina General': { bg: 'bg-green-100', text: 'text-green-700', button: 'bg-green-600 hover:bg-green-700', gradientFrom: '#bbf7d0', gradientTo: '#dcfce7' },
-  'Cardiología': { bg: 'bg-red-100', text: 'text-red-700', button: 'bg-red-600 hover:bg-red-700', gradientFrom: '#fecaca', gradientTo: '#fee2e2' },
-  'Dermatología': { bg: 'bg-orange-100', text: 'text-orange-700', button: 'bg-orange-500 hover:bg-orange-600', gradientFrom: '#fdba74', gradientTo: '#fed7aa' },
-  'Pediatría': { bg: 'bg-sky-100', text: 'text-sky-700', button: 'bg-sky-500 hover:bg-sky-600', gradientFrom: '#7dd3fc', gradientTo: '#bae6fd' },
-  'Psiquiatría': { bg: 'bg-violet-100', text: 'text-violet-700', button: 'bg-violet-600 hover:bg-violet-700', gradientFrom: '#c4b5fd', gradientTo: '#ddd6fe' },
-  'Neurología': { bg: 'bg-indigo-100', text: 'text-indigo-700', button: 'bg-indigo-600 hover:bg-indigo-700', gradientFrom: '#a5b4fc', gradientTo: '#c7d2fe' },
-  'Oftalmología': { bg: 'bg-blue-100', text: 'text-blue-700', button: 'bg-blue-600 hover:bg-blue-700', gradientFrom: '#93c5fd', gradientTo: '#bfdbfe' },
-  'Otorrinolaringología': { bg: 'bg-yellow-100', text: 'text-yellow-700', button: 'bg-yellow-500 hover:bg-yellow-600', gradientFrom: '#fde68a', gradientTo: '#fef9c3' },
-  'Gastroenterología': { bg: 'bg-lime-100', text: 'text-lime-700', button: 'bg-lime-600 hover:bg-lime-700', gradientFrom: '#d9f99d', gradientTo: '#ecfccb' },
-  'Ortopedia': { bg: 'bg-slate-100', text: 'text-slate-700', button: 'bg-slate-600 hover:bg-slate-700', gradientFrom: '#cbd5e1', gradientTo: '#e2e8f0' },
-  'Ginecología': { bg: 'bg-pink-100', text: 'text-pink-700', button: 'bg-pink-500 hover:bg-pink-600', gradientFrom: '#f9a8d4', gradientTo: '#fbcfe8' },
-  'Urología': { bg: 'bg-amber-100', text: 'text-amber-700', button: 'bg-amber-500 hover:bg-amber-600', gradientFrom: '#fde68a', gradientTo: '#fef3c7' },
-};
 
 function AvailabilityIndicator({ status }: { status: Doctor['availability'] }) {
   const config = {
@@ -49,7 +35,7 @@ function AvailabilityIndicator({ status }: { status: Doctor['availability'] }) {
 
 export default function DoctorCard({ doctor, index = 0 }: Props) {
   const [showAppointment, setShowAppointment] = useState(false);
-  const specialtyColor = SPECIALTY_COLORS[doctor.specialty] ?? { bg: 'bg-teal-100', text: 'text-teal-700', button: 'bg-teal-600 hover:bg-teal-700', gradientFrom: '#ccfbf1', gradientTo: '#e6fffa' };
+  const specialtyColor = getSpecialtyBadgeColors(doctor.specialty);
 
   const handleAppointmentConfirm = (data: AppointmentData) => {
     console.log('Cita agendada:', data);
