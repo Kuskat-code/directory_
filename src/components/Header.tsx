@@ -65,9 +65,8 @@ export default function Header() {
                 <li key={link.href}>
                   <Link
                     href={link.href}
-                    className={`relative text-[1.05rem] font-medium tracking-wide transition-colors duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
-                      isActive ? 'text-primary' : 'text-gray-700 hover:opacity-70'
-                    }`}
+                    className={`relative text-[1.05rem] font-medium tracking-wide transition-colors duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${isActive ? 'text-primary' : 'text-gray-700 hover:opacity-70'
+                      }`}
                   >
                     {link.label}
                     {isActive && (
@@ -89,19 +88,18 @@ export default function Header() {
             <button
               type="button"
               onClick={() => router.push('/admin')}
-              className={`rounded-lg px-4 py-2 text-sm font-semibold transition-all duration-300 ${
-                hasSolidBg && !menuOpen
+              className={`rounded-lg px-4 py-2 text-sm font-semibold transition-all duration-300 ${hasSolidBg && !menuOpen
                   ? 'bg-slate-800 text-white hover:bg-slate-700 shadow-sm'
                   : 'border border-white/30 bg-black/10 text-white backdrop-blur-sm hover:bg-black/20'
-              }`}
+                }`}
             >
-              Portal Admin 
+              Portal Admin
             </button>
 
             {hasSolidBg && !menuOpen ? (
               <Button
                 size="sm"
-                className="whitespace-nowrap"
+                className="rounded-lg border border-gray-300 px-5 py-2.5 text-[1.05rem] font-semibold whitespace-nowrap text-gray-700 transition-all duration-300 hover:bg-gray-50 md:border-white md:text-white md:hover:bg-white/10"
                 onClick={() => router.push('/perfil')}
               >
                 Iniciar sesión
@@ -140,9 +138,8 @@ export default function Header() {
         {/* Menú Desplegable (Móvil) */}
         <div
           id="mobile-nav"
-          className={`overflow-hidden transition-all duration-300 ease-in-out md:hidden ${
-            menuOpen ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
-          }`}
+          className={`overflow-hidden transition-all duration-300 ease-in-out md:hidden ${menuOpen ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
+            }`}
         >
           <ul className="flex flex-col gap-4 bg-white/95 px-6 pb-6 backdrop-blur-md">
             {navLinks.map((link) => {
@@ -152,9 +149,8 @@ export default function Header() {
                   <Link
                     href={link.href}
                     onClick={() => setMenuOpen(false)}
-                    className={`block text-lg font-medium transition-colors ${
-                      isActive ? 'text-primary' : 'text-gray-700 hover:text-teal-600'
-                    }`}
+                    className={`block text-lg font-medium transition-colors ${isActive ? 'text-primary' : 'text-gray-700 hover:text-teal-600'
+                      }`}
                   >
                     {link.label}
                   </Link>
@@ -171,9 +167,9 @@ export default function Header() {
                   router.push('/admin');
                 }}
               >
-                Portal Admin 
+                Portal Admin
               </button>
-              
+
               <Button
                 className="w-full"
                 onClick={() => {
