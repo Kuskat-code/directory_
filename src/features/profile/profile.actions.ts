@@ -589,8 +589,11 @@ export async function signUpAction(input: {
   name: string;
   email: string;
   password: string;
+  role?: 'paciente' | 'doctor';
 }): Promise<ActionResponse<{ userId: string }>> {
   const supabase = await createClient();
+  
+  const targetRole = input.role || 'doctor';
   
   const { data, error } = await supabase.auth.signUp({
     email: input.email,
@@ -598,7 +601,7 @@ export async function signUpAction(input: {
     options: {
       data: {
         name: input.name,
-        role: 'doctor', // Asignar rol doctor por defecto para activar el trigger de doctores
+        role: targetRole,
       },
     },
   });
@@ -641,6 +644,7 @@ export interface UserSessionData {
   name: string;
   email: string;
   avatar: string | null;
+  role: 'paciente' | 'doctor' | 'admin';
 }
 
 export async function getCurrentUserSession(): Promise<ActionResponse<UserSessionData | null>> {
@@ -654,7 +658,7 @@ export async function getCurrentUserSession(): Promise<ActionResponse<UserSessio
   // Buscamos los datos de perfil desde la tabla usuarios
   const { data: userData } = await supabase
     .from('usuarios')
-    .select('avatar, nombre, correo')
+    .select('avatar, nombre, correo, rol')
     .eq('id', user.id)
     .maybeSingle();
 
@@ -665,6 +669,7 @@ export async function getCurrentUserSession(): Promise<ActionResponse<UserSessio
       name: userData?.nombre || user.user_metadata?.name || 'Usuario',
       email: userData?.correo || user.email || '',
       avatar: userData?.avatar || null,
+      role: userData?.rol || (user.user_metadata?.role as any) || 'paciente',
     },
   };
 }

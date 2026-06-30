@@ -134,6 +134,7 @@ export default function DirectorioContent() {
                   animationDelay: seed.delay,
                   animationDuration: seed.duration,
                 }}
+                suppressHydrationWarning
               />
             );
           })}
@@ -164,7 +165,7 @@ export default function DirectorioContent() {
             <aside className="shrink-0 lg:w-72" aria-label="Filtros de busqueda">
               <div className="sticky top-24 rounded-[var(--radius-card)] border border-border bg-white p-5 shadow-md">
                 <div className="mb-5 flex items-center gap-2 text-sm font-bold text-text">
-                  <SlidersHorizontal className="h-4 w-4 text-primary" aria-hidden="true" />
+                  <SlidersHorizontal className="h-4 w-4 text-primary" aria-hidden="true" suppressHydrationWarning />
                   Filtros
                 </div>
 

@@ -100,7 +100,7 @@ export default function DoctorCard({ doctor, index = 0 }: Props) {
         <div className="h-28 w-full relative overflow-hidden">
           {doctor.isPremium && (
             <div className="absolute top-3 right-3 bg-white/80 backdrop-blur-sm p-1 rounded-full shadow-sm z-10">
-              <Crown className="h-4 w-4 text-amber-500 fill-amber-400" />
+              <Crown className="h-4 w-4 text-amber-500 fill-amber-400" suppressHydrationWarning />
             </div>
           )}
           {doctor.coverImage ? (
@@ -140,7 +140,7 @@ export default function DoctorCard({ doctor, index = 0 }: Props) {
           <div className="mt-4 w-full space-y-2">
             {/* Ubicación */}
             <div className="flex items-center justify-center gap-1.5 text-sm text-text-muted">
-              <MapPin className="h-4 w-4 shrink-0 text-text-muted/60" aria-hidden="true" />
+              <MapPin className="h-4 w-4 shrink-0 text-text-muted/60" aria-hidden="true" suppressHydrationWarning />
               <span>{doctor.location}</span>
             </div>
 
@@ -160,7 +160,7 @@ export default function DoctorCard({ doctor, index = 0 }: Props) {
             href={`/perfil?id=${doctor.id}`}
             className={`inline-flex w-full items-center justify-center gap-2 rounded-[var(--radius-button)] px-5 py-2.5 text-sm font-semibold text-white shadow-md transition-all duration-300 transition-premium hover:shadow-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 active:scale-[0.98] ${style.buttonClass}`}
           >
-            <Calendar className="h-4 w-4" aria-hidden="true" />
+            <Calendar className="h-4 w-4" aria-hidden="true" suppressHydrationWarning />
             View Profile
           </Link>
         </div>

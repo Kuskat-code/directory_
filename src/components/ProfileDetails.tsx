@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { ChevronLeft, ChevronRight, Plus, Star, Trash2, X } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Plus, Trash2, X } from 'lucide-react';
 import type { Doctor } from '@/src/lib/constants';
 import type { EditableProfile, ProfileService } from '@/src/features/profile/types';
 import { ImageUploader } from '@/src/features/profile/components/ImageUploader';
@@ -419,55 +419,6 @@ export default function ProfileDetails({
         )}
       </AnimatePresence>
 
-      <motion.section
-        custom={3}
-        initial="hidden"
-        whileInView="visible"
-        viewport={{ once: true, margin: '-40px' }}
-        variants={sectionVariants}
-        className={sectionClass(false)}
-      >
-        <div className="mb-4 flex items-center justify-between">
-          <div>
-            <h2 className="text-base font-bold text-text tracking-tight">Resenas de Clientes</h2>
-            <p className="mt-0.5 text-[11px] text-text-muted">
-              Basado en {doctor.reviews} opiniones verificadas
-            </p>
-          </div>
-          <button
-            type="button"
-            className="cursor-pointer text-xs font-semibold text-primary transition-colors hover:text-primary-dark"
-          >
-            Ver todas
-          </button>
-        </div>
-
-        <div className="rounded-[var(--radius-card)] border border-border bg-secondary/30 p-4">
-          <div className="mb-2.5 flex items-center justify-between gap-2">
-            <div className="flex items-center gap-2.5">
-              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-xs font-bold text-white shadow-sm">
-                {profile.name.charAt(0)}
-              </div>
-              <div>
-                <h4 className="text-xs font-bold text-text leading-none">Paciente Verificado</h4>
-                <p className="mt-0.5 text-[10px] text-text-muted">Atencion en {profile.specialty}</p>
-              </div>
-            </div>
-            <div className="flex items-center gap-0.5 text-xs text-amber-400" aria-label={`${doctor.rating} de 5 estrellas`}>
-              {Array.from({ length: 5 }, (_, i) => (
-                <Star
-                  key={i}
-                  className={`h-3 w-3 ${i < Math.floor(doctor.rating) ? 'fill-amber-400 text-amber-400' : 'fill-border text-border'}`}
-                />
-              ))}
-            </div>
-          </div>
-          <p className="pl-0.5 text-xs leading-relaxed italic text-text-muted">
-            Excelente atencion y profesionalismo. El doctor me brindo un diagnostico claro y
-            un tratamiento efectivo. Altamente recomendado.
-          </p>
-        </div>
-      </motion.section>
     </div>
   );
 }

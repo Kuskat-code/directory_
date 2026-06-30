@@ -2,7 +2,7 @@
 
 import Image from 'next/image';
 import { motion } from 'framer-motion';
-import { MapPin, Star } from 'lucide-react';
+import { MapPin } from 'lucide-react';
 import type { Doctor } from '@/src/lib/constants';
 import { MEDICAL_SPECIALTIES as SPECIALTIES } from '@/src/lib/constants';
 import type { EditableProfile } from '@/src/features/profile/types';
@@ -147,10 +147,6 @@ export default function ProfileHero({
                   {profile.location}
                 </span>
                 <span className="flex items-center gap-1">{profile.experience} años de experiencia</span>
-                <span className="flex items-center gap-1">
-                  <Star className="h-3.5 w-3.5 fill-amber-400 text-amber-400" aria-hidden="true" />
-                  {doctor.rating.toFixed(1)} ({doctor.reviews} Resenas)
-                </span>
               </div>
             </>
           )}
