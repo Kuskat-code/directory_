@@ -72,3 +72,11 @@ __pycache__/
 # database
 
 schema.sql
+
+
+#vibecoding
+/.agents*
+/.claude*
+skills-lock.json
+schema.dbml
+seed.sql
