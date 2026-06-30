@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { Button } from '@/src/components/ui/Button';
+import { getCurrentUserSession, signOutAction } from '@/src/features/profile/profile.actions';
 
 const navLinks = [
   { label: 'Inicio', href: '/' },
@@ -23,6 +24,10 @@ export default function Header() {
   const router = useRouter();
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+
+  // Auth States
+  const [user, setUser] = useState<any>(null);
+  const [profileAvatar, setProfileAvatar] = useState<string | null>(null);
 
   const isHeroPage = pathname === '/';
   const hasSolidBg = scrolled || !isHeroPage || menuOpen;
@@ -49,6 +54,34 @@ export default function Header() {
     };
   }, [menuOpen]);
 
+  // Auth Hook (Safe server-side session loading, reactive to pathname and auth-change events)
+  useEffect(() => {
+    async function loadSession() {
+      const response = await getCurrentUserSession();
+      if (response.success && response.data) {
+        setUser(response.data);
+        setProfileAvatar(response.data.avatar);
+      } else {
+        setUser(null);
+        setProfileAvatar(null);
+      }
+    }
+    void loadSession();
+
+    window.addEventListener('auth-change', loadSession);
+    return () => {
+      window.removeEventListener('auth-change', loadSession);
+    };
+  }, [pathname]);
+
+  const handleSignOut = async () => {
+    await signOutAction();
+    // Limpiamos los estados de inmediato para reactividad instantánea en pantalla
+    setUser(null);
+    setProfileAvatar(null);
+    router.refresh();
+  };
+
   return (
     <header
       className={[
@@ -65,8 +98,9 @@ export default function Header() {
                 <li key={link.href}>
                   <Link
                     href={link.href}
-                    className={`relative text-[1.05rem] font-medium tracking-wide transition-colors duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${isActive ? 'text-primary' : 'text-gray-700 hover:opacity-70'
-                      }`}
+                    className={`relative text-[1.05rem] font-medium tracking-wide transition-colors duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
+                      isActive ? 'text-primary' : 'text-gray-700 hover:opacity-70'
+                    }`}
                   >
                     {link.label}
                     {isActive && (
@@ -82,33 +116,37 @@ export default function Header() {
             })}
           </ul>
 
-          {/* Botones de acción (Escritorio) */}
-          <div className="absolute right-6 hidden md:flex items-center gap-3">
-            {/* Botón Acceso Admin Temporal */}
-            <button
-              type="button"
-              onClick={() => router.push('/admin')}
-              className={`rounded-lg px-4 py-2 text-sm font-semibold transition-all duration-300 ${hasSolidBg && !menuOpen
-                  ? 'bg-slate-800 text-white hover:bg-slate-700 shadow-sm'
-                  : 'border border-white/30 bg-black/10 text-white backdrop-blur-sm hover:bg-black/20'
-                }`}
-            >
-              Portal Admin
-            </button>
-
-            {hasSolidBg && !menuOpen ? (
-              <Button
-                size="sm"
-                className="rounded-lg border border-gray-300 px-5 py-2.5 text-[1.05rem] font-semibold whitespace-nowrap text-gray-700 transition-all duration-300 hover:bg-gray-50 md:border-white md:text-white md:hover:bg-white/10"
-                onClick={() => router.push('/perfil')}
-              >
-                Iniciar sesión
-              </Button>
+          <div className="absolute right-6 hidden md:block">
+            {user ? (
+              <div className="flex items-center gap-4">
+                <Link
+                  href={`/perfil?id=${user.id}`}
+                  className="h-10 w-10 overflow-hidden rounded-full ring-2 ring-teal-500 hover:ring-teal-600 transition-all shadow-sm active:scale-95"
+                  title="Ver mi perfil"
+                >
+                  <img
+                    src={profileAvatar || `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(user.name || 'Doctor')}`}
+                    className="h-full w-full object-cover"
+                    alt="Foto de perfil"
+                  />
+                </Link>
+                <button
+                  type="button"
+                  className="inline-flex items-center justify-center rounded-[var(--radius-button)] px-5 py-2.5 text-sm font-semibold whitespace-nowrap transition-all duration-300 transition-premium active:scale-[0.98] border border-gray-300 text-gray-700 hover:bg-gray-50 bg-white/20"
+                  onClick={handleSignOut}
+                >
+                  Cerrar sesión
+                </button>
+              </div>
             ) : (
               <button
                 type="button"
-                onClick={() => router.push('/perfil')}
-                className="rounded-lg border border-gray-300 px-5 py-2.5 text-[1.05rem] font-semibold whitespace-nowrap text-gray-700 transition-all duration-300 hover:bg-gray-50 md:border-white md:text-white md:hover:bg-white/10"
+                className={`inline-flex items-center justify-center rounded-[var(--radius-button)] px-5 py-2.5 text-sm font-semibold whitespace-nowrap transition-all duration-300 transition-premium active:scale-[0.98] border ${
+                  hasSolidBg
+                    ? 'bg-teal-600 text-white border-teal-600 hover:bg-teal-700 shadow-md hover:shadow-lg'
+                    : 'border-gray-300 text-gray-700 hover:bg-gray-50 bg-white/20'
+                }`}
+                onClick={() => router.push('?auth=login')}
               >
                 Iniciar sesión
               </button>
@@ -135,11 +173,11 @@ export default function Header() {
           </button>
         </div>
 
-        {/* Menú Desplegable (Móvil) */}
         <div
           id="mobile-nav"
-          className={`overflow-hidden transition-all duration-300 ease-in-out md:hidden ${menuOpen ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
-            }`}
+          className={`overflow-hidden transition-all duration-300 ease-in-out md:hidden ${
+            menuOpen ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
+          }`}
         >
           <ul className="flex flex-col gap-4 bg-white/95 px-6 pb-6 backdrop-blur-md">
             {navLinks.map((link) => {
@@ -149,37 +187,59 @@ export default function Header() {
                   <Link
                     href={link.href}
                     onClick={() => setMenuOpen(false)}
-                    className={`block text-lg font-medium transition-colors ${isActive ? 'text-primary' : 'text-gray-700 hover:text-teal-600'
-                      }`}
+                    className={`block text-lg font-medium transition-colors ${
+                      isActive ? 'text-primary' : 'text-gray-700 hover:text-teal-600'
+                    }`}
                   >
                     {link.label}
                   </Link>
                 </li>
               );
             })}
-            <li className="flex flex-col gap-2 pt-2 border-t border-gray-100">
-              {/* Botón Admin en Móvil */}
-              <button
-                type="button"
-                className="w-full rounded-xl bg-slate-800 py-3 text-center text-sm font-semibold text-white transition-all hover:bg-slate-700"
-                onClick={() => {
-                  setMenuOpen(false);
-                  router.push('/admin');
-                }}
-              >
-                Portal Admin
-              </button>
-
-              <Button
-                className="w-full"
-                onClick={() => {
-                  setMenuOpen(false);
-                  router.push('/perfil');
-                }}
-              >
-                Iniciar sesión
-              </Button>
-            </li>
+            {user ? (
+              <>
+                <li className="flex items-center gap-3 py-2 border-t border-gray-100">
+                  <Link
+                    href={`/perfil?id=${user.id}`}
+                    onClick={() => setMenuOpen(false)}
+                    className="flex items-center gap-3 font-semibold text-gray-700"
+                  >
+                    <div className="h-10 w-10 overflow-hidden rounded-full ring-2 ring-teal-500">
+                      <img
+                        src={profileAvatar || `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(user.name || 'Doctor')}`}
+                        className="h-full w-full object-cover"
+                        alt="Foto de perfil"
+                      />
+                    </div>
+                    <span>Mi Perfil</span>
+                  </Link>
+                </li>
+                <li>
+                  <Button
+                    className="w-full"
+                    variant="outline"
+                    onClick={() => {
+                      setMenuOpen(false);
+                      handleSignOut();
+                    }}
+                  >
+                    Cerrar sesión
+                  </Button>
+                </li>
+              </>
+            ) : (
+              <li>
+                <Button
+                  className="w-full"
+                  onClick={() => {
+                    setMenuOpen(false);
+                    router.push('?auth=login');
+                  }}
+                >
+                  Iniciar sesión
+                </Button>
+              </li>
+            )}
           </ul>
         </div>
       </nav>

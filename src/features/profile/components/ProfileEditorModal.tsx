@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState, useEffect } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import {
   Briefcase,
@@ -71,19 +71,18 @@ export function ProfileEditorModal({
   onCancel,
   onChange,
 }: ProfileEditorModalProps) {
-  const [activeTab, setActiveTab] = useState<TabId>('perfil');
-
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = 'hidden';
     } else {
       document.body.style.overflow = '';
     }
-
     return () => {
       document.body.style.overflow = '';
     };
   }, [isOpen]);
+
+  const [activeTab, setActiveTab] = useState<TabId>('perfil');
 
   // Derive accent colors from the current specialty being edited
   const colors = getSpecialtyColors(draft.specialty);
@@ -285,7 +284,7 @@ function PerfilTab({
       {/* Avatar card */}
       <Card>
         <Field label="Foto de perfil">
-          <div className="flex flex-col items-center gap-4">
+          <div className="flex items-center gap-4">
             <img
               src={draft.avatar}
               alt="Foto de perfil actual"

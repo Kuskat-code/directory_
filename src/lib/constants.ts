@@ -87,6 +87,7 @@ export interface Doctor {
   phone: string;
   email: string;
   avatar: string;
+  coverImage?: string;
   rating: number;
   reviews: number;
   experience: number;
@@ -95,7 +96,6 @@ export interface Doctor {
   certifications?: string[];
   languages?: string[];
   isPremium?: boolean;
-  coverImage?: string;
 }
 
 export const EXAMPLE_DOCTORS: Doctor[] = [

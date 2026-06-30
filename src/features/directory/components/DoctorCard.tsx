@@ -1,15 +1,11 @@
 'use client';
 
-import { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
-import { Calendar, Crown, MapPin, Stethoscope } from 'lucide-react';
-import type { Doctor } from '@/src/lib/constants';
-import { getSpecialtyBadgeColors } from '@/src/lib/specialty-badge-colors';
+import { Calendar, MapPin, Crown } from 'lucide-react';
+import type { Doctor, DoctorAvailability } from '@/src/lib/constants';
 import { Card } from '@/src/components/ui/Card';
-import AppointmentModal from '@/src/components/AppointmentModal';
-import type { AppointmentData } from '@/src/components/AppointmentModal';
 
 interface Props {
   doctor: Doctor;
@@ -18,7 +14,57 @@ interface Props {
 
 const EASE = [0.4, 0, 0.2, 1] as const;
 
-function AvailabilityIndicator({ status }: { status: Doctor['availability'] }) {
+interface SpecialtyStyle {
+  bgGradient: string;
+  badgeClass: string;
+  buttonClass: string;
+}
+
+const SPECIALTY_STYLES: Record<string, SpecialtyStyle> = {
+  'Cardiología': {
+    bgGradient: 'from-rose-500/20 to-red-400/10',
+    badgeClass: 'bg-red-50 text-red-600 border border-red-100/50',
+    buttonClass: 'bg-red-600 hover:bg-red-700 focus-visible:ring-red-500',
+  },
+  'Pediatría': {
+    bgGradient: 'from-sky-400/30 to-sky-200/10',
+    badgeClass: 'bg-sky-50 text-sky-600 border border-sky-100/50',
+    buttonClass: 'bg-[#00a3ff] hover:bg-[#008ce0] focus-visible:ring-[#00a3ff]',
+  },
+  'Dermatología': {
+    bgGradient: 'from-amber-400/30 to-orange-200/10',
+    badgeClass: 'bg-orange-50 text-orange-600 border border-orange-100/50',
+    buttonClass: 'bg-[#ff7a00] hover:bg-[#e06b00] focus-visible:ring-[#ff7a00]',
+  },
+  'Neurología': {
+    bgGradient: 'from-purple-400/30 to-purple-200/10',
+    badgeClass: 'bg-purple-50 text-purple-600 border border-purple-100/50',
+    buttonClass: 'bg-purple-600 hover:bg-purple-700 focus-visible:ring-purple-500',
+  },
+  'Psiquiatría': {
+    bgGradient: 'from-indigo-400/30 to-indigo-200/10',
+    badgeClass: 'bg-indigo-50 text-indigo-600 border border-indigo-100/50',
+    buttonClass: 'bg-indigo-600 hover:bg-indigo-700 focus-visible:ring-indigo-500',
+  },
+  'Ginecología': {
+    bgGradient: 'from-pink-400/30 to-pink-200/10',
+    badgeClass: 'bg-pink-50 text-pink-600 border border-pink-100/50',
+    buttonClass: 'bg-pink-600 hover:bg-pink-700 focus-visible:ring-pink-500',
+  },
+  'Medicina General': {
+    bgGradient: 'from-emerald-400/30 to-emerald-200/10',
+    badgeClass: 'bg-emerald-50 text-emerald-600 border border-emerald-100/50',
+    buttonClass: 'bg-emerald-600 hover:bg-emerald-700 focus-visible:ring-emerald-500',
+  },
+};
+
+const DEFAULT_STYLE: SpecialtyStyle = {
+  bgGradient: 'from-primary/20 to-cyan-200/10',
+  badgeClass: 'bg-primary/5 text-primary border border-primary/10',
+  buttonClass: 'bg-primary hover:bg-primary-dark focus-visible:ring-primary',
+};
+
+function AvailabilityIndicator({ status }: { status: DoctorAvailability }) {
   const config = {
     available: { label: 'Disponible hoy', dot: 'bg-success', text: 'text-success' },
     limited: { label: 'Pocos horarios', dot: 'bg-warning', text: 'text-warning' },
@@ -26,7 +72,7 @@ function AvailabilityIndicator({ status }: { status: Doctor['availability'] }) {
   }[status ?? 'available'];
 
   return (
-    <div className={`flex items-center gap-1.5 text-xs font-medium ${config.text}`}>
+    <div className={`flex items-center justify-center gap-1.5 text-xs font-semibold ${config.text}`}>
       <span className={`h-2 w-2 rounded-full ${config.dot}`} aria-hidden="true" />
       {config.label}
     </div>
@@ -34,119 +80,91 @@ function AvailabilityIndicator({ status }: { status: Doctor['availability'] }) {
 }
 
 export default function DoctorCard({ doctor, index = 0 }: Props) {
-  const [showAppointment, setShowAppointment] = useState(false);
-  const specialtyColor = getSpecialtyBadgeColors(doctor.specialty);
-
-  const handleAppointmentConfirm = (data: AppointmentData) => {
-    console.log('Cita agendada:', data);
-  };
+  const style = SPECIALTY_STYLES[doctor.specialty] ?? DEFAULT_STYLE;
 
   return (
-    <>
-      <AppointmentModal
-        isOpen={showAppointment}
-        doctorName={doctor.name}
-        specialty={doctor.specialty}
-        onClose={() => setShowAppointment(false)}
-        onConfirm={handleAppointmentConfirm}
-      />
-      <motion.article
-        initial={{ opacity: 0, y: 28 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true, margin: '-40px' }}
-        transition={{ duration: 0.45, delay: index * 0.06, ease: EASE }}
-        whileHover={{ y: -6, scale: 1.01 }}
-        className="group h-full"
+    <motion.article
+      initial={{ opacity: 0, y: 28 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: '-40px' }}
+      transition={{ duration: 0.45, delay: index * 0.06, ease: EASE }}
+      whileHover={{ y: -6, scale: 1.01 }}
+      className="group h-full"
+    >
+      <Card
+        hoverable
+        padding="none"
+        className="flex h-full flex-col overflow-hidden transition-shadow duration-300 transition-premium group-hover:shadow-glow bg-white"
       >
-        <Card
-          hoverable
-          padding="none"
-          className="flex h-full flex-col overflow-hidden transition-shadow duration-300 transition-premium group-hover:shadow-glow"
-        >
-          {/* Header: cover image (premium) or gradient (free) */}
-          <div className="relative h-30 overflow-hidden">
-            {doctor.isPremium ? (
-              <>
-                <img
-                  src={doctor.coverImage}
-                  alt=""
-                  className="h-full w-full object-cover"
-                  loading="lazy"
-                />
-                <div className="absolute inset-0 bg-gradient-to-b from-black/50 to-black/10" />
-                <div className="absolute right-2 top-2 flex items-center gap-1 rounded-full bg-amber-400/90 px-2 py-0.5 text-[10px] font-bold text-amber-900 shadow-sm backdrop-blur-sm">
-                  <Crown className="h-3 w-3" />
-                  Premium
-                </div>
-              </>
-            ) : (
-              <div
-                className="h-full w-full"
-                style={{
-                  background: `linear-gradient(135deg, ${specialtyColor.gradientFrom} 0%, ${specialtyColor.gradientTo} 100%)`,
-                }}
+        {/* Cabecera superior de la Card */}
+        <div className="h-28 w-full relative overflow-hidden">
+          {doctor.isPremium && (
+            <div className="absolute top-3 right-3 bg-white/80 backdrop-blur-sm p-1 rounded-full shadow-sm z-10">
+              <Crown className="h-4 w-4 text-amber-500 fill-amber-400" />
+            </div>
+          )}
+          {doctor.coverImage ? (
+            <img
+              src={doctor.coverImage}
+              alt=""
+              className="h-full w-full object-cover"
+            />
+          ) : (
+            <div className={`h-full w-full bg-gradient-to-br ${style.bgGradient}`} />
+          )}
+        </div>
+
+        {/* Cuerpo de la Card */}
+        <div className="relative px-6 pb-6 pt-12 text-center flex flex-col items-center flex-1">
+          {/* Avatar superpuesto */}
+          <div className="absolute top-0 -translate-y-1/2 left-1/2 -translate-x-1/2 z-10">
+            <div className="relative h-20 w-20 overflow-hidden rounded-full border-4 border-white bg-secondary shadow-md">
+              <Image
+                src={doctor.avatar || `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(doctor.name)}`}
+                alt={`Foto de ${doctor.name}`}
+                width={80}
+                height={80}
+                className="h-full w-full object-cover"
+                loading="lazy"
+                unoptimized
               />
-            )}
-          </div>
-
-          {/* Content: avatar + info */}
-          <div className="relative z-10 -mt-10 flex flex-col items-center px-6 pb-4 text-center">
-            <div className="relative mb-3">
-              <div className={`absolute -inset-1 rounded-full opacity-0 blur-md transition-opacity duration-300 group-hover:opacity-100 ${doctor.isPremium ? 'bg-white/40' : 'bg-gradient-to-br from-primary/30 to-cyan-400/30'}`} />
-              <div className="relative h-20 w-20 overflow-hidden rounded-full border-4 border-white bg-secondary shadow-md">
-                <Image
-                  src={doctor.avatar}
-                  alt={`Foto de ${doctor.name}`}
-                  width={80}
-                  height={80}
-                  className="h-full w-full object-cover"
-                  loading="lazy"
-                  unoptimized
-                />
-              </div>
-            </div>
-
-            <h3 className="text-base font-bold text-text">{doctor.name}</h3>
-
-            <span
-              className={`mt-1.5 inline-flex items-center gap-1 rounded-[var(--radius-pill)] px-2.5 py-0.5 text-[11px] font-semibold ${specialtyColor.bg} ${specialtyColor.text}`}
-            >
-              <Stethoscope className="h-3 w-3" aria-hidden="true" />
-              {doctor.specialty}
-            </span>
-
-            <div className="mt-3 w-full space-y-2">
-              <div className="flex items-center justify-center gap-1 text-xs text-text-muted">
-                <MapPin className="h-3.5 w-3.5 shrink-0 text-primary" aria-hidden="true" />
-                <span>{doctor.location}</span>
-              </div>
-
-              <AvailabilityIndicator status={doctor.availability} />
-
-              <p className="text-[11px] text-text-muted">
-                {doctor.experience} años de experiencia
-              </p>
             </div>
           </div>
 
-          <div className="mt-auto flex gap-2 border-t border-border p-3">
-            <button
-              type="button"
-              onClick={() => setShowAppointment(true)}
-              className={`flex-1 rounded-[var(--radius-button)] px-3 py-2 text-xs font-semibold text-white shadow-sm transition-all hover:shadow-md active:scale-[0.98] ${specialtyColor.button}`}
-            >
-              Agendar Cita
-            </button>
-            <Link
-              href={`/perfil?id=${doctor.id}`}
-              className={`flex-1 inline-flex items-center justify-center gap-1.5 rounded-[var(--radius-button)] border border-border px-3 py-2 text-xs font-semibold text-text-muted transition-all hover:border-primary/50 hover:text-primary active:scale-[0.98]`}
-            >
-              <Calendar className="h-3.5 w-3.5" aria-hidden="true" />
-              Ver Perfil
-            </Link>
+          <h3 className="text-lg font-bold text-text mb-1.5">{doctor.name}</h3>
+
+          <span className={`inline-flex items-center rounded-[var(--radius-pill)] px-3 py-1 text-xs font-semibold transition-colors duration-300 transition-premium ${style.badgeClass}`}>
+            {doctor.specialty}
+          </span>
+
+          <div className="mt-4 w-full space-y-2">
+            {/* Ubicación */}
+            <div className="flex items-center justify-center gap-1.5 text-sm text-text-muted">
+              <MapPin className="h-4 w-4 shrink-0 text-text-muted/60" aria-hidden="true" />
+              <span>{doctor.location}</span>
+            </div>
+
+            {/* Disponibilidad */}
+            <AvailabilityIndicator status={doctor.availability || 'available'} />
+
+            {/* Experiencia */}
+            <p className="text-xs text-text-muted">
+              {doctor.experience} años de experiencia
+            </p>
           </div>
-        </Card>
-      </motion.article>
-    </>
+        </div>
+
+        {/* Botón inferior */}
+        <div className="mt-auto border-t border-border p-4">
+          <Link
+            href={`/perfil?id=${doctor.id}`}
+            className={`inline-flex w-full items-center justify-center gap-2 rounded-[var(--radius-button)] px-5 py-2.5 text-sm font-semibold text-white shadow-md transition-all duration-300 transition-premium hover:shadow-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 active:scale-[0.98] ${style.buttonClass}`}
+          >
+            <Calendar className="h-4 w-4" aria-hidden="true" />
+            View Profile
+          </Link>
+        </div>
+      </Card>
+    </motion.article>
   );
 }
