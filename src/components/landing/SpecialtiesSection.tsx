@@ -95,7 +95,7 @@ export default function SpecialtiesSection() {
                     className="group flex flex-col items-center rounded-[var(--radius-card)] border border-border bg-white p-6 text-center shadow-sm transition-all duration-300 hover:border-primary/30 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary h-full"
                   >
                     <div className="flex h-14 w-14 items-center justify-center rounded-[var(--radius-card)] bg-secondary text-primary transition-colors group-hover:bg-primary group-hover:text-white">
-                      <Icon className="h-7 w-7" strokeWidth={1.5} aria-hidden="true" />
+                      <Icon className="h-7 w-7" strokeWidth={1.5} aria-hidden="true" suppressHydrationWarning />
                     </div>
                     <span className="mt-4 text-sm font-semibold leading-snug text-text md:text-base line-clamp-2">
                       {spec.name}
