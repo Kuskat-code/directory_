@@ -209,7 +209,7 @@ export default function OrienteMapSection() {
                       id={id}
                       d={path.d}
                       fill="currentColor"
-                      className={getPathClass(isHovered, isSelected)}
+                      className={`${getPathClass(isHovered, isSelected)} [transform-box:fill-box] [transform-origin:center]`}
                       stroke={isActive ? '#1E40AF' : 'transparent'}
                       strokeWidth={isActive ? 1.5 : 0}
                       filter={isHovered ? 'url(#oriente-dept-glow)' : undefined}
@@ -221,9 +221,9 @@ export default function OrienteMapSection() {
                         scale: isHovered ? 1.04 : isSelected ? 1.02 : 1,
                       }}
                       transition={{ duration: 0.3, ease: EASE }}
-                      style={{ transformBox: 'fill-box', transformOrigin: 'center' }}
                       onMouseEnter={() => handlePathEnter(id)}
                       onMouseLeave={handlePathLeave}
+                      suppressHydrationWarning
                       onFocus={() => {
                         setFocusedId(id);
                         updateTooltip(id);
