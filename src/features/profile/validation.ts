@@ -57,9 +57,15 @@ export const updateAvatarSchema = z.object({
   avatar: z.string().min(1, 'La imagen es requerida'),
 });
 
+export const updateCoverImageSchema = z.object({
+  doctorId: z.string().min(1),
+  coverImage: z.string().min(1, 'La imagen de portada es requerida'),
+});
+
 export type UpdateBasicInfoInput = z.infer<typeof updateBasicInfoSchema>;
 export type UpdateSummaryInput = z.infer<typeof updateSummarySchema>;
 export type UpdateScheduleInput = z.infer<typeof updateScheduleSchema>;
 export type UpdateServicesInput = z.infer<typeof updateServicesSchema>;
 export type UpdateGalleryInput = z.infer<typeof updateGallerySchema>;
 export type UpdateAvatarInput = z.infer<typeof updateAvatarSchema>;
+export type UpdateCoverImageInput = z.infer<typeof updateCoverImageSchema>;

@@ -110,7 +110,7 @@ function FeatureItem({ feature }: { feature: PlanFeature }) {
   const { Icon, text } = feature;
   return (
     <li className="flex items-start gap-3">
-      <Icon className="mt-0.5 h-4 w-4 shrink-0 text-slate-400" aria-hidden="true" />
+      <Icon className="mt-0.5 h-4 w-4 shrink-0 text-slate-400" aria-hidden="true" suppressHydrationWarning />
       <span className="text-sm text-slate-600">{text}</span>
     </li>
   );

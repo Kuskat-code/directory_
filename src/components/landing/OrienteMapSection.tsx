@@ -49,7 +49,7 @@ function DepartmentPanel({ department }: DepartmentPanelProps) {
       className="flex h-full flex-col rounded-[var(--radius-card)] border border-border/60 bg-white p-6 shadow-[0_20px_50px_-24px_rgba(15,23,42,0.35)] md:p-8"
     >
       <div className="mb-6 inline-flex w-fit items-center gap-2 rounded-full bg-primary/8 px-3 py-1.5 text-xs font-semibold uppercase tracking-wide text-primary">
-        <MapPin className="h-3.5 w-3.5" aria-hidden="true" />
+        <MapPin className="h-3.5 w-3.5" aria-hidden="true" suppressHydrationWarning />
         Región Oriente
       </div>
 
@@ -68,7 +68,7 @@ function DepartmentPanel({ department }: DepartmentPanelProps) {
               key={specialty}
               className="flex items-center gap-2.5 rounded-[var(--radius-button)] bg-secondary/70 px-3 py-2.5 text-sm font-medium text-text"
             >
-              <Stethoscope className="h-4 w-4 shrink-0 text-primary" aria-hidden="true" />
+              <Stethoscope className="h-4 w-4 shrink-0 text-primary" aria-hidden="true" suppressHydrationWarning />
               {specialty}
             </li>
           ))}
@@ -81,7 +81,7 @@ function DepartmentPanel({ department }: DepartmentPanelProps) {
           className="inline-flex w-full items-center justify-center gap-2 rounded-[var(--radius-button)] bg-primary px-6 py-3 text-base font-semibold text-white shadow-md transition-all duration-300 hover:bg-primary-dark hover:shadow-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 active:scale-[0.98]"
         >
           Ver especialistas
-          <ArrowRight className="h-4 w-4" aria-hidden="true" />
+          <ArrowRight className="h-4 w-4" aria-hidden="true" suppressHydrationWarning />
         </Link>
       </div>
     </motion.div>
@@ -182,6 +182,7 @@ export default function OrienteMapSection() {
                 overflow="visible"
                 role="img"
                 aria-label="Mapa interactivo de la región Oriente de El Salvador"
+                suppressHydrationWarning
               >
                 <defs>
                   <filter id="oriente-dept-glow" x="-50%" y="-50%" width="200%" height="200%">

@@ -207,10 +207,10 @@ export default function NewsCarousel() {
           {/* Arrows — top right, aligned with header */}
           <div className="flex shrink-0 items-center gap-2">
             <NavButton onClick={() => go(-1)} label="Página anterior" disabled={page === 0}>
-              <ChevronLeft className="h-4 w-4" />
+              <ChevronLeft className="h-4 w-4" suppressHydrationWarning />
             </NavButton>
             <NavButton onClick={() => go(1)} label="Página siguiente" disabled={page === TOTAL_PAGES - 1}>
-              <ChevronRight className="h-4 w-4" />
+              <ChevronRight className="h-4 w-4" suppressHydrationWarning />
             </NavButton>
           </div>
         </motion.div>

@@ -8,7 +8,7 @@ const EASE = [0.4, 0, 0.2, 1] as const;
 
 function DirectoryIcon() {
   return (
-    <svg viewBox="0 0 64 64" fill="none" className="h-14 w-14" aria-hidden="true">
+    <svg viewBox="0 0 64 64" fill="none" className="h-14 w-14" aria-hidden="true" suppressHydrationWarning>
       <rect x="8" y="12" width="48" height="40" rx="8" className="fill-secondary stroke-primary" strokeWidth="2" />
       <circle cx="24" cy="28" r="6" className="fill-primary/20 stroke-primary" strokeWidth="2" />
       <path d="M36 26h16M36 32h12M36 38h14" className="stroke-primary" strokeWidth="2" strokeLinecap="round" />
@@ -19,7 +19,7 @@ function DirectoryIcon() {
 
 function SearchIcon() {
   return (
-    <svg viewBox="0 0 64 64" fill="none" className="h-14 w-14" aria-hidden="true">
+    <svg viewBox="0 0 64 64" fill="none" className="h-14 w-14" aria-hidden="true" suppressHydrationWarning>
       <circle cx="28" cy="28" r="16" className="fill-secondary stroke-primary" strokeWidth="2" />
       <path d="M40 40l14 14" className="stroke-accent" strokeWidth="3" strokeLinecap="round" />
       <path d="M22 28h12M28 22v12" className="stroke-primary" strokeWidth="2" strokeLinecap="round" />
@@ -29,7 +29,7 @@ function SearchIcon() {
 
 function TrustIcon() {
   return (
-    <svg viewBox="0 0 64 64" fill="none" className="h-14 w-14" aria-hidden="true">
+    <svg viewBox="0 0 64 64" fill="none" className="h-14 w-14" aria-hidden="true" suppressHydrationWarning>
       <path d="M32 8l20 8v16c0 12-8 22-20 24-12-2-20-12-20-24V16l20-8z" className="fill-secondary stroke-primary" strokeWidth="2" />
       <path d="M24 32l6 6 12-14" className="stroke-success" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
     </svg>

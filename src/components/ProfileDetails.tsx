@@ -45,6 +45,22 @@ export default function ProfileDetails({
   onChange,
 }: ProfileDetailsProps) {
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
+  const [languagesText, setLanguagesText] = useState(() => profile.languages.join(', '));
+
+  // Sincronizar idiomas si cambian externamente
+  useEffect(() => {
+    const parsedCurrent = languagesText
+      .split(',')
+      .map((l) => l.trim())
+      .filter(Boolean);
+    const hasChanged =
+      parsedCurrent.length !== profile.languages.length ||
+      parsedCurrent.some((val, idx) => val !== profile.languages[idx]);
+
+    if (hasChanged) {
+      setLanguagesText(profile.languages.join(', '));
+    }
+  }, [profile.languages]);
 
   const closeLightbox = useCallback(() => setLightboxIndex(null), []);
 
@@ -142,17 +158,19 @@ export default function ProfileDetails({
               </label>
               <input
                 type="text"
-                value={profile.languages.join(', ')}
-                onChange={(e) =>
+                value={languagesText}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  setLanguagesText(val);
                   onChange({
-                    languages: e.target.value
+                    languages: val
                       .split(',')
                       .map((l) => l.trim())
                       .filter(Boolean),
-                  })
-                }
+                  });
+                }}
                 className="profile-input"
-                placeholder="Espanol, Ingles"
+                placeholder="Español, Inglés"
               />
             </div>
           </div>

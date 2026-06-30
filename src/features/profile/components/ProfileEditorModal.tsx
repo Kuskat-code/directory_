@@ -423,6 +423,23 @@ function ResumenTab({
   draft: EditableProfile;
   onChange: (u: Partial<EditableProfile>) => void;
 }) {
+  const [languagesText, setLanguagesText] = useState(() => draft.languages.join(', '));
+
+  // Sincronizar idiomas si cambian externamente
+  useEffect(() => {
+    const parsedCurrent = languagesText
+      .split(',')
+      .map((l) => l.trim())
+      .filter(Boolean);
+    const hasChanged =
+      parsedCurrent.length !== draft.languages.length ||
+      parsedCurrent.some((val, idx) => val !== draft.languages[idx]);
+
+    if (hasChanged) {
+      setLanguagesText(draft.languages.join(', '));
+    }
+  }, [draft.languages]);
+
   return (
     <Card>
       <div className="space-y-4">
@@ -443,15 +460,17 @@ function ResumenTab({
         <Field label="Idiomas hablados">
           <input
             type="text"
-            value={draft.languages.join(', ')}
-            onChange={(e) =>
+            value={languagesText}
+            onChange={(e) => {
+              const val = e.target.value;
+              setLanguagesText(val);
               onChange({
-                languages: e.target.value
+                languages: val
                   .split(',')
                   .map((l) => l.trim())
                   .filter(Boolean),
-              })
-            }
+              });
+            }}
             className="profile-input"
             placeholder="Español, Inglés, Francés…"
           />
