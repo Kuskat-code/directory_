@@ -594,8 +594,22 @@ export async function signUpAction(input: {
   email: string;
   password: string;
   role?: 'paciente' | 'doctor';
+  captchaToken?: string;
 }): Promise<ActionResponse<{ userId: string }>> {
   try {
+    console.log('--- SIGNUP ACTION RECEIVED ---');
+    console.log('Email:', input.email);
+    console.log('Captcha Token:', input.captchaToken ? `${input.captchaToken.slice(0, 15)}...` : 'undefined');
+
+    // Si Turnstile está activo en el proyecto, el token es obligatorio
+    if (!input.captchaToken) {
+      console.error('Validation Error: captchaToken is missing');
+      return { 
+        success: false, 
+        error: 'Falta el token de verificación de seguridad (Captcha). Por favor, asegúrese de completar el captcha en el formulario antes de enviar.' 
+      };
+    }
+
     const supabase = await createClient();
     
     const targetRole = input.role || 'doctor';
@@ -608,6 +622,7 @@ export async function signUpAction(input: {
           name: input.name,
           role: targetRole,
         },
+        captchaToken: input.captchaToken,
       },
     });
 
