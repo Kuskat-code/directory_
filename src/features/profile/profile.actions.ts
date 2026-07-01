@@ -766,14 +766,7 @@ export async function signUpAction(input: unknown): Promise<ActionResponse<{ use
       return { success: false, error: result.error.issues[0]?.message ?? 'Datos inválidos' };
     }
 
-    // Si Turnstile está activo en el proyecto, el token es obligatorio
-    if (!result.data.captchaToken) {
-      console.error('Validation Error: captchaToken is missing');
-      return { 
-        success: false, 
-        error: 'Falta el token de verificación de seguridad (Captcha). Por favor, asegúrese de completar el captcha en el formulario antes de enviar.' 
-      };
-    }
+    // Dejamos que Supabase valide si el token es requerido según la configuración del proyecto
 
     const supabase = await createClient();
     const targetRole = result.data.role;
