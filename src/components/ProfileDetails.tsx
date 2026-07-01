@@ -275,7 +275,7 @@ export default function ProfileDetails({
         className={sectionClass(isEditing)}
       >
         <div className="mb-4 flex items-center justify-between">
-          <h2 className="text-base font-bold text-text tracking-tight">Galeria Profesional</h2>
+          <h2 className="text-base font-bold text-text tracking-tight">Galería Profesional</h2>
           {isEditing && onChange && (
             <div>
               <Button
@@ -283,7 +283,7 @@ export default function ProfileDetails({
                 variant="ghost"
                 size="sm"
                 onClick={() => fileInputRef.current?.click()}
-                disabled={profile.planType !== 'premium' && profile.galleryImages.length >= 3}
+                disabled={profile.planType !== 'premium' && profile.planType !== 'enterprise' && profile.galleryImages.length >= 3}
               >
                 <Plus className="h-4 w-4" />
                 Agregar foto

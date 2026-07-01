@@ -40,17 +40,17 @@ const features = [
   {
     icon: DirectoryIcon,
     title: 'Directorio verificado',
-    desc: 'Accede a cientos de medicos certificados en todas las especialidades de El Salvador.',
+    desc: 'Accede a cientos de médicos certificados en todas las especialidades de El Salvador.',
   },
   {
     icon: SearchIcon,
-    title: 'Busqueda inteligente',
-    desc: 'Filtra por especialidad, ubicacion y valoraciones para encontrar al especialista ideal.',
+    title: 'Búsqueda inteligente',
+    desc: 'Filtra por especialidad, ubicación y valoraciones para encontrar al especialista ideal.',
   },
   {
     icon: TrustIcon,
     title: 'Confianza garantizada',
-    desc: 'Resenas autenticas, perfiles completos y disponibilidad en tiempo real para decidir con seguridad.',
+    desc: 'Reseñas auténticas, perfiles completos y disponibilidad en tiempo real para decidir con seguridad.',
   },
 ];
 
@@ -76,10 +76,10 @@ export default function FeaturesSection() {
           className="mx-auto mb-14 max-w-2xl text-center"
         >
           <h2 id="features-heading" className="text-heading font-bold text-text">
-            Salud de confianza, tecnologia moderna
+            Salud de confianza, tecnología moderna
           </h2>
           <p className="text-subheading mt-4 text-text-muted">
-            La plataforma medica mas completa de El Salvador, disenada para pacientes exigentes y profesionales de excelencia.
+            La plataforma médica más completa de El Salvador, diseñada para pacientes exigentes y profesionales de excelencia.
           </p>
         </motion.div>
 

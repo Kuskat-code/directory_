@@ -544,6 +544,7 @@ export async function getDoctorsList(): Promise<ActionResponse<Doctor[]>> {
       bio,
       lenguajes,
       imagen_portada,
+      tipo_plan,
       usuarios (
         nombre,
         correo,
@@ -581,6 +582,7 @@ export async function getDoctorsList(): Promise<ActionResponse<Doctor[]>> {
       bio: d.bio || undefined,
       certifications: undefined,
       languages: d.lenguajes || undefined,
+      isPremium: d.tipo_plan === 'premium' || d.tipo_plan === 'enterprise',
     };
   });
 
@@ -593,52 +595,64 @@ export async function signUpAction(input: {
   password: string;
   role?: 'paciente' | 'doctor';
 }): Promise<ActionResponse<{ userId: string }>> {
-  const supabase = await createClient();
-  
-  const targetRole = input.role || 'doctor';
-  
-  const { data, error } = await supabase.auth.signUp({
-    email: input.email,
-    password: input.password,
-    options: {
-      data: {
-        name: input.name,
-        role: targetRole,
+  try {
+    const supabase = await createClient();
+    
+    const targetRole = input.role || 'doctor';
+    
+    const { data, error } = await supabase.auth.signUp({
+      email: input.email,
+      password: input.password,
+      options: {
+        data: {
+          name: input.name,
+          role: targetRole,
+        },
       },
-    },
-  });
+    });
 
-  if (error) {
-    return { success: false, error: error.message };
+    if (error) {
+      return { success: false, error: error.message };
+    }
+
+    if (!data.user) {
+      return { success: false, error: 'Error al registrar el usuario' };
+    }
+
+    return { success: true, data: { userId: data.user.id } };
+  } catch (err) {
+    console.error('Error in signUpAction:', err);
+    const message = err instanceof Error ? err.message : 'Error interno al registrar el usuario.';
+    return { success: false, error: message };
   }
-
-  if (!data.user) {
-    return { success: false, error: 'Error al registrar el usuario' };
-  }
-
-  return { success: true, data: { userId: data.user.id } };
 }
 
 export async function signInAction(input: {
   email: string;
   password: string;
 }): Promise<ActionResponse<{ userId: string }>> {
-  const supabase = await createClient();
-  
-  const { data, error } = await supabase.auth.signInWithPassword({
-    email: input.email,
-    password: input.password,
-  });
+  try {
+    const supabase = await createClient();
+    
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email: input.email,
+      password: input.password,
+    });
 
-  if (error) {
-    return { success: false, error: error.message };
+    if (error) {
+      return { success: false, error: error.message };
+    }
+
+    if (!data.user) {
+      return { success: false, error: 'Credenciales inválidas' };
+    }
+
+    return { success: true, data: { userId: data.user.id } };
+  } catch (err) {
+    console.error('Error in signInAction:', err);
+    const message = err instanceof Error ? err.message : 'Error interno al iniciar sesión.';
+    return { success: false, error: message };
   }
-
-  if (!data.user) {
-    return { success: false, error: 'Credenciales inválidas' };
-  }
-
-  return { success: true, data: { userId: data.user.id } };
 }
 
 export interface UserSessionData {

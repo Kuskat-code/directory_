@@ -518,7 +518,7 @@ function BannerTab({
   draft: EditableProfile;
   onChange: (u: Partial<EditableProfile>) => void;
 }) {
-  const isPremium = draft.planType === 'premium';
+  const isPremium = draft.planType === 'premium' || draft.planType === 'enterprise';
 
   if (!isPremium) {
     return (
@@ -583,7 +583,7 @@ function GaleriaTab({
   onChange: (u: Partial<EditableProfile>) => void;
 }) {
   const images = draft.galleryImages;
-  const isPremium = draft.planType === 'premium';
+  const isPremium = draft.planType === 'premium' || draft.planType === 'enterprise';
   const atLimit = isPremium ? images.length >= 12 : images.length >= FREE_GALLERY_LIMIT;
   const fileInputRef = useRef<HTMLInputElement>(null);
 

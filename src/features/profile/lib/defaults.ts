@@ -13,25 +13,25 @@ const DEFAULT_GALLERY = [
 const DEFAULT_SERVICES: ProfileService[] = [
   {
     title: 'Consulta Especializada',
-    desc: 'Atencion medica personalizada con enfasis en diagnostico preciso y plan de tratamiento integral.',
+    desc: 'Atención médica personalizada con énfasis en diagnóstico preciso y plan de tratamiento integral.',
   },
   {
-    title: 'Diagnostico Avanzado',
-    desc: 'Evaluacion completa utilizando tecnologia de punta para resultados precisos y confiables.',
+    title: 'Diagnóstico Avanzado',
+    desc: 'Evaluación completa utilizando tecnología de punta para resultados precisos y confiables.',
   },
   {
     title: 'Seguimiento Continuo',
-    desc: 'Monitoreo regular del progreso del tratamiento con ajustes personalizados segun sea necesario.',
+    desc: 'Monitoreo regular del progreso del tratamiento con ajustes personalizados según sea necesario.',
   },
   {
     title: 'Teleconsulta',
-    desc: 'Consultas virtuales para seguimiento y atencion primaria desde la comodidad de tu hogar.',
+    desc: 'Consultas virtuales para seguimiento y atención primaria desde la comodidad de tu hogar.',
   },
 ];
 
 const DEFAULT_SCHEDULE: ProfileScheduleItem[] = [
   { days: 'Lunes - Viernes', hours: '8:00 AM - 5:00 PM' },
-  { days: 'Sabado', hours: '8:00 AM - 12:00 PM' },
+  { days: 'Sábado', hours: '8:00 AM - 12:00 PM' },
   { days: 'Domingo', hours: 'Solo Emergencias', closed: true },
 ];
 

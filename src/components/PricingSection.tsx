@@ -135,10 +135,10 @@ export default function PricingSection() {
       {/* ── Header ─────────────────────────────────────────────────────────── */}
       <div className="relative z-10 mx-auto max-w-2xl text-center">
         <h2 id="pricing-title" className="text-4xl font-bold text-slate-900">
-          Planes para cada etapa de tu practica
+          Planes para cada etapa de tu práctica
         </h2>
         <p className="mt-4 text-lg text-slate-500">
-          Desde consultorios individuales hasta centros medicos. Escala tu
+          Desde consultorios individuales hasta centros médicos. Escala tu
           presencia digital con confianza.
         </p>
 
@@ -146,7 +146,7 @@ export default function PricingSection() {
         <div
           className="mt-8 inline-flex rounded-full bg-slate-100 p-1"
           role="group"
-          aria-label="Periodo de facturacion"
+          aria-label="Periodo de facturación"
         >
           <button
             type="button"

@@ -94,7 +94,7 @@ export default function Header() {
         hasSolidBg ? 'bg-white/95 shadow-md backdrop-blur-md' : 'bg-transparent shadow-none',
       ].join(' ')}
     >
-      <nav aria-label="Navegacion principal">
+      <nav aria-label="Navegación principal">
         <div className="relative mx-auto flex h-16 max-w-7xl items-center justify-center px-6 md:h-20">
           <ul className="hidden items-center gap-8 md:flex lg:gap-10">
             {navLinks.map((link) => {
