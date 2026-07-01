@@ -1,7 +1,7 @@
 'use client';
 
-import { useCallback, useEffect, useRef, useState, useTransition } from 'react';
-import type { EditableProfile } from '../types';
+import { useCallback, useEffect, useState, useTransition } from 'react';
+import type { ActionResponse, EditableProfile } from '../types';
 import { PROFILE_STORAGE_KEY } from '../lib/defaults';
 import {
   updateBasicInfo,
@@ -20,19 +20,17 @@ export function useProfileEditor(doctorId: string, defaults: EditableProfile) {
   const [profile, setProfile] = useState(defaults);
   const [draft, setDraft] = useState(defaults);
   const [isEditing, setIsEditing] = useState(false);
-  const [isLoaded, setIsLoaded] = useState(false);
+  const [loadedDoctorId, setLoadedDoctorId] = useState<string | null>(null);
   const [saveStatus, setSaveStatus] = useState<SaveStatus>('idle');
   const [saveError, setSaveError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
-  const defaultsRef = useRef(defaults);
-  defaultsRef.current = defaults;
+  const isLoaded = loadedDoctorId === doctorId;
 
   useEffect(() => {
     let active = true;
-    setIsLoaded(false);
 
     async function loadProfile() {
-      const base = defaultsRef.current;
+      const base = defaults;
       let dbProfile: Partial<EditableProfile> | null = null;
 
       try {
@@ -63,7 +61,7 @@ export function useProfileEditor(doctorId: string, defaults: EditableProfile) {
         setProfile(base);
         setDraft(base);
       } finally {
-        setIsLoaded(true);
+        setLoadedDoctorId(doctorId);
         setIsEditing(false);
       }
     }
@@ -73,7 +71,7 @@ export function useProfileEditor(doctorId: string, defaults: EditableProfile) {
     return () => {
       active = false;
     };
-  }, [doctorId]);
+  }, [doctorId, defaults]);
 
   const startEditing = useCallback(() => {
     setDraft(profile);
@@ -94,7 +92,7 @@ export function useProfileEditor(doctorId: string, defaults: EditableProfile) {
     setSaveError(null);
 
     startTransition(async () => {
-      const promises: Promise<any>[] = [];
+      const promises: Promise<ActionResponse<unknown>>[] = [];
 
       // 1. Verificar si la información básica cambió
       const basicInfoChanged =
@@ -181,9 +179,19 @@ export function useProfileEditor(doctorId: string, defaults: EditableProfile) {
 
       const results = await Promise.allSettled(promises);
 
+      const firstRejected = results.find((result) => result.status === 'rejected');
+      if (firstRejected?.status === 'rejected') {
+        setSaveStatus('error');
+        setSaveError(firstRejected.reason instanceof Error ? firstRejected.reason.message : 'Error al guardar el perfil.');
+        return;
+      }
+
       const firstError = results.find(
-        (r): r is PromiseFulfilledResult<{ success: false; error: string }> =>
-          r.status === 'fulfilled' && !r.value.success,
+        (
+          result,
+        ): result is PromiseFulfilledResult<
+          Extract<ActionResponse<unknown>, { success: false }>
+        > => result.status === 'fulfilled' && !result.value.success,
       );
 
       if (firstError) {
@@ -197,10 +205,21 @@ export function useProfileEditor(doctorId: string, defaults: EditableProfile) {
       results.forEach((r) => {
         if (r.status === 'fulfilled' && r.value.success && r.value.data) {
           const resData = r.value.data;
-          // Actualizar en el draft local las URLs de imágenes devueltas por el servidor
-          if ('avatar' in resData) finalDraft.avatar = resData.avatar;
-          if ('coverImage' in resData) finalDraft.coverImage = resData.coverImage;
-          if ('galleryImages' in resData) finalDraft.galleryImages = resData.galleryImages;
+          if (typeof resData !== 'object' || resData === null) return;
+
+          if ('avatar' in resData && typeof resData.avatar === 'string') {
+            finalDraft.avatar = resData.avatar;
+          }
+          if ('coverImage' in resData && typeof resData.coverImage === 'string') {
+            finalDraft.coverImage = resData.coverImage;
+          }
+          if (
+            'galleryImages' in resData &&
+            Array.isArray(resData.galleryImages) &&
+            resData.galleryImages.every((image) => typeof image === 'string')
+          ) {
+            finalDraft.galleryImages = resData.galleryImages;
+          }
         }
       });
 

@@ -19,7 +19,6 @@ interface ProfileHeroProps {
 
 export default function ProfileHero({
   profile,
-  doctor,
   isEditing = false,
   onChange,
 }: ProfileHeroProps) {

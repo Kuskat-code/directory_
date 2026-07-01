@@ -2,7 +2,6 @@
 
 import Link from 'next/link';
 import Image from 'next/image';
-import { motion } from 'framer-motion';
 import { Calendar, MapPin, Crown } from 'lucide-react';
 import type { Doctor, DoctorAvailability } from '@/src/lib/constants';
 import { Card } from '@/src/components/ui/Card';
@@ -11,8 +10,6 @@ interface Props {
   doctor: Doctor;
   index?: number;
 }
-
-const EASE = [0.4, 0, 0.2, 1] as const;
 
 interface SpecialtyStyle {
   bgGradient: string;
@@ -83,18 +80,11 @@ export default function DoctorCard({ doctor, index = 0 }: Props) {
   const style = SPECIALTY_STYLES[doctor.specialty] ?? DEFAULT_STYLE;
 
   return (
-    <motion.article
-      initial={{ opacity: 0, y: 28 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: '-40px' }}
-      transition={{ duration: 0.45, delay: index * 0.06, ease: EASE }}
-      whileHover={{ y: -6, scale: 1.01 }}
-      className="group h-full"
-    >
+    <article className="group h-full">
       <Card
         hoverable
         padding="none"
-        className="flex h-full flex-col overflow-hidden transition-shadow duration-300 transition-premium group-hover:shadow-glow bg-white"
+        className="flex h-full flex-col overflow-hidden bg-white transition-[box-shadow,transform] duration-300 transition-premium group-hover:-translate-y-1 group-hover:shadow-glow"
       >
         {/* Cabecera superior de la Card */}
         <div className="h-28 w-full relative overflow-hidden">
@@ -104,10 +94,13 @@ export default function DoctorCard({ doctor, index = 0 }: Props) {
             </div>
           )}
           {doctor.coverImage ? (
-            <img
+            <Image
               src={doctor.coverImage}
               alt=""
-              className="h-full w-full object-cover"
+              fill
+              sizes="(min-width: 1280px) 31vw, (min-width: 768px) 45vw, 92vw"
+              className="object-cover"
+              priority={index < 3}
             />
           ) : (
             <div className={`h-full w-full bg-gradient-to-br ${style.bgGradient}`} />
@@ -161,10 +154,10 @@ export default function DoctorCard({ doctor, index = 0 }: Props) {
             className={`inline-flex w-full items-center justify-center gap-2 rounded-[var(--radius-button)] px-5 py-2.5 text-sm font-semibold text-white shadow-md transition-all duration-300 transition-premium hover:shadow-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 active:scale-[0.98] ${style.buttonClass}`}
           >
             <Calendar className="h-4 w-4" aria-hidden="true" suppressHydrationWarning />
-            View Profile
+            Ver perfil
           </Link>
         </div>
       </Card>
-    </motion.article>
+    </article>
   );
 }

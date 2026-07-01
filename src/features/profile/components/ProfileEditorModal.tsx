@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
+import Image from 'next/image';
 import { AnimatePresence, motion } from 'framer-motion';
 import {
   Briefcase,
@@ -23,12 +24,16 @@ import type { EditableProfile, ProfileService, SpecialtyColorScheme } from '../t
 import { ImageUploader } from './ImageUploader';
 import { HoursSection } from './hours-section';
 import { getSpecialtyColors } from '../specialty-colors';
+import {
+  ACCEPTED_IMAGE_MIME_TYPES,
+  FREE_GALLERY_LIMIT,
+  MAX_GALLERY_IMAGES,
+  MAX_IMAGE_BYTES,
+  isAcceptedImageMimeType,
+} from '../validation';
 import { MEDICAL_SPECIALTIES, EL_SALVADOR_DEPARTMENTS_ORIENTE } from '@/src/lib/constants';
 
-const FREE_GALLERY_LIMIT = 3;
 const EASE = [0.4, 0, 0.2, 1] as const;
-const FALLBACK_IMG =
-  'https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?q=80&w=400';
 
 export type SaveStatus = 'idle' | 'saving' | 'saved' | 'error';
 
@@ -285,11 +290,16 @@ function PerfilTab({
       <Card>
         <Field label="Foto de perfil">
           <div className="flex items-center gap-4">
-            <img
-              src={draft.avatar}
-              alt="Foto de perfil actual"
-              className="h-14 w-14 rounded-full object-cover ring-2 ring-border"
-            />
+            <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-full ring-2 ring-border">
+              <Image
+                src={draft.avatar}
+                alt="Foto de perfil actual"
+                fill
+                sizes="56px"
+                className="object-cover"
+                unoptimized
+              />
+            </div>
             <ImageUploader
               value={draft.avatar}
               onChange={(avatar) => onChange({ avatar })}
@@ -428,22 +438,13 @@ function ResumenTab({
   draft: EditableProfile;
   onChange: (u: Partial<EditableProfile>) => void;
 }) {
-  const [languagesText, setLanguagesText] = useState(() => draft.languages.join(', '));
-
-  // Sincronizar idiomas si cambian externamente
-  useEffect(() => {
-    const parsedCurrent = languagesText
-      .split(',')
-      .map((l) => l.trim())
-      .filter(Boolean);
-    const hasChanged =
-      parsedCurrent.length !== draft.languages.length ||
-      parsedCurrent.some((val, idx) => val !== draft.languages[idx]);
-
-    if (hasChanged) {
-      setLanguagesText(draft.languages.join(', '));
-    }
-  }, [draft.languages]);
+  const languagesSource = draft.languages.join(', ');
+  const [languagesDraft, setLanguagesDraft] = useState(() => ({
+    source: languagesSource,
+    value: languagesSource,
+  }));
+  const languagesText =
+    languagesDraft.source === languagesSource ? languagesDraft.value : languagesSource;
 
   return (
     <Card>
@@ -468,7 +469,7 @@ function ResumenTab({
             value={languagesText}
             onChange={(e) => {
               const val = e.target.value;
-              setLanguagesText(val);
+              setLanguagesDraft({ source: languagesSource, value: val });
               onChange({
                 languages: val
                   .split(',')
@@ -549,11 +550,14 @@ function BannerTab({
         </div>
 
         {/* Banner preview */}
-        <div className="relative overflow-hidden rounded-[var(--radius-card)] border border-border/60">
-          <img
+        <div className="relative h-40 overflow-hidden rounded-[var(--radius-card)] border border-border/60">
+          <Image
             src={draft.coverImage}
             alt="Banner actual del perfil"
-            className="h-40 w-full object-cover"
+            fill
+            sizes="(min-width: 768px) 640px, 100vw"
+            className="object-cover"
+            unoptimized
           />
         </div>
 
@@ -584,17 +588,32 @@ function GaleriaTab({
 }) {
   const images = draft.galleryImages;
   const isPremium = draft.planType === 'premium' || draft.planType === 'enterprise';
-  const atLimit = isPremium ? images.length >= 12 : images.length >= FREE_GALLERY_LIMIT;
+  const atLimit = isPremium ? images.length >= MAX_GALLERY_IMAGES : images.length >= FREE_GALLERY_LIMIT;
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [fileError, setFileError] = useState<string | null>(null);
 
   const handleAddFile = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
+    setFileError(null);
+
+    if (!isAcceptedImageMimeType(file.type)) {
+      setFileError('Usa una imagen JPG, PNG, WebP o GIF.');
+      e.target.value = '';
+      return;
+    }
+
+    if (file.size > MAX_IMAGE_BYTES) {
+      setFileError('La imagen no puede superar 5 MB.');
+      e.target.value = '';
+      return;
+    }
 
     const reader = new FileReader();
     reader.onload = () => {
       onChange({ galleryImages: [...images, reader.result as string] });
     };
+    reader.onerror = () => setFileError('No se pudo leer la imagen.');
     reader.readAsDataURL(file);
     e.target.value = ''; // Reset input
   };
@@ -615,8 +634,8 @@ function GaleriaTab({
           <div>
             <h3 className="text-sm font-semibold text-text">Galería profesional</h3>
             <p className="text-[11px] text-text-muted">
-              {isPremium 
-                ? `${images.length} / 12 imágenes (Premium)` 
+              {isPremium
+                ? `${images.length} / ${MAX_GALLERY_IMAGES} imágenes (Premium)`
                 : `${images.length} / ${FREE_GALLERY_LIMIT} imágenes en versión gratuita`}
             </p>
           </div>
@@ -633,13 +652,14 @@ function GaleriaTab({
               <input
                 ref={fileInputRef}
                 type="file"
-                accept="image/*"
+                accept={ACCEPTED_IMAGE_MIME_TYPES.join(',')}
                 className="hidden"
                 onChange={handleAddFile}
               />
             </div>
           )}
         </div>
+        {fileError && <p className="mb-3 text-xs text-red-600">{fileError}</p>}
 
         {/* Image grid */}
         {images.length > 0 ? (
@@ -647,11 +667,13 @@ function GaleriaTab({
             {images.map((imgUrl, i) => (
               <div key={i} className="space-y-2">
                 <div className="relative aspect-[4/3] overflow-hidden rounded-[var(--radius-card)] border border-border/60 bg-secondary">
-                  <img
+                  <Image
                     src={imgUrl}
                     alt={`Foto profesional ${i + 1}`}
-                    className="h-full w-full object-cover"
-                    loading="lazy"
+                    fill
+                    sizes="(min-width: 768px) 200px, 33vw"
+                    className="object-cover"
+                    unoptimized
                   />
                   <button
                     type="button"

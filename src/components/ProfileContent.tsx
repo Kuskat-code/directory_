@@ -11,7 +11,10 @@ import ProfileSidebar from '@/src/components/ProfileSidebar';
 import { buildDefaultProfile } from '@/src/features/profile/lib/defaults';
 import { useProfileEditor } from '@/src/features/profile/hooks/use-profile-editor';
 import { ProfileEditorModal } from '@/src/features/profile/components/ProfileEditorModal';
-import { getCurrentUserSession } from '@/src/features/profile/profile.actions';
+import {
+  getCurrentUserSession,
+  type UserSessionData,
+} from '@/src/features/profile/profile.actions';
 
 const EASE = [0.4, 0, 0.2, 1] as const;
 
@@ -20,7 +23,7 @@ export default function ProfileContent() {
   const doctorId = searchParams.get('id') ?? '';
 
   // Auth State
-  const [currentUser, setCurrentUser] = useState<any>(null);
+  const [currentUser, setCurrentUser] = useState<UserSessionData | null>(null);
 
   useEffect(() => {
     async function loadUser() {

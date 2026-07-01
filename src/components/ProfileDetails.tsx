@@ -1,11 +1,19 @@
 'use client';
 
 import { useCallback, useEffect, useState, useRef } from 'react';
+import Image from 'next/image';
 import { AnimatePresence, motion } from 'framer-motion';
 import { ChevronLeft, ChevronRight, Plus, Trash2, X } from 'lucide-react';
 import type { Doctor } from '@/src/lib/constants';
 import type { EditableProfile, ProfileService } from '@/src/features/profile/types';
 import { ImageUploader } from '@/src/features/profile/components/ImageUploader';
+import {
+  ACCEPTED_IMAGE_MIME_TYPES,
+  FREE_GALLERY_LIMIT,
+  MAX_GALLERY_IMAGES,
+  MAX_IMAGE_BYTES,
+  isAcceptedImageMimeType,
+} from '@/src/features/profile/validation';
 import { Button } from '@/src/components/ui/Button';
 
 const EASE = [0.4, 0, 0.2, 1] as const;
@@ -40,41 +48,48 @@ interface ProfileDetailsProps {
 export default function ProfileDetails({
   profile,
   tags,
-  doctor,
   isEditing = false,
   onChange,
 }: ProfileDetailsProps) {
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
+  const [fileError, setFileError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const isPremium = profile.planType === 'premium' || profile.planType === 'enterprise';
+  const galleryLimit = isPremium ? MAX_GALLERY_IMAGES : FREE_GALLERY_LIMIT;
 
   const handleSelectFile = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
+    setFileError(null);
+
+    if (!isAcceptedImageMimeType(file.type)) {
+      setFileError('Usa una imagen JPG, PNG, WebP o GIF.');
+      e.target.value = '';
+      return;
+    }
+
+    if (file.size > MAX_IMAGE_BYTES) {
+      setFileError('La imagen no puede superar 5 MB.');
+      e.target.value = '';
+      return;
+    }
 
     const reader = new FileReader();
     reader.onload = () => {
       if (!onChange) return;
       onChange({ galleryImages: [...profile.galleryImages, reader.result as string] });
     };
+    reader.onerror = () => setFileError('No se pudo leer la imagen.');
     reader.readAsDataURL(file);
     e.target.value = ''; // Reset input
   };
-  const [languagesText, setLanguagesText] = useState(() => profile.languages.join(', '));
-
-  // Sincronizar idiomas si cambian externamente
-  useEffect(() => {
-    const parsedCurrent = languagesText
-      .split(',')
-      .map((l) => l.trim())
-      .filter(Boolean);
-    const hasChanged =
-      parsedCurrent.length !== profile.languages.length ||
-      parsedCurrent.some((val, idx) => val !== profile.languages[idx]);
-
-    if (hasChanged) {
-      setLanguagesText(profile.languages.join(', '));
-    }
-  }, [profile.languages]);
+  const languagesSource = profile.languages.join(', ');
+  const [languagesDraft, setLanguagesDraft] = useState(() => ({
+    source: languagesSource,
+    value: languagesSource,
+  }));
+  const languagesText =
+    languagesDraft.source === languagesSource ? languagesDraft.value : languagesSource;
 
   const closeLightbox = useCallback(() => setLightboxIndex(null), []);
 
@@ -165,7 +180,7 @@ export default function ProfileDetails({
                 value={languagesText}
                 onChange={(e) => {
                   const val = e.target.value;
-                  setLanguagesText(val);
+                  setLanguagesDraft({ source: languagesSource, value: val });
                   onChange({
                     languages: val
                       .split(',')
@@ -283,7 +298,7 @@ export default function ProfileDetails({
                 variant="ghost"
                 size="sm"
                 onClick={() => fileInputRef.current?.click()}
-                disabled={profile.planType !== 'premium' && profile.planType !== 'enterprise' && profile.galleryImages.length >= 3}
+                disabled={profile.galleryImages.length >= galleryLimit}
               >
                 <Plus className="h-4 w-4" />
                 Agregar foto
@@ -291,13 +306,14 @@ export default function ProfileDetails({
               <input
                 ref={fileInputRef}
                 type="file"
-                accept="image/*"
+                accept={ACCEPTED_IMAGE_MIME_TYPES.join(',')}
                 className="hidden"
                 onChange={handleSelectFile}
               />
             </div>
           )}
         </div>
+        {fileError && <p className="mb-3 text-xs text-red-600">{fileError}</p>}
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {profile.galleryImages.map((imgUrl, i) => (
             <motion.div
@@ -317,10 +333,13 @@ export default function ProfileDetails({
                 aria-label={`Ver imagen ${i + 1} en grande`}
                 tabIndex={isEditing ? -1 : 0}
               >
-                <img
+                <Image
                   src={imgUrl}
                   alt={`Instalacion profesional ${i + 1}`}
-                  className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                  fill
+                  sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
+                  className="object-cover transition-transform duration-300 group-hover:scale-105"
+                  unoptimized
                 />
                 {!isEditing && (
                   <span className="absolute inset-0 flex items-center justify-center bg-text/0 transition-colors duration-200 group-hover:bg-text/10" />

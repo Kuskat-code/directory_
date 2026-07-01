@@ -12,14 +12,19 @@ export const MEDICAL_SPECIALTIES = [
   'Cardiología',
   'Dermatología',
   'Pediatría',
+  'Ginecología',
+  'Odontología',
+  'Psicología',
   'Psiquiatría',
   'Neurología',
   'Oftalmología',
   'Otorrinolaringología',
   'Gastroenterología',
+  'Traumatología y Ortopedia',
   'Ortopedia',
-  'Ginecología',
   'Urología',
+  'Endocrinología',
+  'Nutrición',
 ];
 
 export const EL_SALVADOR_DEPARTMENTS_ORIENTE = [
