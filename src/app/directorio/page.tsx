@@ -4,7 +4,7 @@ import DirectorioContent from './DirectorioContent';
 import { getDoctorsList } from '@/src/features/profile/profile.actions';
 import { filterDoctors } from '@/src/features/directory/lib/directory-filters';
 import { getSiteUrl, jsonLd, siteConfig } from '@/src/lib/seo';
-import type { Doctor } from '@/src/lib/constants';
+import { type Doctor, EXAMPLE_DOCTORS } from '@/src/lib/constants';
 
 type SearchParams = Record<string, string | string[] | undefined>;
 
@@ -26,12 +26,21 @@ async function getDirectorySearchParams(searchParams?: Promise<SearchParams>) {
 }
 
 async function loadDirectoryDoctors(): Promise<{ doctors: Doctor[]; error: string | null }> {
-  const response = await getDoctorsList();
-  if (response.success) {
-    return { doctors: response.data, error: null };
+  try {
+    const response = await getDoctorsList();
+    if (response.success) {
+      return { doctors: response.data, error: null };
+    }
+    return {
+      doctors: EXAMPLE_DOCTORS,
+      error: 'error' in response ? response.error : 'No se pudo cargar el directorio desde la base de datos.'
+    };
+  } catch (err: unknown) {
+    return {
+      doctors: EXAMPLE_DOCTORS,
+      error: err instanceof Error ? err.message : 'Error de conexión con el servidor.'
+    };
   }
-
-  return { doctors: [], error: 'error' in response ? response.error : 'No se pudo cargar el directorio.' };
 }
 
 const getCachedDirectoryDoctors = unstable_cache(loadDirectoryDoctors, ['directory-doctors'], {

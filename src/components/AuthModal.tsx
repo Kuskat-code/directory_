@@ -137,9 +137,10 @@ export default function AuthModal() {
   return (
     <AnimatePresence>
       {isOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4">
           {/* Backdrop con Blur */}
           <motion.div
+            key="auth-backdrop"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -153,7 +154,7 @@ export default function AuthModal() {
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 16 }}
             transition={{ type: 'spring', duration: 0.5, bounce: 0.15 }}
-            className={`relative z-10 w-full max-h-[95vh] overflow-y-auto rounded-2xl bg-white p-6 sm:p-8 shadow-2xl border border-gray-100 flex flex-col transition-all duration-300 ${
+            className={`relative z-10 w-full max-h-[95vh] overflow-y-auto rounded-2xl bg-white p-5 sm:p-8 shadow-2xl border border-gray-100 flex flex-col transition-all duration-300 ${
               isRegister && !registerRole ? 'max-w-2xl' : 'max-w-md'
             }`}
           >
@@ -182,12 +183,12 @@ export default function AuthModal() {
 
             {isRegister && !registerRole ? (
               // ─── Selector de Roles para Registro ─────────────────────────────────
-              <div className="flex flex-col h-full">
-                <div className="mb-8 text-center mt-6 sm:mt-2">
+              <div className="flex flex-col">
+                <div className="mb-5 text-center mt-4 sm:mt-2">
                   <span className="text-sm font-semibold uppercase tracking-wider text-teal-600">
                     Directorio Médico
                   </span>
-                  <h2 className="text-3xl font-bold text-gray-900 mt-1">
+                  <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mt-1">
                     Crear Cuenta
                   </h2>
                   <p className="text-sm text-gray-500 mt-1.5">
@@ -200,12 +201,12 @@ export default function AuthModal() {
                   <button
                     type="button"
                     onClick={() => setRegisterRole('paciente')}
-                    className="flex flex-col items-center text-center p-5 sm:p-6 rounded-2xl border-2 border-gray-100 bg-gray-50/50 hover:bg-teal-50/10 hover:border-teal-500 hover:shadow-lg transition-all duration-300 group cursor-pointer"
+                    className="flex flex-col items-center text-center p-4 sm:p-6 rounded-2xl border-2 border-gray-100 bg-gray-50/50 hover:bg-teal-50/10 hover:border-teal-500 hover:shadow-lg transition-all duration-300 group cursor-pointer"
                   >
-                    <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-teal-50 text-teal-600 transition-all group-hover:bg-teal-600 group-hover:text-white mb-4 shadow-sm">
+                    <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-teal-50 text-teal-600 transition-all group-hover:bg-teal-600 group-hover:text-white mb-2 sm:mb-4 shadow-sm">
                       <User className="h-7 w-7" />
                     </div>
-                    <h3 className="text-lg font-bold text-gray-900 mb-2">Soy Paciente</h3>
+                    <h3 className="text-base sm:text-lg font-bold text-gray-900 mb-1 sm:mb-2">Soy Paciente</h3>
                     <p className="text-xs text-gray-500 leading-relaxed">
                       Busca especialistas certificados, agenda tus citas médicas y mantén tu historial en un solo lugar.
                     </p>
@@ -215,19 +216,19 @@ export default function AuthModal() {
                   <button
                     type="button"
                     onClick={() => setRegisterRole('doctor')}
-                    className="flex flex-col items-center text-center p-5 sm:p-6 rounded-2xl border-2 border-gray-100 bg-gray-50/50 hover:bg-teal-50/10 hover:border-teal-500 hover:shadow-lg transition-all duration-300 group cursor-pointer"
+                    className="flex flex-col items-center text-center p-4 sm:p-6 rounded-2xl border-2 border-gray-100 bg-gray-50/50 hover:bg-teal-50/10 hover:border-teal-500 hover:shadow-lg transition-all duration-300 group cursor-pointer"
                   >
-                    <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-teal-50 text-teal-600 transition-all group-hover:bg-teal-600 group-hover:text-white mb-4 shadow-sm">
+                    <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-teal-50 text-teal-600 transition-all group-hover:bg-teal-600 group-hover:text-white mb-2 sm:mb-4 shadow-sm">
                       <Stethoscope className="h-7 w-7" />
                     </div>
-                    <h3 className="text-lg font-bold text-gray-900 mb-2">Soy Médico</h3>
+                    <h3 className="text-base sm:text-lg font-bold text-gray-900 mb-1 sm:mb-2">Soy Médico</h3>
                     <p className="text-xs text-gray-500 leading-relaxed">
                       Crea tu perfil profesional, publica tu consultorio y conecta con miles de pacientes en El Salvador.
                     </p>
                   </button>
                 </div>
 
-                <div className="relative flex items-center justify-center my-6">
+                <div className="relative flex items-center justify-center my-4">
                   <div className="absolute inset-x-0 h-px bg-gray-100" />
                   <span className="relative bg-white px-3 text-xs text-gray-400 uppercase tracking-wider">O</span>
                 </div>
