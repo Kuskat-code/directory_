@@ -3,8 +3,9 @@
 import { useState, useTransition, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
+import dynamic from 'next/dynamic';
 import { X, Mail, Lock, User, Eye, EyeOff, Loader2, Stethoscope, ArrowLeft } from 'lucide-react';
-import Turnstile from 'react-turnstile';
+const Turnstile = dynamic(() => import('react-turnstile'), { ssr: false });
 import { signUpAction, signInAction, getCurrentUserSession } from '@/src/features/profile/profile.actions';
 
 export default function AuthModal() {
@@ -44,7 +45,9 @@ export default function AuthModal() {
     // Para cerrar, removemos el query param "auth"
     const params = new URLSearchParams(searchParams.toString());
     params.delete('auth');
-    router.replace(`?${params.toString()}`, { scroll: false });
+    const queryString = params.toString();
+    const targetUrl = window.location.pathname + (queryString ? `?${queryString}` : '');
+    router.replace(targetUrl, { scroll: false });
     // Resetear form
     setName('');
     setEmail('');
@@ -58,7 +61,9 @@ export default function AuthModal() {
   const switchMode = (mode: 'login' | 'register') => {
     const params = new URLSearchParams(searchParams.toString());
     params.set('auth', mode);
-    router.replace(`?${params.toString()}`, { scroll: false });
+    const queryString = params.toString();
+    const targetUrl = window.location.pathname + (queryString ? `?${queryString}` : '');
+    router.replace(targetUrl, { scroll: false });
     setError(null);
     setRegisterRole(null);
     setCaptchaToken(null);
