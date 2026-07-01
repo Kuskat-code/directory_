@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useEffect, useState, useSyncExternalStore } from 'react';
 import { createPortal } from 'react-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import {
@@ -35,6 +35,14 @@ const TIME_SLOTS = [
   '4:00 PM', '4:30 PM', '5:00 PM',
 ];
 
+function useIsMounted() {
+  return useSyncExternalStore(
+    () => () => undefined,
+    () => true,
+    () => false,
+  );
+}
+
 interface AppointmentModalProps {
   isOpen: boolean;
   doctorName: string;
@@ -58,11 +66,7 @@ export default function AppointmentModal({
   onClose,
   onConfirm,
 }: AppointmentModalProps) {
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
+  const mounted = useIsMounted();
 
   useEffect(() => {
     if (isOpen) {

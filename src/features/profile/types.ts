@@ -23,7 +23,7 @@ export interface EditableProfile {
   services: ProfileService[];
   schedule: ProfileScheduleItem[];
   galleryImages: string[];
-  planType?: 'free' | 'premium';
+  planType?: 'free' | 'premium' | 'enterprise';
 }
 
 export type ActionResponse<T = void> =

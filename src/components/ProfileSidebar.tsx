@@ -151,7 +151,7 @@ export default function ProfileSidebar({
         <div className="mb-4 flex items-center justify-between">
           <h2 className="flex items-center gap-2 text-sm font-bold text-text">
             <Clock className="h-4 w-4 text-primary" aria-hidden="true" />
-            Horario de Atencion
+            Horario de Atención
           </h2>
           {isEditing && onChange && (
             <button

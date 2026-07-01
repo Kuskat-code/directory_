@@ -2,8 +2,19 @@
 
 import { createClient } from '@/src/lib/supabase/server';
 import { publicSupabase } from '@/src/lib/supabase/public';
-import type { ActionResponse, EditableProfile } from './types';
+import type { Doctor } from '@/src/lib/constants';
+import type {
+  ActionResponse,
+  EditableProfile,
+  ProfileScheduleItem,
+  ProfileService,
+} from './types';
 import {
+  ACCEPTED_IMAGE_MIME_TYPES,
+  FREE_GALLERY_LIMIT,
+  MAX_GALLERY_IMAGES,
+  MAX_IMAGE_BYTES,
+  signUpSchema,
   updateBasicInfoSchema,
   updateSummarySchema,
   updateScheduleSchema,
@@ -20,7 +31,121 @@ import {
   type UpdateCoverImageInput,
 } from './validation';
 
-async function verifyOwnership(doctorId: string, supabase: any): Promise<string | null> {
+type ServerSupabaseClient = Awaited<ReturnType<typeof createClient>>;
+type AcceptedImageMimeType = (typeof ACCEPTED_IMAGE_MIME_TYPES)[number];
+type ApplicationRole = 'paciente' | 'doctor' | 'admin';
+type Relation<T> = T | T[] | null;
+
+interface BasicUserRelation {
+  nombre: string | null;
+  correo: string | null;
+}
+
+interface DoctorUserRelation extends BasicUserRelation {
+  avatar: string | null;
+}
+
+interface SpecialtyRelation {
+  categoria: string | null;
+}
+
+interface BasicInfoRow {
+  ubicacion: string | null;
+  experiencia: number | null;
+  telefono: string | null;
+  id_especialidad: number | null;
+  usuarios: Relation<BasicUserRelation>;
+}
+
+interface SummaryRow {
+  bio: string | null;
+  lenguajes: string[] | null;
+}
+
+interface DoctorProfileRow {
+  ubicacion: string | null;
+  experiencia: number | null;
+  telefono: string | null;
+  bio: string | null;
+  lenguajes: string[] | null;
+  servicios: ProfileService[] | null;
+  cronograma: ProfileScheduleItem[] | null;
+  galeria_imagenes: string[] | null;
+  imagen_portada: string | null;
+  tipo_plan: unknown;
+  usuarios: Relation<DoctorUserRelation>;
+  especialidades: Relation<SpecialtyRelation>;
+}
+
+interface DoctorListRow {
+  id: string;
+  ubicacion: string;
+  experiencia: number | null;
+  telefono: string | null;
+  bio: string | null;
+  lenguajes: string[] | null;
+  imagen_portada: string | null;
+  tipo_plan: string | null;
+  usuarios: Relation<DoctorUserRelation>;
+  especialidades: Relation<SpecialtyRelation>;
+}
+
+const ACCEPTED_IMAGE_MIME_SET = new Set<string>(ACCEPTED_IMAGE_MIME_TYPES);
+
+function getErrorMessage(error: unknown): string {
+  return error instanceof Error ? error.message : 'Error desconocido';
+}
+
+function normalizeImageMimeType(contentType: string): AcceptedImageMimeType | null {
+  const normalized = contentType === 'image/jpg' ? 'image/jpeg' : contentType;
+  return ACCEPTED_IMAGE_MIME_SET.has(normalized) ? (normalized as AcceptedImageMimeType) : null;
+}
+
+function getBase64DecodedSize(base64Data: string): number {
+  const padding = base64Data.endsWith('==') ? 2 : base64Data.endsWith('=') ? 1 : 0;
+  return Math.floor((base64Data.length * 3) / 4) - padding;
+}
+
+function hasAllowedImageSignature(buffer: Buffer, contentType: AcceptedImageMimeType): boolean {
+  switch (contentType) {
+    case 'image/jpeg':
+      return buffer.length >= 3 && buffer[0] === 0xff && buffer[1] === 0xd8 && buffer[2] === 0xff;
+    case 'image/png':
+      return buffer.subarray(0, 8).equals(Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]));
+    case 'image/webp':
+      return buffer.length >= 12 && buffer.subarray(0, 4).toString('ascii') === 'RIFF' && buffer.subarray(8, 12).toString('ascii') === 'WEBP';
+    case 'image/gif':
+      return buffer.subarray(0, 6).toString('ascii') === 'GIF87a' || buffer.subarray(0, 6).toString('ascii') === 'GIF89a';
+  }
+}
+
+function isPremiumPlan(planType: unknown): boolean {
+  return planType === 'premium' || planType === 'enterprise';
+}
+
+function toApplicationRole(value: unknown): ApplicationRole {
+  return value === 'doctor' || value === 'admin' ? value : 'paciente';
+}
+
+function toPlanType(value: unknown): EditableProfile['planType'] | undefined {
+  return value === 'free' || value === 'premium' || value === 'enterprise' ? value : undefined;
+}
+
+function firstRelation<T>(relation: Relation<T> | undefined): T | null {
+  if (Array.isArray(relation)) return relation[0] ?? null;
+  return relation ?? null;
+}
+
+function isHttpImageUrl(value: string): boolean {
+  try {
+    const url = new URL(value);
+    return url.protocol === 'http:' || url.protocol === 'https:';
+  } catch {
+    return false;
+  }
+}
+
+async function verifyOwnership(doctorId: string, supabase: ServerSupabaseClient): Promise<string | null> {
   const { data: { user }, error: authError } = await supabase.auth.getUser();
   if (authError || !user || user.id !== doctorId) {
     return 'Acceso no autorizado: Debes iniciar sesión y ser propietario de este perfil.';
@@ -29,25 +154,39 @@ async function verifyOwnership(doctorId: string, supabase: any): Promise<string 
 }
 
 async function uploadBase64Image(
-  supabase: any,
+  supabase: ServerSupabaseClient,
   base64String: string,
   bucketName: string,
   fileName: string
 ): Promise<string> {
-  // Check if it's actually a base64 string
-  const match = base64String.match(/^data:(image\/[a-zA-Z+.-]+);base64,(.+)$/);
+  const match = base64String.match(/^data:(image\/(?:jpeg|jpg|png|webp|gif));base64,([A-Za-z0-9+/]+={0,2})$/);
   if (!match) {
-    // If it's not a base64 string, assume it's already a URL
-    return base64String;
+    if (isHttpImageUrl(base64String)) {
+      return base64String;
+    }
+    throw new Error('Formato de imagen inválido.');
   }
 
-  const contentType = match[1];
-  const base64Data = match[2];
-  
-  // Convert base64 data to Buffer
-  const buffer = Buffer.from(base64Data, 'base64');
+  const contentType = normalizeImageMimeType(match[1]);
+  if (!contentType) {
+    throw new Error('Tipo de imagen no permitido.');
+  }
 
-  // Attempt to upload the file to storage
+  const base64Data = match[2];
+  if (base64Data.length % 4 !== 0) {
+    throw new Error('La imagen base64 está corrupta.');
+  }
+
+  const decodedSize = getBase64DecodedSize(base64Data);
+  if (decodedSize <= 0 || decodedSize > MAX_IMAGE_BYTES) {
+    throw new Error('La imagen excede el tamaño máximo de 5 MB.');
+  }
+
+  const buffer = Buffer.from(base64Data, 'base64');
+  if (buffer.byteLength > MAX_IMAGE_BYTES || !hasAllowedImageSignature(buffer, contentType)) {
+    throw new Error('El contenido del archivo no coincide con una imagen permitida.');
+  }
+
   const { error } = await supabase.storage
     .from(bucketName)
     .upload(fileName, buffer, {
@@ -59,7 +198,6 @@ async function uploadBase64Image(
     throw new Error(`Error al subir a storage: ${error.message}. Asegúrate de que el bucket "${bucketName}" exista en Supabase y tenga las políticas RLS correspondientes activadas.`);
   }
 
-  // Get public URL
   const { data: { publicUrl } } = supabase.storage
     .from(bucketName)
     .getPublicUrl(fileName);
@@ -98,16 +236,17 @@ export async function updateBasicInfo(
     return { success: false, error: 'No se pudo obtener el perfil actual para actualizar.' };
   }
 
-  const currentSpecialtyId = current.id_especialidad;
-  const currentUbicacion = current.ubicacion;
-  const currentExperiencia = current.experiencia;
-  const currentTelefono = current.telefono;
-  const userRelation = current.usuarios as any;
-  const currentNombre = Array.isArray(userRelation) ? userRelation[0]?.nombre : userRelation?.nombre;
-  const currentCorreo = Array.isArray(userRelation) ? userRelation[0]?.correo : userRelation?.correo;
+  const currentRow = current as BasicInfoRow;
+  const currentSpecialtyId = currentRow.id_especialidad;
+  const currentUbicacion = currentRow.ubicacion;
+  const currentExperiencia = currentRow.experiencia;
+  const currentTelefono = currentRow.telefono;
+  const userRelation = firstRelation(currentRow.usuarios);
+  const currentNombre = userRelation?.nombre;
+  const currentCorreo = userRelation?.correo;
 
   // 1. Actualizar usuarios si nombre o correo cambiaron
-  const userUpdates: Record<string, any> = {};
+  const userUpdates: Partial<{ nombre: string; correo: string }> = {};
   if (result.data.name !== currentNombre) userUpdates.nombre = result.data.name;
   if (result.data.email !== currentCorreo) userUpdates.correo = result.data.email;
 
@@ -145,7 +284,12 @@ export async function updateBasicInfo(
   }
 
   // 3. Actualizar doctores solo si los campos cambiaron
-  const doctorUpdates: Record<string, any> = {};
+  const doctorUpdates: Partial<{
+    id_especialidad: number | null;
+    ubicacion: string;
+    experiencia: number;
+    telefono: string;
+  }> = {};
   if (specialtyId !== currentSpecialtyId) doctorUpdates.id_especialidad = specialtyId;
   if (result.data.location !== currentUbicacion) doctorUpdates.ubicacion = result.data.location;
   if (result.data.experience !== currentExperiencia) doctorUpdates.experiencia = result.data.experience;
@@ -189,13 +333,14 @@ export async function updateSummary(
     return { success: false, error: 'No se pudo obtener el perfil actual.' };
   }
 
-  const summaryUpdates: Record<string, any> = {};
-  if (result.data.bio !== current.bio) summaryUpdates.bio = result.data.bio;
+  const currentRow = current as SummaryRow;
+  const summaryUpdates: Partial<{ bio: string; lenguajes: string[] }> = {};
+  if (result.data.bio !== currentRow.bio) summaryUpdates.bio = result.data.bio;
 
   const languagesChanged =
-    !current.lenguajes ||
-    result.data.languages.length !== current.lenguajes.length ||
-    result.data.languages.some((val, idx) => val !== current.lenguajes[idx]);
+    !currentRow.lenguajes ||
+    result.data.languages.length !== currentRow.lenguajes.length ||
+    result.data.languages.some((val, idx) => val !== currentRow.lenguajes?.[idx]);
 
   if (languagesChanged) summaryUpdates.lenguajes = result.data.languages;
 
@@ -309,12 +454,20 @@ export async function updateGallery(
 
   const { data: current, error: fetchErr } = await supabase
     .from('doctores')
-    .select('galeria_imagenes')
+    .select('galeria_imagenes, tipo_plan')
     .eq('id', result.data.doctorId)
     .single();
 
   if (fetchErr || !current) {
     return { success: false, error: 'No se pudo obtener la galería actual.' };
+  }
+
+  const maxImages = isPremiumPlan(current.tipo_plan) ? MAX_GALLERY_IMAGES : FREE_GALLERY_LIMIT;
+  if (result.data.galleryImages.length > maxImages) {
+    return {
+      success: false,
+      error: `Tu plan permite un máximo de ${maxImages} imágenes en la galería.`,
+    };
   }
 
   const uploadedUrls = await Promise.all(
@@ -335,14 +488,15 @@ export async function updateGallery(
       return img;
     })
   ).catch((err) => {
-    return err.message;
+    return getErrorMessage(err);
   });
 
   if (typeof uploadedUrls === 'string') {
     return { success: false, error: uploadedUrls };
   }
 
-  if (JSON.stringify(uploadedUrls) !== JSON.stringify(current.galeria_imagenes)) {
+  const currentGallery = current.galeria_imagenes ?? [];
+  if (JSON.stringify(uploadedUrls) !== JSON.stringify(currentGallery)) {
     const { error } = await supabase
       .from('doctores')
       .update({
@@ -391,8 +545,8 @@ export async function updateAvatar(
         'avatars',
         `avatar-${result.data.doctorId}-${Date.now()}`
       );
-    } catch (uploadError: any) {
-      return { success: false, error: 'Error al subir el avatar: ' + uploadError.message };
+    } catch (uploadError: unknown) {
+      return { success: false, error: 'Error al subir el avatar: ' + getErrorMessage(uploadError) };
     }
   }
 
@@ -428,7 +582,7 @@ export async function updateCoverImage(
 
   const { data: current, error: fetchErr } = await supabase
     .from('doctores')
-    .select('imagen_portada')
+    .select('imagen_portada, tipo_plan')
     .eq('id', result.data.doctorId)
     .single();
 
@@ -437,6 +591,13 @@ export async function updateCoverImage(
   }
 
   let coverUrl = result.data.coverImage;
+  if (coverUrl !== current.imagen_portada && !isPremiumPlan(current.tipo_plan)) {
+    return {
+      success: false,
+      error: 'La imagen de portada personalizada requiere un plan Premium o Enterprise.',
+    };
+  }
+
   if (coverUrl.startsWith('data:image/')) {
     try {
       coverUrl = await uploadBase64Image(
@@ -445,8 +606,8 @@ export async function updateCoverImage(
         'covers',
         `cover-${result.data.doctorId}-${Date.now()}`
       );
-    } catch (uploadError: any) {
-      return { success: false, error: 'Error al subir la imagen de portada: ' + uploadError.message };
+    } catch (uploadError: unknown) {
+      return { success: false, error: 'Error al subir la imagen de portada: ' + getErrorMessage(uploadError) };
     }
   }
 
@@ -507,33 +668,31 @@ export async function getDoctorProfile(
     return { success: true, data: null };
   }
 
-  const userData = data.usuarios as any;
-  const specialtyData = data.especialidades as any;
+  const profileRow = data as DoctorProfileRow;
+  const userData = firstRelation(profileRow.usuarios);
+  const specialtyData = firstRelation(profileRow.especialidades);
 
   const profile: Partial<EditableProfile> = {
     name: userData?.nombre || undefined,
     specialty: specialtyData?.categoria || undefined,
-    location: data.ubicacion || undefined,
-    experience: data.experiencia !== null ? Number(data.experiencia) : undefined,
-    phone: data.telefono || undefined,
+    location: profileRow.ubicacion || undefined,
+    experience: profileRow.experiencia !== null ? Number(profileRow.experiencia) : undefined,
+    phone: profileRow.telefono || undefined,
     email: userData?.correo || undefined,
-    bio: data.bio || undefined,
-    languages: data.lenguajes || undefined,
-    services: data.servicios as any || undefined,
-    schedule: data.cronograma as any || undefined,
-    galleryImages: data.galeria_imagenes || undefined,
+    bio: profileRow.bio || undefined,
+    languages: profileRow.lenguajes || undefined,
+    services: profileRow.servicios || undefined,
+    schedule: profileRow.cronograma || undefined,
+    galleryImages: profileRow.galeria_imagenes || undefined,
     avatar: userData?.avatar || undefined,
-    coverImage: data.imagen_portada || undefined,
-    planType: data.tipo_plan || undefined,
+    coverImage: profileRow.imagen_portada || undefined,
+    planType: toPlanType(profileRow.tipo_plan),
   };
 
   return { success: true, data: profile };
 }
 
-import type { Doctor } from '@/src/lib/constants';
-
 export async function getDoctorsList(): Promise<ActionResponse<Doctor[]>> {
-  console.log('getDoctorsList: Fetching doctors from Supabase...');
   const { data, error } = await publicSupabase
     .from('doctores')
     .select(`
@@ -544,6 +703,7 @@ export async function getDoctorsList(): Promise<ActionResponse<Doctor[]>> {
       bio,
       lenguajes,
       imagen_portada,
+      tipo_plan,
       usuarios (
         nombre,
         correo,
@@ -555,15 +715,12 @@ export async function getDoctorsList(): Promise<ActionResponse<Doctor[]>> {
     `);
 
   if (error) {
-    console.error('getDoctorsList database error:', error);
     return { success: false, error: error.message };
   }
 
-  console.log('getDoctorsList: Retrieved doctors count:', data?.length);
-
-  const list: Doctor[] = (data || []).map((d: any) => {
-    const userData = d.usuarios as any;
-    const specialtyData = d.especialidades as any;
+  const list: Doctor[] = ((data ?? []) as DoctorListRow[]).map((d) => {
+    const userData = firstRelation(d.usuarios);
+    const specialtyData = firstRelation(d.especialidades);
 
     return {
       id: d.id,
@@ -581,64 +738,86 @@ export async function getDoctorsList(): Promise<ActionResponse<Doctor[]>> {
       bio: d.bio || undefined,
       certifications: undefined,
       languages: d.lenguajes || undefined,
+      isPremium: d.tipo_plan === 'premium' || d.tipo_plan === 'enterprise',
     };
   });
 
   return { success: true, data: list };
 }
 
-export async function signUpAction(input: {
-  name: string;
-  email: string;
-  password: string;
-  role?: 'paciente' | 'doctor';
-}): Promise<ActionResponse<{ userId: string }>> {
-  const supabase = await createClient();
-  
-  const targetRole = input.role || 'doctor';
-  
-  const { data, error } = await supabase.auth.signUp({
-    email: input.email,
-    password: input.password,
-    options: {
-      data: {
-        name: input.name,
-        role: targetRole,
+export async function signUpAction(input: unknown): Promise<ActionResponse<{ userId: string }>> {
+  try {
+    const result = signUpSchema.safeParse(input);
+    if (!result.success) {
+      return { success: false, error: result.error.issues[0]?.message ?? 'Datos inválidos' };
+    }
+
+    // Si Turnstile está activo en el proyecto, el token es obligatorio
+    if (!result.data.captchaToken) {
+      console.error('Validation Error: captchaToken is missing');
+      return { 
+        success: false, 
+        error: 'Falta el token de verificación de seguridad (Captcha). Por favor, asegúrese de completar el captcha en el formulario antes de enviar.' 
+      };
+    }
+
+    const supabase = await createClient();
+    const targetRole = result.data.role;
+    
+    const { data, error } = await supabase.auth.signUp({
+      email: result.data.email,
+      password: result.data.password,
+      options: {
+        data: {
+          name: result.data.name,
+          role: targetRole,
+        },
+        captchaToken: result.data.captchaToken,
       },
-    },
-  });
+    });
 
-  if (error) {
-    return { success: false, error: error.message };
+    if (error) {
+      return { success: false, error: error.message };
+    }
+
+    if (!data.user) {
+      return { success: false, error: 'Error al registrar el usuario' };
+    }
+
+    return { success: true, data: { userId: data.user.id } };
+  } catch (err) {
+    console.error('Error in signUpAction:', err);
+    const message = err instanceof Error ? err.message : 'Error interno al registrar el usuario.';
+    return { success: false, error: message };
   }
-
-  if (!data.user) {
-    return { success: false, error: 'Error al registrar el usuario' };
-  }
-
-  return { success: true, data: { userId: data.user.id } };
 }
 
 export async function signInAction(input: {
   email: string;
   password: string;
 }): Promise<ActionResponse<{ userId: string }>> {
-  const supabase = await createClient();
-  
-  const { data, error } = await supabase.auth.signInWithPassword({
-    email: input.email,
-    password: input.password,
-  });
+  try {
+    const supabase = await createClient();
+    
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email: input.email,
+      password: input.password,
+    });
 
-  if (error) {
-    return { success: false, error: error.message };
+    if (error) {
+      return { success: false, error: error.message };
+    }
+
+    if (!data.user) {
+      return { success: false, error: 'Credenciales inválidas' };
+    }
+
+    return { success: true, data: { userId: data.user.id } };
+  } catch (err) {
+    console.error('Error in signInAction:', err);
+    const message = err instanceof Error ? err.message : 'Error interno al iniciar sesión.';
+    return { success: false, error: message };
   }
-
-  if (!data.user) {
-    return { success: false, error: 'Credenciales inválidas' };
-  }
-
-  return { success: true, data: { userId: data.user.id } };
 }
 
 export interface UserSessionData {
@@ -646,7 +825,7 @@ export interface UserSessionData {
   name: string;
   email: string;
   avatar: string | null;
-  role: 'paciente' | 'doctor' | 'admin';
+  role: ApplicationRole;
 }
 
 export async function getCurrentUserSession(): Promise<ActionResponse<UserSessionData | null>> {
@@ -671,7 +850,7 @@ export async function getCurrentUserSession(): Promise<ActionResponse<UserSessio
       name: userData?.nombre || user.user_metadata?.name || 'Usuario',
       email: userData?.correo || user.email || '',
       avatar: userData?.avatar || null,
-      role: userData?.rol || (user.user_metadata?.role as any) || 'paciente',
+      role: toApplicationRole(userData?.rol),
     },
   };
 }

@@ -4,6 +4,7 @@ import { useState, useTransition, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Mail, Lock, User, Eye, EyeOff, Loader2, Stethoscope, ArrowLeft } from 'lucide-react';
+import Turnstile from 'react-turnstile';
 import { signUpAction, signInAction, getCurrentUserSession } from '@/src/features/profile/profile.actions';
 
 export default function AuthModal() {
@@ -24,6 +25,7 @@ export default function AuthModal() {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [captchaToken, setCaptchaToken] = useState<string | null>(null);
 
   const [isPending, startTransition] = useTransition();
 
@@ -50,6 +52,7 @@ export default function AuthModal() {
     setConfirmPassword('');
     setError(null);
     setRegisterRole(null);
+    setCaptchaToken(null);
   };
 
   const switchMode = (mode: 'login' | 'register') => {
@@ -58,6 +61,7 @@ export default function AuthModal() {
     router.replace(`?${params.toString()}`, { scroll: false });
     setError(null);
     setRegisterRole(null);
+    setCaptchaToken(null);
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -70,8 +74,19 @@ export default function AuthModal() {
       if (password.length < 6) return setError('La contraseña debe tener al menos 6 caracteres');
       if (!registerRole) return setError('Debes seleccionar un rol de registro');
 
+      const siteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITEKEY;
+      if (siteKey && !captchaToken) {
+        return setError('Por favor complete la verificación de seguridad (Captcha)');
+      }
+
       startTransition(async () => {
-        const response = await signUpAction({ name, email, password, role: registerRole });
+        const response = await signUpAction({
+          name,
+          email,
+          password,
+          role: registerRole,
+          captchaToken: captchaToken || undefined,
+        });
         if (response.success) {
           // Registro exitoso, iniciamos sesión de forma automática
           const loginResponse = await signInAction({ email, password });
@@ -343,6 +358,17 @@ export default function AuthModal() {
                           className="w-full rounded-lg border border-gray-200 bg-gray-50 py-2.5 pl-10 pr-10 text-sm text-gray-900 outline-none transition-all focus:border-teal-500 focus:bg-white focus:ring-2 focus:ring-teal-500/20"
                         />
                       </div>
+                    </div>
+                  )}
+
+                  {isRegister && process.env.NEXT_PUBLIC_TURNSTILE_SITEKEY && (
+                    <div className="flex justify-center py-2" key={authMode}>
+                      <Turnstile
+                        sitekey={process.env.NEXT_PUBLIC_TURNSTILE_SITEKEY}
+                        onVerify={(token) => setCaptchaToken(token)}
+                        onExpire={() => setCaptchaToken(null)}
+                        onError={() => setCaptchaToken(null)}
+                      />
                     </div>
                   )}
 

@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import Image from 'next/image';
 import { AnimatePresence, motion } from 'framer-motion';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 
@@ -97,12 +98,13 @@ function NewsCard({ item, index }: { item: NewsItem; index: number }) {
       className="flex cursor-pointer flex-col overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-sm will-change-transform"
     >
       {/* Image */}
-      <div className="relative w-full overflow-hidden">
-        <img
+      <div className="relative aspect-video w-full overflow-hidden">
+        <Image
           src={item.image}
           alt={item.title}
-          className="aspect-video w-full object-cover transition-transform duration-500 hover:scale-105"
-          loading="lazy"
+          fill
+          sizes="(min-width: 1024px) 33vw, (min-width: 768px) 50vw, 100vw"
+          className="object-cover transition-transform duration-500 hover:scale-105"
         />
         <span className="absolute left-3 top-3 rounded-full bg-black/50 px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-white backdrop-blur-sm">
           {item.category}

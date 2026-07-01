@@ -1,11 +1,16 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { Button } from '@/src/components/ui/Button';
-import { getCurrentUserSession, signOutAction } from '@/src/features/profile/profile.actions';
+import {
+  getCurrentUserSession,
+  signOutAction,
+  type UserSessionData,
+} from '@/src/features/profile/profile.actions';
 
 const navLinks = [
   { label: 'Inicio', href: '/' },
@@ -26,26 +31,24 @@ export default function Header() {
   const [menuOpen, setMenuOpen] = useState(false);
 
   // Auth States
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<UserSessionData | null>(null);
   const [profileAvatar, setProfileAvatar] = useState<string | null>(null);
 
   const isHeroPage = pathname === '/';
   const hasSolidBg = scrolled || !isHeroPage || menuOpen;
 
   useEffect(() => {
-    const handleScroll = () => setScrolled(window.scrollY > 20);
+    const handleScroll = () => {
+      const nextScrolled = window.scrollY > 20;
+      setScrolled(nextScrolled);
+      if (nextScrolled) {
+        setMenuOpen(false);
+      }
+    };
     handleScroll();
     window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
-
-  useEffect(() => {
-    if (scrolled) setMenuOpen(false);
-  }, [scrolled]);
-
-  useEffect(() => {
-    setMenuOpen(false);
-  }, [pathname]);
 
   useEffect(() => {
     document.body.style.overflow = menuOpen ? 'hidden' : '';
@@ -94,7 +97,7 @@ export default function Header() {
         hasSolidBg ? 'bg-white/95 shadow-md backdrop-blur-md' : 'bg-transparent shadow-none',
       ].join(' ')}
     >
-      <nav aria-label="Navegacion principal">
+      <nav aria-label="Navegación principal">
         <div className="relative mx-auto flex h-16 max-w-7xl items-center justify-center px-6 md:h-20">
           <ul className="hidden items-center gap-8 md:flex lg:gap-10">
             {navLinks.map((link) => {
@@ -126,13 +129,16 @@ export default function Header() {
               <div className="flex items-center gap-4">
                 <Link
                   href={`/perfil?id=${user.id}`}
-                  className="h-10 w-10 overflow-hidden rounded-full ring-2 ring-teal-500 hover:ring-teal-600 transition-all shadow-sm active:scale-95"
+                  className="relative block h-10 w-10 overflow-hidden rounded-full ring-2 ring-teal-500 transition-all hover:ring-teal-600 active:scale-95 shadow-sm"
                   title="Ver mi perfil"
                 >
-                  <img
+                  <Image
                     src={profileAvatar || `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(user.name || 'Doctor')}`}
-                    className="h-full w-full object-cover"
                     alt="Foto de perfil"
+                    fill
+                    sizes="40px"
+                    className="object-cover"
+                    unoptimized
                   />
                 </Link>
                 <button
@@ -209,11 +215,14 @@ export default function Header() {
                     onClick={() => setMenuOpen(false)}
                     className="flex items-center gap-3 font-semibold text-gray-700"
                   >
-                    <div className="h-10 w-10 overflow-hidden rounded-full ring-2 ring-teal-500">
-                      <img
+                    <div className="relative h-10 w-10 overflow-hidden rounded-full ring-2 ring-teal-500">
+                      <Image
                         src={profileAvatar || `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(user.name || 'Doctor')}`}
-                        className="h-full w-full object-cover"
                         alt="Foto de perfil"
+                        fill
+                        sizes="40px"
+                        className="object-cover"
+                        unoptimized
                       />
                     </div>
                     <span>Mi Perfil</span>

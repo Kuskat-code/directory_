@@ -3,6 +3,7 @@ import { Inter } from "next/font/google";
 import { Suspense } from "react";
 import "./globals.css";
 import AuthModal from "@/src/components/AuthModal";
+import { getSiteUrl, siteConfig } from "@/src/lib/seo";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -11,9 +12,50 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Directorio Medico de El Salvador | Especialistas verificados",
-  description:
-    "Directorio medico premium de El Salvador. Busca especialistas verificados, compara resenas y agenda citas con confianza.",
+  metadataBase: getSiteUrl(),
+  title: {
+    default: siteConfig.title,
+    template: "%s | Directorio Medico El Salvador",
+  },
+  description: siteConfig.description,
+  applicationName: siteConfig.name,
+  keywords: [
+    "directorio medico el salvador",
+    "medicos en el salvador",
+    "especialistas medicos",
+    "doctores san miguel",
+    "citas medicas",
+  ],
+  authors: [{ name: "Directorio Medico El Salvador" }],
+  creator: "Directorio Medico El Salvador",
+  publisher: "Directorio Medico El Salvador",
+  alternates: {
+    canonical: "/",
+  },
+  openGraph: {
+    type: "website",
+    locale: "es_SV",
+    url: "/",
+    siteName: siteConfig.name,
+    title: siteConfig.title,
+    description: siteConfig.description,
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: siteConfig.title,
+    description: siteConfig.description,
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+      "max-video-preview": -1,
+    },
+  },
 };
 
 export default function RootLayout({
@@ -32,4 +74,3 @@ export default function RootLayout({
     </html>
   );
 }
-
