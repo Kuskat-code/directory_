@@ -79,7 +79,12 @@ export default function Header() {
     // Limpiamos los estados de inmediato para reactividad instantánea en pantalla
     setUser(null);
     setProfileAvatar(null);
-    router.refresh();
+    
+    if (pathname === '/perfil') {
+      router.push('/');
+    } else {
+      router.refresh();
+    }
   };
 
   return (

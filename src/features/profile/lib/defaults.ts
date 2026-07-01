@@ -55,6 +55,7 @@ export function buildDefaultProfile(
     services: isMock ? DEFAULT_SERVICES : [],
     schedule: isMock ? DEFAULT_SCHEDULE : [],
     galleryImages: isMock ? DEFAULT_GALLERY : [],
+    planType: doctor.isPremium ? 'premium' : 'free',
   };
 }
 

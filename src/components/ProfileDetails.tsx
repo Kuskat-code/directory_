@@ -1,8 +1,8 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useState, useRef } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { ChevronLeft, ChevronRight, Plus, Star, Trash2, X } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Plus, Trash2, X } from 'lucide-react';
 import type { Doctor } from '@/src/lib/constants';
 import type { EditableProfile, ProfileService } from '@/src/features/profile/types';
 import { ImageUploader } from '@/src/features/profile/components/ImageUploader';
@@ -45,6 +45,20 @@ export default function ProfileDetails({
   onChange,
 }: ProfileDetailsProps) {
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleSelectFile = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      if (!onChange) return;
+      onChange({ galleryImages: [...profile.galleryImages, reader.result as string] });
+    };
+    reader.readAsDataURL(file);
+    e.target.value = ''; // Reset input
+  };
   const [languagesText, setLanguagesText] = useState(() => profile.languages.join(', '));
 
   // Sincronizar idiomas si cambian externamente
@@ -111,16 +125,6 @@ export default function ProfileDetails({
     if (!onChange) return;
     const galleryImages = profile.galleryImages.map((img, i) => (i === index ? url : img));
     onChange({ galleryImages });
-  };
-
-  const addGalleryImage = () => {
-    if (!onChange) return;
-    onChange({
-      galleryImages: [
-        ...profile.galleryImages,
-        'https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?q=80&w=400',
-      ],
-    });
   };
 
   const removeGalleryImage = (index: number) => {
@@ -273,10 +277,25 @@ export default function ProfileDetails({
         <div className="mb-4 flex items-center justify-between">
           <h2 className="text-base font-bold text-text tracking-tight">Galeria Profesional</h2>
           {isEditing && onChange && (
-            <Button type="button" variant="ghost" size="sm" onClick={addGalleryImage}>
-              <Plus className="h-4 w-4" />
-              Agregar foto
-            </Button>
+            <div>
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={profile.planType !== 'premium' && profile.galleryImages.length >= 3}
+              >
+                <Plus className="h-4 w-4" />
+                Agregar foto
+              </Button>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={handleSelectFile}
+              />
+            </div>
           )}
         </div>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -419,55 +438,6 @@ export default function ProfileDetails({
         )}
       </AnimatePresence>
 
-      <motion.section
-        custom={3}
-        initial="hidden"
-        whileInView="visible"
-        viewport={{ once: true, margin: '-40px' }}
-        variants={sectionVariants}
-        className={sectionClass(false)}
-      >
-        <div className="mb-4 flex items-center justify-between">
-          <div>
-            <h2 className="text-base font-bold text-text tracking-tight">Resenas de Clientes</h2>
-            <p className="mt-0.5 text-[11px] text-text-muted">
-              Basado en {doctor.reviews} opiniones verificadas
-            </p>
-          </div>
-          <button
-            type="button"
-            className="cursor-pointer text-xs font-semibold text-primary transition-colors hover:text-primary-dark"
-          >
-            Ver todas
-          </button>
-        </div>
-
-        <div className="rounded-[var(--radius-card)] border border-border bg-secondary/30 p-4">
-          <div className="mb-2.5 flex items-center justify-between gap-2">
-            <div className="flex items-center gap-2.5">
-              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-xs font-bold text-white shadow-sm">
-                {profile.name.charAt(0)}
-              </div>
-              <div>
-                <h4 className="text-xs font-bold text-text leading-none">Paciente Verificado</h4>
-                <p className="mt-0.5 text-[10px] text-text-muted">Atencion en {profile.specialty}</p>
-              </div>
-            </div>
-            <div className="flex items-center gap-0.5 text-xs text-amber-400" aria-label={`${doctor.rating} de 5 estrellas`}>
-              {Array.from({ length: 5 }, (_, i) => (
-                <Star
-                  key={i}
-                  className={`h-3 w-3 ${i < Math.floor(doctor.rating) ? 'fill-amber-400 text-amber-400' : 'fill-border text-border'}`}
-                />
-              ))}
-            </div>
-          </div>
-          <p className="pl-0.5 text-xs leading-relaxed italic text-text-muted">
-            Excelente atencion y profesionalismo. El doctor me brindo un diagnostico claro y
-            un tratamiento efectivo. Altamente recomendado.
-          </p>
-        </div>
-      </motion.section>
     </div>
   );
 }
