@@ -486,6 +486,7 @@ export async function getDoctorProfile(
       cronograma,
       galeria_imagenes,
       imagen_portada,
+      tipo_plan,
       usuarios (
         nombre,
         correo,
@@ -523,6 +524,7 @@ export async function getDoctorProfile(
     galleryImages: data.galeria_imagenes || undefined,
     avatar: userData?.avatar || undefined,
     coverImage: data.imagen_portada || undefined,
+    planType: data.tipo_plan || undefined,
   };
 
   return { success: true, data: profile };

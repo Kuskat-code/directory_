@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import {
   AlertTriangle,
@@ -57,6 +58,12 @@ export default function AppointmentModal({
   onClose,
   onConfirm,
 }: AppointmentModalProps) {
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = 'hidden';
@@ -142,21 +149,25 @@ export default function AppointmentModal({
 
   const isFormValid = selectedDate !== null && selectedTime !== '' && (!isEmergency || reason.trim().length > 0);
 
-  return (
+  if (!mounted) return null;
+
+  return createPortal(
     <AnimatePresence>
       {isOpen && (
-        <>
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+          {/* Backdrop con Blur */}
           <motion.div
             key="appt-backdrop"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.22 }}
-            className="fixed inset-0 z-[100] bg-black/50 backdrop-blur-sm"
+            className="absolute inset-0 bg-black/50 backdrop-blur-sm"
             onClick={handleClose}
             aria-hidden="true"
           />
 
+          {/* Caja del Modal */}
           <motion.div
             key="appt-panel"
             role="dialog"
@@ -166,7 +177,7 @@ export default function AppointmentModal({
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.97, y: 24 }}
             transition={{ duration: 0.26, ease: EASE }}
-            className="fixed inset-x-4 bottom-4 top-6 z-[110] mx-auto flex max-w-lg flex-col overflow-hidden rounded-3xl bg-white shadow-[0_32px_64px_-12px_rgb(10_110_122/0.25),0_0_0_1px_rgb(10_110_122/0.06)] sm:inset-x-8 md:inset-x-0 md:left-1/2 md:w-full md:-translate-x-1/2"
+            className="relative z-10 flex w-full max-w-lg max-h-[90vh] flex-col overflow-hidden rounded-3xl bg-white shadow-[0_32px_64px_-12px_rgb(10_110_122/0.25),0_0_0_1px_rgb(10_110_122/0.06)]"
           >
             <div className="h-1 w-full shrink-0 bg-primary" />
 
@@ -379,8 +390,9 @@ export default function AppointmentModal({
               </div>
             )}
           </motion.div>
-        </>
+        </div>
       )}
-    </AnimatePresence>
+    </AnimatePresence>,
+    document.body,
   );
 }

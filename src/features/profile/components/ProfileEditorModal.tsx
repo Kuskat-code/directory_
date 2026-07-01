@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import {
   Briefcase,
@@ -23,7 +23,7 @@ import type { EditableProfile, ProfileService, SpecialtyColorScheme } from '../t
 import { ImageUploader } from './ImageUploader';
 import { HoursSection } from './hours-section';
 import { getSpecialtyColors } from '../specialty-colors';
-import { MEDICAL_SPECIALTIES } from '@/src/lib/constants';
+import { MEDICAL_SPECIALTIES, EL_SALVADOR_DEPARTMENTS_ORIENTE } from '@/src/lib/constants';
 
 const FREE_GALLERY_LIMIT = 3;
 const EASE = [0.4, 0, 0.2, 1] as const;
@@ -90,15 +90,15 @@ export function ProfileEditorModal({
   return (
     <AnimatePresence>
       {isOpen && (
-        <>
-          {/* Backdrop — z-[100] cubre la navbar (z-50) */}
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+          {/* Backdrop con Blur */}
           <motion.div
             key="editor-backdrop"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.22 }}
-            className="fixed inset-0 z-[100] bg-black/50 backdrop-blur-sm"
+            className="absolute inset-0 bg-black/50 backdrop-blur-sm"
             onClick={onCancel}
             aria-hidden="true"
           />
@@ -113,7 +113,7 @@ export function ProfileEditorModal({
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.97, y: 24 }}
             transition={{ duration: 0.26, ease: EASE }}
-            className="fixed inset-x-4 bottom-4 top-6 z-[110] mx-auto flex max-w-2xl flex-col overflow-hidden rounded-3xl bg-white shadow-[0_32px_64px_-12px_rgb(10_110_122/0.25),0_0_0_1px_rgb(10_110_122/0.06)] sm:inset-x-8 md:inset-x-0 md:left-1/2 md:w-full md:-translate-x-1/2"
+            className="relative z-10 flex w-full max-w-2xl max-h-[90vh] flex-col overflow-hidden rounded-3xl bg-white shadow-[0_32px_64px_-12px_rgb(10_110_122/0.25),0_0_0_1px_rgb(10_110_122/0.06)]"
           >
             {/* Thin specialty-color accent strip at top */}
             <div
@@ -262,7 +262,7 @@ export function ProfileEditorModal({
               </AnimatePresence>
             </div>
           </motion.div>
-        </>
+        </div>
       )}
     </AnimatePresence>
   );
@@ -350,15 +350,20 @@ function PerfilTab({
               <MapPin
                 aria-hidden="true"
                 className="pointer-events-none absolute left-3 top-1/2 z-10 h-3.5 w-3.5 -translate-y-1/2 text-text-muted"
+                suppressHydrationWarning
               />
-              <input
-                type="text"
+              <select
                 value={draft.location}
                 onChange={(e) => onChange({ location: e.target.value })}
-                className="profile-input"
+                className="profile-input cursor-pointer"
                 style={{ paddingLeft: '2.5rem' }}
-                placeholder="Ciudad, Depto."
-              />
+              >
+                {EL_SALVADOR_DEPARTMENTS_ORIENTE.map((dept) => (
+                  <option key={dept} value={dept}>
+                    {dept}
+                  </option>
+                ))}
+              </select>
             </div>
           </Field>
           <Field label="Años de experiencia">
@@ -513,6 +518,27 @@ function BannerTab({
   draft: EditableProfile;
   onChange: (u: Partial<EditableProfile>) => void;
 }) {
+  const isPremium = draft.planType === 'premium';
+
+  if (!isPremium) {
+    return (
+      <Card>
+        <div className="flex flex-col items-center justify-center p-8 text-center space-y-4">
+          <div className="flex h-12 w-12 items-center justify-center rounded-full bg-amber-50 text-amber-500 border border-amber-100">
+            <Crown className="h-6 w-6" />
+          </div>
+          <div>
+            <h3 className="text-sm font-semibold text-text">Función Premium</h3>
+            <p className="mt-1 text-xs text-text-muted max-w-sm leading-relaxed">
+              La personalización de la imagen de portada (banner) es una característica exclusiva para suscriptores Premium. Mejora tu plan para habilitar esta sección.
+            </p>
+          </div>
+          <PremiumUpgradeButton className="mt-1" />
+        </div>
+      </Card>
+    );
+  }
+
   return (
     <Card>
       <div className="space-y-4">
@@ -557,11 +583,20 @@ function GaleriaTab({
   onChange: (u: Partial<EditableProfile>) => void;
 }) {
   const images = draft.galleryImages;
-  const atLimit = images.length >= FREE_GALLERY_LIMIT;
+  const isPremium = draft.planType === 'premium';
+  const atLimit = isPremium ? images.length >= 12 : images.length >= FREE_GALLERY_LIMIT;
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const addImage = () => {
-    if (atLimit) return;
-    onChange({ galleryImages: [...images, FALLBACK_IMG] });
+  const handleAddFile = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      onChange({ galleryImages: [...images, reader.result as string] });
+    };
+    reader.readAsDataURL(file);
+    e.target.value = ''; // Reset input
   };
 
   const removeImage = (idx: number) => {
@@ -580,18 +615,29 @@ function GaleriaTab({
           <div>
             <h3 className="text-sm font-semibold text-text">Galería profesional</h3>
             <p className="text-[11px] text-text-muted">
-              {images.length} / {FREE_GALLERY_LIMIT} imágenes en versión gratuita
+              {isPremium 
+                ? `${images.length} / 12 imágenes (Premium)` 
+                : `${images.length} / ${FREE_GALLERY_LIMIT} imágenes en versión gratuita`}
             </p>
           </div>
           {!atLimit && (
-            <button
-              type="button"
-              onClick={addImage}
-              className="inline-flex items-center gap-1.5 rounded-[var(--radius-button)] border border-border px-3 py-1.5 text-xs font-medium text-text-muted transition-colors hover:border-primary/50 hover:text-primary"
-            >
-              <Plus className="h-3.5 w-3.5" aria-hidden="true" />
-              Agregar foto
-            </button>
+            <div>
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                className="inline-flex items-center gap-1.5 rounded-[var(--radius-button)] border border-border px-3 py-1.5 text-xs font-medium text-text-muted transition-colors hover:border-primary/50 hover:text-primary cursor-pointer"
+              >
+                <Plus className="h-3.5 w-3.5" aria-hidden="true" />
+                Agregar foto
+              </button>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={handleAddFile}
+              />
+            </div>
           )}
         </div>
 

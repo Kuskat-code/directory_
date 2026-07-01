@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useState, useRef } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { ChevronLeft, ChevronRight, Plus, Trash2, X } from 'lucide-react';
 import type { Doctor } from '@/src/lib/constants';
@@ -45,6 +45,20 @@ export default function ProfileDetails({
   onChange,
 }: ProfileDetailsProps) {
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleSelectFile = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      if (!onChange) return;
+      onChange({ galleryImages: [...profile.galleryImages, reader.result as string] });
+    };
+    reader.readAsDataURL(file);
+    e.target.value = ''; // Reset input
+  };
   const [languagesText, setLanguagesText] = useState(() => profile.languages.join(', '));
 
   // Sincronizar idiomas si cambian externamente
@@ -111,16 +125,6 @@ export default function ProfileDetails({
     if (!onChange) return;
     const galleryImages = profile.galleryImages.map((img, i) => (i === index ? url : img));
     onChange({ galleryImages });
-  };
-
-  const addGalleryImage = () => {
-    if (!onChange) return;
-    onChange({
-      galleryImages: [
-        ...profile.galleryImages,
-        'https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?q=80&w=400',
-      ],
-    });
   };
 
   const removeGalleryImage = (index: number) => {
@@ -273,10 +277,25 @@ export default function ProfileDetails({
         <div className="mb-4 flex items-center justify-between">
           <h2 className="text-base font-bold text-text tracking-tight">Galeria Profesional</h2>
           {isEditing && onChange && (
-            <Button type="button" variant="ghost" size="sm" onClick={addGalleryImage}>
-              <Plus className="h-4 w-4" />
-              Agregar foto
-            </Button>
+            <div>
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={profile.planType !== 'premium' && profile.galleryImages.length >= 3}
+              >
+                <Plus className="h-4 w-4" />
+                Agregar foto
+              </Button>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={handleSelectFile}
+              />
+            </div>
           )}
         </div>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
