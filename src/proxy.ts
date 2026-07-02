@@ -39,6 +39,7 @@ export async function proxy(request: NextRequest) {
   const path = url.pathname
   const userRole = user?.app_metadata?.role
 
+
   // Admin route - solo admin
   if (path.startsWith('/admin') && userRole !== 'admin') {
     return NextResponse.redirect(new URL('/', request.url))

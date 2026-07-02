@@ -16,19 +16,19 @@ function getNavLinks(role: UserSessionData['role'] | null) {
   const links: { label: string; href: string }[] = [];
 
   if (role === 'paciente') {
-    links.push({ label: 'Home', href: '/dashboard/paciente' });
+    links.push({ label: 'Inicio', href: '/dashboard/paciente' });
   } else if (role === 'doctor') {
-    links.push({ label: 'Home', href: '/dashboard/doctor' });
+    links.push({ label: 'Inicio', href: '/dashboard/doctor' });
   } else if (role === 'admin') {
-    links.push({ label: 'Home', href: '/dashboard/admin' });
+    links.push({ label: 'Inicio', href: '/dashboard/admin' });
   } else {
     links.push({ label: 'Inicio', href: '/' });
   }
 
-  links.push({ label: 'Directorio', href: '/directorio' });
+  links.push({ label: 'Directorio Médico', href: '/directorio' });
 
-  if (role !== 'paciente') {
-    links.push({ label: 'Precios', href: '/precios' });
+  if (role !== 'admin' && role !== 'paciente') {
+    links.push({ label: 'Planes', href: '/precios' });
   }
 
   return links;
