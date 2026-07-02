@@ -1,10 +1,10 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/src/components/ui/Button';
 import {
   getCurrentUserSession,
@@ -12,12 +12,29 @@ import {
   type UserSessionData,
 } from '@/src/features/profile/profile.actions';
 
-const navLinks = [
-  { label: 'Inicio', href: '/' },
-  { label: 'Directorio', href: '/directorio' },
-  { label: 'Precios', href: '/precios' },
-  { label: 'Soporte', href: '/soporte' },
-];
+function getNavLinks(role: UserSessionData['role'] | null) {
+  const links: { label: string; href: string }[] = [];
+
+  if (role === 'paciente') {
+    links.push({ label: 'Home', href: '/dashboard/paciente' });
+  } else if (role === 'doctor' || role === 'admin') {
+    links.push({ label: 'Home', href: '/dashboard/doctor' });
+  } else {
+    links.push({ label: 'Inicio', href: '/' });
+  }
+
+  links.push({ label: 'Directorio', href: '/directorio' });
+
+  if (role !== 'paciente') {
+    links.push({ label: 'Precios', href: '/precios' });
+  }
+
+  if (role === 'admin') {
+    links.push({ label: 'Admin', href: '/admin' });
+  }
+
+  return links;
+}
 
 function isNavLinkActive(pathname: string, href: string) {
   if (href === '/') return pathname === '/';
@@ -29,11 +46,15 @@ export default function Header() {
   const router = useRouter();
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
 
   // Auth States
   const [user, setUser] = useState<UserSessionData | null>(null);
   const [profileAvatar, setProfileAvatar] = useState<string | null>(null);
 
+  const role = user?.role ?? null;
+  const navLinks = getNavLinks(role);
   const isHeroPage = pathname === '/';
   const hasSolidBg = scrolled || !isHeroPage || menuOpen;
 
@@ -57,7 +78,6 @@ export default function Header() {
     };
   }, [menuOpen]);
 
-  // Auth Hook (Safe server-side session loading, reactive to pathname and auth-change events)
   useEffect(() => {
     async function loadSession() {
       const response = await getCurrentUserSession();
@@ -77,13 +97,24 @@ export default function Header() {
     };
   }, [pathname]);
 
+  // Cerrar dropdown al hacer clic fuera
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+        setDropdownOpen(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
   const handleSignOut = async () => {
     await signOutAction();
-    // Limpiamos los estados de inmediato para reactividad instantánea en pantalla
     setUser(null);
     setProfileAvatar(null);
-    
-    if (pathname === '/perfil') {
+    setDropdownOpen(false);
+
+    if (pathname === '/perfil' || pathname.startsWith('/dashboard') || pathname === '/configuracion') {
       router.push('/');
     } else {
       router.refresh();
@@ -127,27 +158,89 @@ export default function Header() {
           <div className="absolute right-6 hidden md:block">
             {user ? (
               <div className="flex items-center gap-4">
-                <Link
-                  href={`/perfil?id=${user.id}`}
-                  className="relative block h-10 w-10 overflow-hidden rounded-full ring-2 ring-teal-500 transition-all hover:ring-teal-600 active:scale-95 shadow-sm"
-                  title="Ver mi perfil"
-                >
-                  <Image
-                    src={profileAvatar || `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(user.name || 'Doctor')}`}
-                    alt="Foto de perfil"
-                    fill
-                    sizes="40px"
-                    className="object-cover"
-                    unoptimized
-                  />
-                </Link>
-                <button
-                  type="button"
-                  className="inline-flex items-center justify-center rounded-[var(--radius-button)] px-5 py-2.5 text-sm font-semibold whitespace-nowrap transition-all duration-300 transition-premium active:scale-[0.98] border border-gray-300 text-gray-700 hover:bg-gray-50 bg-white/20"
-                  onClick={handleSignOut}
-                >
-                  Cerrar sesión
-                </button>
+                {/* Avatar con dropdown solo para doctores */}
+                {role === 'doctor' ? (
+                  <div className="relative" ref={dropdownRef}>
+                    <button
+                      type="button"
+                      onClick={() => setDropdownOpen((prev) => !prev)}
+                      className="relative block h-10 w-10 overflow-hidden rounded-full ring-2 ring-teal-500 transition-all hover:ring-teal-600 active:scale-95 shadow-sm"
+                      title="Opciones de perfil"
+                    >
+                      <Image
+                        src={profileAvatar || `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(user.name || 'Doctor')}`}
+                        alt="Foto de perfil"
+                        fill
+                        sizes="40px"
+                        className="object-cover"
+                        unoptimized
+                      />
+                    </button>
+                    <AnimatePresence>
+                      {dropdownOpen && (
+                        <motion.div
+                          initial={{ opacity: 0, y: -8 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0, y: -8 }}
+                          transition={{ duration: 0.15 }}
+                          className="absolute right-0 mt-2 w-52 rounded-xl border border-gray-100 bg-white py-2 shadow-lg"
+                        >
+                          <div className="px-4 py-2 border-b border-gray-100">
+                            <p className="text-sm font-semibold text-gray-900 truncate">{user.name}</p>
+                            <p className="text-xs text-gray-500 truncate">{user.email}</p>
+                          </div>
+                          <Link
+                            href={`/perfil?id=${user.id}`}
+                            onClick={() => setDropdownOpen(false)}
+                            className="block px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                          >
+                            Personalizar
+                          </Link>
+                          <Link
+                            href="/configuracion"
+                            onClick={() => setDropdownOpen(false)}
+                            className="block px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                          >
+                            Configurar
+                          </Link>
+                          <div className="border-t border-gray-100 mt-1 pt-1">
+                            <button
+                              type="button"
+                              onClick={handleSignOut}
+                              className="w-full text-left px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition-colors"
+                            >
+                              Cerrar sesión
+                            </button>
+                          </div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </div>
+                ) : (
+                  <Link
+                    href={role === 'admin' ? '/admin' : '#'}
+                    className="relative block h-10 w-10 overflow-hidden rounded-full ring-2 ring-teal-500 transition-all hover:ring-teal-600 active:scale-95 shadow-sm"
+                    title={role === 'admin' ? 'Ir al panel admin' : 'Mi cuenta'}
+                  >
+                    <Image
+                      src={profileAvatar || `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(user.name || 'Usuario')}`}
+                      alt="Foto de perfil"
+                      fill
+                      sizes="40px"
+                      className="object-cover"
+                      unoptimized
+                    />
+                  </Link>
+                )}
+                {role !== 'doctor' && (
+                  <button
+                    type="button"
+                    className="inline-flex items-center justify-center rounded-[var(--radius-button)] px-5 py-2.5 text-sm font-semibold whitespace-nowrap transition-all duration-300 transition-premium active:scale-[0.98] border border-gray-300 text-gray-700 hover:bg-gray-50 bg-white/20"
+                    onClick={handleSignOut}
+                  >
+                    Cerrar sesión
+                  </button>
+                )}
               </div>
             ) : (
               <button
@@ -209,24 +302,40 @@ export default function Header() {
             })}
             {user ? (
               <>
+                {role === 'doctor' && (
+                  <>
+                    <li>
+                      <Link
+                        href={`/perfil?id=${user.id}`}
+                        onClick={() => setMenuOpen(false)}
+                        className="block text-lg font-medium text-gray-700 hover:text-teal-600 transition-colors"
+                      >
+                        Personalizar
+                      </Link>
+                    </li>
+                    <li>
+                      <Link
+                        href="/configuracion"
+                        onClick={() => setMenuOpen(false)}
+                        className="block text-lg font-medium text-gray-700 hover:text-teal-600 transition-colors"
+                      >
+                        Configurar
+                      </Link>
+                    </li>
+                  </>
+                )}
                 <li className="flex items-center gap-3 py-2 border-t border-gray-100">
-                  <Link
-                    href={`/perfil?id=${user.id}`}
-                    onClick={() => setMenuOpen(false)}
-                    className="flex items-center gap-3 font-semibold text-gray-700"
-                  >
-                    <div className="relative h-10 w-10 overflow-hidden rounded-full ring-2 ring-teal-500">
-                      <Image
-                        src={profileAvatar || `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(user.name || 'Doctor')}`}
-                        alt="Foto de perfil"
-                        fill
-                        sizes="40px"
-                        className="object-cover"
-                        unoptimized
-                      />
-                    </div>
-                    <span>Mi Perfil</span>
-                  </Link>
+                  <div className="relative h-10 w-10 overflow-hidden rounded-full ring-2 ring-teal-500">
+                    <Image
+                      src={profileAvatar || `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(user.name || 'Usuario')}`}
+                      alt="Foto de perfil"
+                      fill
+                      sizes="40px"
+                      className="object-cover"
+                      unoptimized
+                    />
+                  </div>
+                  <span className="font-semibold text-gray-700">{user.name}</span>
                 </li>
                 <li>
                   <Button

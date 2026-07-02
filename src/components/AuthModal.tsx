@@ -93,9 +93,9 @@ export default function AuthModal() {
           if (loginResponse.success) {
             window.dispatchEvent(new Event('auth-change'));
             if (registerRole === 'paciente') {
-              router.push('/');
+              router.push('/dashboard/paciente');
             } else {
-              router.push(`/perfil?id=${loginResponse.data.userId}`);
+              router.push('/dashboard/doctor');
             }
             router.refresh();
           } else {
@@ -118,9 +118,11 @@ export default function AuthModal() {
           const sessionResp = await getCurrentUserSession();
           if (sessionResp.success && sessionResp.data) {
             if (sessionResp.data.role === 'paciente') {
-              router.push('/');
+              router.push('/dashboard/paciente');
+            } else if (sessionResp.data.role === 'admin') {
+              router.push('/admin');
             } else {
-              router.push(`/perfil?id=${response.data.userId}`);
+              router.push('/dashboard/doctor');
             }
           } else {
             router.push(`/perfil?id=${response.data.userId}`);

@@ -19,7 +19,7 @@ export function AdminModerationCard() {
             <Flag className="w-3.5 h-3.5 text-red-500" />
             Reseña Reportada
           </div>
-          <p className="text-gray-500 italic leading-relaxed">"Este contratista nunca apareció y me bloqueó..."</p>
+          <p className="text-gray-500 italic leading-relaxed">&ldquo;Este contratista nunca apareció y me bloqueó&hellip;&rdquo;</p>
           <div className="flex justify-between text-gray-400 mt-2">
             <span>Destino: J. Smith</span>
             <span>Hace 2h</span>
@@ -40,7 +40,7 @@ export function AdminModerationCard() {
             <UserCheck className="w-3.5 h-3.5 text-teal-600" />
             Verificación de Perfil
           </div>
-          <p className="text-gray-500 leading-relaxed">Aprobación pendiente para el documento "Certificación del Colegio Médico".</p>
+          <p className="text-gray-500 leading-relaxed">Aprobación pendiente para el documento &ldquo;Certificación del Colegio Médico&rdquo;.</p>
           <div className="flex justify-between text-gray-400 mt-2">
             <span>Usuario: Dr. E. Martínez</span>
             <span>Hace 1d</span>
