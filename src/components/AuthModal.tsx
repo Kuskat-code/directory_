@@ -127,7 +127,7 @@ export default function AuthModal() {
             } else if (sessionResp.data.role === 'doctor') {
               router.push('/dashboard/doctor');
             } else if (sessionResp.data.role === 'admin') {
-              router.push('/admin');
+              router.push('/dashboard/admin');
             } else {
               router.push('/');
             }

@@ -9,7 +9,7 @@ export const ORIENTE_DEPARTMENT_MAP = {
     slug: 'san-miguel',
     location: 'San Miguel',
     doctors: 42,
-    specialties: ['Medicina General', 'Cardiología', 'Ortopedia'],
+    specialties: ['Medicina General', 'Cardiología', 'Traumatología y Ortopedia'],
   },
   'SV-US': {
     name: 'Usulután',

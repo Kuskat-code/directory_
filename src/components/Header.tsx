@@ -60,7 +60,7 @@ export default function Header() {
         { label: 'Home', href: '/dashboard/doctor' },
         { label: 'Directorio', href: '/directorio' },
         { label: 'Precios', href: '/precios' },
-        { label: 'Admin', href: '/admin' },
+        { label: 'Admin', href: '/dashboard/admin' },
       ];
     }
     return [

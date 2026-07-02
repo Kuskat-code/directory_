@@ -1,28 +1,17 @@
-export const PROFESSIONS = [
-  { id: 'lawyer', label: 'Abogado/a', icon: '⚖️' },
-  { id: 'doctor', label: 'Médico/a', icon: '🏥' },
-  { id: 'engineer', label: 'Ingeniero/a', icon: '🔧' },
-  { id: 'architect', label: 'Arquitecto/a', icon: '🏗️' },
-  { id: 'accountant', label: 'Contador/a', icon: '📊' },
-  { id: 'psychologist', label: 'Psicólogo/a', icon: '🧠' },
-];
-
 export const MEDICAL_SPECIALTIES = [
   'Medicina General',
-  'Cardiología',
-  'Dermatología',
   'Pediatría',
   'Ginecología',
+  'Cardiología',
+  'Dermatología',
+  'Oftalmología',
   'Odontología',
   'Psicología',
   'Psiquiatría',
-  'Neurología',
-  'Oftalmología',
-  'Otorrinolaringología',
-  'Gastroenterología',
-  'Traumatología y Ortopedia',
-  'Ortopedia',
   'Urología',
+  'Traumatología y Ortopedia',
+  'Gastroenterología',
+  'Neurología',
   'Endocrinología',
   'Nutrición',
 ];
@@ -47,7 +36,7 @@ export const LANDING_SPECIALTIES = [
   { name: 'Pediatría', icon: 'baby' },
   { name: 'Psicología', icon: 'brain' },
   { name: 'Neurología', icon: 'activity' },
-  { name: 'Nefrología', icon: 'droplets' },
+  { name: 'Endocrinología', icon: 'droplets' },
   { name: 'Dermatología', icon: 'sparkles' },
   { name: 'Ginecología', icon: 'heart-handshake' },
 ] as const;
@@ -74,13 +63,6 @@ export function getTopSpecialtiesForDepartment(
     .slice(0, 3)
     .map(([specialty]) => specialty);
 }
-
-export const APPOINTMENT_STATUSES = {
-  PENDING: 'Pendiente',
-  CONFIRMED: 'Confirmada',
-  COMPLETED: 'Completada',
-  CANCELLED: 'Cancelada',
-} as const;
 
 export type DoctorAvailability = 'available' | 'limited' | 'unavailable';
 
@@ -207,7 +189,7 @@ export const EXAMPLE_DOCTORS: Doctor[] = [
   {
     id: '7',
     name: 'Dr. Miguel Ángel Ruiz',
-    specialty: 'Ortopedia',
+    specialty: 'Traumatología y Ortopedia',
     location: 'San Miguel',
     phone: '+503 2345 6795',
     email: 'miguel.ruiz@email.com',

@@ -35,12 +35,7 @@ export async function proxy(request: NextRequest) {
   const path = url.pathname
   const userRole = user?.app_metadata?.role
 
-  // Admin route - solo admin
-  if (path.startsWith('/admin') && userRole !== 'admin') {
-    return NextResponse.redirect(new URL('/', request.url))
-  }
-
-  // Dashboard routes - requieren autenticación
+  // Dashboard routes - requieren autenticación y autorizaciones por rol
   if (path.startsWith('/dashboard')) {
     if (!user) {
       return NextResponse.redirect(new URL('/?auth=login', request.url))
@@ -49,6 +44,9 @@ export async function proxy(request: NextRequest) {
       return NextResponse.redirect(new URL('/', request.url))
     }
     if (path.startsWith('/dashboard/doctor') && userRole !== 'doctor') {
+      return NextResponse.redirect(new URL('/', request.url))
+    }
+    if (path.startsWith('/dashboard/admin') && userRole !== 'admin') {
       return NextResponse.redirect(new URL('/', request.url))
     }
   }
