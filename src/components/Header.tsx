@@ -17,8 +17,10 @@ function getNavLinks(role: UserSessionData['role'] | null) {
 
   if (role === 'paciente') {
     links.push({ label: 'Home', href: '/dashboard/paciente' });
-  } else if (role === 'doctor' || role === 'admin') {
+  } else if (role === 'doctor') {
     links.push({ label: 'Home', href: '/dashboard/doctor' });
+  } else if (role === 'admin') {
+    links.push({ label: 'Home', href: '/dashboard/admin' });
   } else {
     links.push({ label: 'Inicio', href: '/' });
   }
@@ -27,10 +29,6 @@ function getNavLinks(role: UserSessionData['role'] | null) {
 
   if (role !== 'paciente') {
     links.push({ label: 'Precios', href: '/precios' });
-  }
-
-  if (role === 'admin') {
-    links.push({ label: 'Admin', href: '/admin' });
   }
 
   return links;
@@ -137,9 +135,8 @@ export default function Header() {
                 <li key={link.href}>
                   <Link
                     href={link.href}
-                    className={`relative text-[1.05rem] font-medium tracking-wide transition-colors duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
-                      isActive ? 'text-primary' : 'text-gray-700 hover:opacity-70'
-                    }`}
+                    className={`relative text-[1.05rem] font-medium tracking-wide transition-colors duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${isActive ? 'text-primary' : 'text-gray-700 hover:opacity-70'
+                      }`}
                   >
                     {link.label}
                     {isActive && (
@@ -158,8 +155,8 @@ export default function Header() {
           <div className="absolute right-6 hidden md:block">
             {user ? (
               <div className="flex items-center gap-4">
-                {/* Avatar con dropdown solo para doctores */}
-                {role === 'doctor' ? (
+                {/* Avatar con dropdown para doctores y admin */}
+                {role === 'doctor' || role === 'admin' ? (
                   <div className="relative" ref={dropdownRef}>
                     <button
                       type="button"
@@ -189,13 +186,23 @@ export default function Header() {
                             <p className="text-sm font-semibold text-gray-900 truncate">{user.name}</p>
                             <p className="text-xs text-gray-500 truncate">{user.email}</p>
                           </div>
-                          <Link
-                            href={`/perfil?id=${user.id}`}
-                            onClick={() => setDropdownOpen(false)}
-                            className="block px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
-                          >
-                            Personalizar
-                          </Link>
+                          {role === 'doctor' ? (
+                            <Link
+                              href={`/perfil?id=${user.id}`}
+                              onClick={() => setDropdownOpen(false)}
+                              className="block px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                            >
+                              Personalizar
+                            </Link>
+                          ) : (
+                            <Link
+                              href="/dashboard/admin"
+                              onClick={() => setDropdownOpen(false)}
+                              className="block px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                            >
+                              Dashboard
+                            </Link>
+                          )}
                           <Link
                             href="/configuracion"
                             onClick={() => setDropdownOpen(false)}
@@ -218,9 +225,9 @@ export default function Header() {
                   </div>
                 ) : (
                   <Link
-                    href={role === 'admin' ? '/admin' : '#'}
+                    href="#"
                     className="relative block h-10 w-10 overflow-hidden rounded-full ring-2 ring-teal-500 transition-all hover:ring-teal-600 active:scale-95 shadow-sm"
-                    title={role === 'admin' ? 'Ir al panel admin' : 'Mi cuenta'}
+                    title="Mi cuenta"
                   >
                     <Image
                       src={profileAvatar || `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(user.name || 'Usuario')}`}
@@ -232,24 +239,14 @@ export default function Header() {
                     />
                   </Link>
                 )}
-                {role !== 'doctor' && (
-                  <button
-                    type="button"
-                    className="inline-flex items-center justify-center rounded-[var(--radius-button)] px-5 py-2.5 text-sm font-semibold whitespace-nowrap transition-all duration-300 transition-premium active:scale-[0.98] border border-gray-300 text-gray-700 hover:bg-gray-50 bg-white/20"
-                    onClick={handleSignOut}
-                  >
-                    Cerrar sesión
-                  </button>
-                )}
               </div>
             ) : (
               <button
                 type="button"
-                className={`inline-flex items-center justify-center rounded-[var(--radius-button)] px-5 py-2.5 text-sm font-semibold whitespace-nowrap transition-all duration-300 transition-premium active:scale-[0.98] border ${
-                  hasSolidBg
-                    ? 'bg-teal-600 text-white border-teal-600 hover:bg-teal-700 shadow-md hover:shadow-lg'
-                    : 'border-gray-300 text-gray-700 hover:bg-gray-50 bg-white/20'
-                }`}
+                className={`inline-flex items-center justify-center rounded-[var(--radius-button)] px-5 py-2.5 text-sm font-semibold whitespace-nowrap transition-all duration-300 transition-premium active:scale-[0.98] border ${hasSolidBg
+                  ? 'bg-teal-600 text-white border-teal-600 hover:bg-teal-700 shadow-md hover:shadow-lg'
+                  : 'border-gray-300 text-gray-700 hover:bg-gray-50 bg-white/20'
+                  }`}
                 onClick={() => router.push('?auth=login')}
               >
                 Iniciar sesión
@@ -279,9 +276,8 @@ export default function Header() {
 
         <div
           id="mobile-nav"
-          className={`overflow-hidden transition-all duration-300 ease-in-out md:hidden ${
-            menuOpen ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
-          }`}
+          className={`overflow-hidden transition-all duration-300 ease-in-out md:hidden ${menuOpen ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
+            }`}
         >
           <ul className="flex flex-col gap-4 bg-white/95 px-6 pb-6 backdrop-blur-md">
             {navLinks.map((link) => {
@@ -291,9 +287,8 @@ export default function Header() {
                   <Link
                     href={link.href}
                     onClick={() => setMenuOpen(false)}
-                    className={`block text-lg font-medium transition-colors ${
-                      isActive ? 'text-primary' : 'text-gray-700 hover:text-teal-600'
-                    }`}
+                    className={`block text-lg font-medium transition-colors ${isActive ? 'text-primary' : 'text-gray-700 hover:text-teal-600'
+                      }`}
                   >
                     {link.label}
                   </Link>
@@ -302,17 +297,29 @@ export default function Header() {
             })}
             {user ? (
               <>
-                {role === 'doctor' && (
+                {(role === 'doctor' || role === 'admin') && (
                   <>
-                    <li>
-                      <Link
-                        href={`/perfil?id=${user.id}`}
-                        onClick={() => setMenuOpen(false)}
-                        className="block text-lg font-medium text-gray-700 hover:text-teal-600 transition-colors"
-                      >
-                        Personalizar
-                      </Link>
-                    </li>
+                    {role === 'doctor' ? (
+                      <li>
+                        <Link
+                          href={`/perfil?id=${user.id}`}
+                          onClick={() => setMenuOpen(false)}
+                          className="block text-lg font-medium text-gray-700 hover:text-teal-600 transition-colors"
+                        >
+                          Personalizar
+                        </Link>
+                      </li>
+                    ) : (
+                      <li>
+                        <Link
+                          href="/dashboard/admin"
+                          onClick={() => setMenuOpen(false)}
+                          className="block text-lg font-medium text-gray-700 hover:text-teal-600 transition-colors"
+                        >
+                          Dashboard
+                        </Link>
+                      </li>
+                    )}
                     <li>
                       <Link
                         href="/configuracion"

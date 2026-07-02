@@ -59,12 +59,32 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL('/', request.url))
   }
 
+  if (path.startsWith('/dashboard/admin') && (!user || userRole !== 'admin')) {
+    if (!user) {
+      return NextResponse.redirect(new URL('/?auth=login', request.url))
+    }
+    return NextResponse.redirect(new URL('/', request.url))
+  }
+
   // Configuracion route - solo doctor
   if (path.startsWith('/configuracion') && (!user || userRole !== 'doctor')) {
     if (!user) {
       return NextResponse.redirect(new URL('/?auth=login', request.url))
     }
     return NextResponse.redirect(new URL('/', request.url))
+  }
+
+  // Redirigir "/" al dashboard según el rol si está autenticado
+  if (path === '/' && user) {
+    if (userRole === 'paciente') {
+      return NextResponse.redirect(new URL('/dashboard/paciente', request.url))
+    }
+    if (userRole === 'doctor') {
+      return NextResponse.redirect(new URL('/dashboard/doctor', request.url))
+    }
+    if (userRole === 'admin') {
+      return NextResponse.redirect(new URL('/dashboard/admin', request.url))
+    }
   }
 
   return response
