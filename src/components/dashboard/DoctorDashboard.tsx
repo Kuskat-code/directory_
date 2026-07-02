@@ -4,7 +4,6 @@ import { useEffect, useState } from 'react'
 import { getCurrentUserSession, type UserSessionData } from '@/src/features/profile/profile.actions'
 import Link from 'next/link'
 import { Settings, Eye, Edit3, TrendingUp, DollarSign, Calendar } from 'lucide-react'
-import PricingSection from '@/src/components/PricingSection'
 
 export default function DoctorDashboard() {
   const [user, setUser] = useState<UserSessionData | null>(null)
@@ -84,26 +83,6 @@ export default function DoctorDashboard() {
             <p className="text-xs text-gray-500">Plan actual</p>
           </div>
         </div>
-      </section>
-
-      {/* Enlace al directorio */}
-      <section className="mb-8">
-        <Link
-          href="/directorio"
-          className="flex items-center justify-between rounded-xl border border-gray-200 bg-white p-5 transition-all hover:border-teal-500 hover:shadow-md"
-        >
-          <div>
-            <h3 className="font-semibold text-gray-900">Ver Directorio Médico</h3>
-            <p className="text-sm text-gray-500">Explora otros profesionales de la salud</p>
-          </div>
-          <span className="text-teal-600 font-medium text-sm">Ir &rarr;</span>
-        </Link>
-      </section>
-
-      {/* Sección de Precios al final */}
-      <section id="pricing" className="scroll-mt-24">
-        <h2 className="mb-4 text-xl font-bold text-gray-900">Planes y Precios</h2>
-        <PricingSection />
       </section>
     </div>
   )
