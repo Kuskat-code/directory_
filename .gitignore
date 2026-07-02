@@ -66,6 +66,8 @@ schema.sql
 #vibecoding
 /.agents*
 /.claude*
+/.codex*
 skills-lock.json
 schema.dbml
 seed.sql
+
