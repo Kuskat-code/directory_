@@ -5,7 +5,8 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Mail, Lock, User, Eye, EyeOff, Loader2, Stethoscope, ArrowLeft } from 'lucide-react';
 import Turnstile from 'react-turnstile';
-import { signUpAction, signInAction, getCurrentUserSession } from '@/src/features/profile/profile.actions';
+import { signUpAction, signInAction } from '@/src/features/profile/profile.actions';
+import { getCachedUserSession, notifyAuthChange } from '@/src/features/profile/lib/session-client-cache';
 
 export default function AuthModal() {
   const router = useRouter();
@@ -91,7 +92,7 @@ export default function AuthModal() {
           // Registro exitoso, iniciamos sesión de forma automática
           const loginResponse = await signInAction({ email, password });
           if (loginResponse.success) {
-            window.dispatchEvent(new Event('auth-change'));
+            notifyAuthChange();
             if (registerRole === 'paciente') {
               router.push('/dashboard/paciente');
             } else {
@@ -114,8 +115,8 @@ export default function AuthModal() {
         const response = await signInAction({ email, password });
         if (response.success) {
           // Login exitoso, redirección inteligente de acuerdo al rol
-          window.dispatchEvent(new Event('auth-change'));
-          const sessionResp = await getCurrentUserSession();
+          notifyAuthChange();
+          const sessionResp = await getCachedUserSession();
           if (sessionResp.success && sessionResp.data) {
             if (sessionResp.data.role === 'paciente') {
               router.push('/dashboard/paciente');

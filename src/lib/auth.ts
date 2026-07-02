@@ -1,12 +1,16 @@
+import { cache } from 'react'
 import { createClient } from '@/src/lib/supabase/server'
 import { redirect } from 'next/navigation'
 
-export async function getAuthenticatedRole() {
+// cache() dedupe: si varios Server Components del mismo request llaman a
+// getAuthenticatedRole (directa o indirectamente vía requireRole), solo se
+// ejecuta un supabase.auth.getUser() real por request.
+export const getAuthenticatedRole = cache(async () => {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   const role = user?.app_metadata?.role ?? null
   return { user, role }
-}
+})
 
 export async function requireRole(allowedRoles: ('paciente' | 'doctor' | 'admin')[], fallback = '/') {
   const { user, role } = await getAuthenticatedRole()

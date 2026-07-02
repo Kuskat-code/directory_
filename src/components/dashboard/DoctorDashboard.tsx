@@ -1,7 +1,8 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { getCurrentUserSession, type UserSessionData } from '@/src/features/profile/profile.actions'
+import type { UserSessionData } from '@/src/features/profile/profile.actions'
+import { getCachedUserSession } from '@/src/features/profile/lib/session-client-cache'
 import Link from 'next/link'
 import { Settings, Eye, Edit3, TrendingUp, DollarSign, Calendar } from 'lucide-react'
 
@@ -10,7 +11,7 @@ export default function DoctorDashboard() {
 
   useEffect(() => {
     async function load() {
-      const res = await getCurrentUserSession()
+      const res = await getCachedUserSession()
       if (res.success && res.data) {
         setUser(res.data)
       }
