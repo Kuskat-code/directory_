@@ -48,6 +48,7 @@ env/
 ENV/
 __pycache__/
 *.pyc
+.clinic/
 
 # IDEs and Editors
 .vscode/
