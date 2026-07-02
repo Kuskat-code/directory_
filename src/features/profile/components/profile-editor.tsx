@@ -7,7 +7,6 @@ import { useProfileEditor } from '../hooks/use-profile-editor';
 import { useSpecialtyColors } from '../hooks/use-specialty-colors';
 import { BasicInfoSection } from './basic-info-section';
 import { SummarySection } from './summary-section';
-import { HoursSection } from './hours-section';
 import { PracticeAreasSection } from './practice-areas-section';
 import { GallerySection } from './gallery-section';
 
