@@ -22,6 +22,7 @@ import {
   updateGallerySchema,
   updateAvatarSchema,
   updateCoverImageSchema,
+  updateUserProfileSchema,
   type UpdateBasicInfoInput,
   type UpdateSummaryInput,
   type UpdateScheduleInput,
@@ -29,6 +30,7 @@ import {
   type UpdateGalleryInput,
   type UpdateAvatarInput,
   type UpdateCoverImageInput,
+  type UpdateUserProfileInput,
 } from './validation';
 
 type ServerSupabaseClient = Awaited<ReturnType<typeof createClient>>;
@@ -564,6 +566,32 @@ export async function updateAvatar(
   }
 
   return { success: true, data: { ...result.data, avatar: avatarUrl } };
+}
+
+export async function updateUserProfile(
+  input: unknown,
+): Promise<ActionResponse<UpdateUserProfileInput>> {
+  const result = updateUserProfileSchema.safeParse(input);
+  if (!result.success) {
+    return { success: false, error: result.error.issues[0]?.message ?? 'Datos inválidos' };
+  }
+
+  const supabase = await createClient();
+  const errorMsg = await verifyOwnership(result.data.userId, supabase);
+  if (errorMsg) {
+    return { success: false, error: errorMsg };
+  }
+
+  const { error } = await supabase
+    .from('usuarios')
+    .update({ nombre: result.data.name })
+    .eq('id', result.data.userId);
+
+  if (error) {
+    return { success: false, error: error.message };
+  }
+
+  return { success: true, data: result.data };
 }
 
 export async function updateCoverImage(

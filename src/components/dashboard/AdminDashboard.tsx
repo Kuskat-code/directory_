@@ -203,7 +203,7 @@ export default function AdminDashboard() {
                                 <Flag className="h-4 w-4" />
                                 <h4 className="text-sm font-bold text-gray-900">Reseña Reportada</h4>
                             </div>
-                            <p className="mb-3 text-sm italic text-gray-600">"Este contratista nunca apareció y me bloqueó..."</p>
+                            <p className="mb-3 text-sm italic text-gray-600">&ldquo;Este contratista nunca apareció y me bloqueó&hellip;&rdquo;</p>
                             <div className="mb-4 flex items-center justify-between text-xs text-gray-400">
                                 <span>Destino: J. Smith</span>
                                 <span>Hace 2h</span>
@@ -224,7 +224,7 @@ export default function AdminDashboard() {
                                 <h4 className="text-sm font-bold text-gray-900">Verificación de Perfil</h4>
                             </div>
                             <p className="mb-3 text-sm text-gray-600">
-                                Aprobación pendiente para el documento "Certificación del Colegio Médico".
+                                Aprobación pendiente para el documento &ldquo;Certificación del Colegio Médico&rdquo;.
                             </p>
                             <div className="mb-4 flex items-center justify-between text-xs text-gray-400">
                                 <span>Usuario: Dr. E. Martínez</span>

@@ -67,7 +67,7 @@ export async function middleware(request: NextRequest) {
   }
 
   // Configuracion route - solo doctor
-  if (path.startsWith('/configuracion') && (!user || userRole !== 'doctor')) {
+  if (path.startsWith('/configuracion') && (!user || (userRole !== 'doctor' && userRole !== 'admin'))) {
     if (!user) {
       return NextResponse.redirect(new URL('/?auth=login', request.url))
     }
