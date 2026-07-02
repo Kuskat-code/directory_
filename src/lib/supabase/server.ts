@@ -4,12 +4,13 @@ import { cookies } from 'next/headers';
 export async function createClient() {
   const cookieStore = await cookies();
 
-  const rawUrl = process.env.SUPABASE_URL || '';
+  const rawUrl = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL || '';
   const cleanUrl = rawUrl.replace(/\/rest\/v1\/?$/, '').replace(/\/$/, '');
+  const anonKey = process.env.SUPABASE_ANON_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
 
   return createServerClient(
     cleanUrl,
-    process.env.SUPABASE_ANON_KEY!,
+    anonKey,
     {
       cookies: {
         getAll() {
