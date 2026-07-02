@@ -1,12 +1,13 @@
 'use client';
 
+import Image from 'next/image';
 import { motion } from 'framer-motion';
 import { ImageIcon, Plus, Trash2 } from 'lucide-react';
 import type { EditableProfile, SpecialtyColorScheme } from '../types';
 import { ImageUploader } from './ImageUploader';
+import { FREE_GALLERY_LIMIT } from '../validation';
 
 const EASE = [0.4, 0, 0.2, 1] as const;
-const FREE_GALLERY_LIMIT = 3;
 
 const FALLBACK_GALLERY_IMAGE =
   'https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?q=80&w=400';
@@ -94,13 +95,13 @@ export function GallerySection({
             <div className="relative aspect-[4/3] overflow-hidden rounded-[var(--radius-card)] border bg-secondary"
               style={{ borderColor: isEditing ? colors.border : 'var(--color-border)' }}
             >
-              <img
+              <Image
                 src={imgUrl}
                 alt={`Instalación profesional ${i + 1}`}
-                className="h-full w-full object-cover"
-                loading="lazy"
-                width={400}
-                height={300}
+                fill
+                sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
+                className="object-cover"
+                unoptimized
               />
               {isEditing && (
                 <button

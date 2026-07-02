@@ -53,15 +53,9 @@ export default function HeroSection() {
           <div className="mt-2 flex flex-wrap gap-4">
             <Link
               href="/directorio"
-              className="group inline-flex items-center gap-2 rounded-lg bg-teal-600 px-6 py-3 font-semibold text-white transition-all duration-300 ease-out hover:-translate-y-0.5 hover:bg-teal-700 hover:shadow-lg hover:shadow-teal-600/25 active:scale-95 active:shadow-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 focus-visible:ring-offset-2"
+              className="inline-flex items-center rounded-lg bg-teal-600 px-6 py-3 font-semibold text-white transition-all duration-300 ease-out hover:-translate-y-0.5 hover:bg-teal-700 hover:shadow-lg hover:shadow-teal-600/25 active:scale-95 active:shadow-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 focus-visible:ring-offset-2"
             >
               Explorar directorio
-              <span
-                className="transition-transform duration-300 group-hover:translate-x-1"
-                aria-hidden="true"
-              >
-                →
-              </span>
             </Link>
             <Link
               href="/registro"

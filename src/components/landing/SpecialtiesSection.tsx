@@ -58,9 +58,6 @@ export default function SpecialtiesSection() {
           className="mb-12 flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-end px-4"
         >
           <div>
-            <span className="mb-2 inline-block rounded-full bg-blue-50 px-3 py-1 text-xs font-semibold uppercase tracking-wider text-primary">
-              Especialidades
-            </span>
             <h2
               id="specialties-heading"
               className="text-heading font-bold text-text text-3xl md:text-4xl"

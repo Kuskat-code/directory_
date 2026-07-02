@@ -12,8 +12,6 @@ import {
   User,
 } from 'lucide-react';
 
-const EASE = [0.4, 0, 0.2, 1] as const;
-
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 interface PlanFeature {
@@ -110,7 +108,7 @@ function FeatureItem({ feature }: { feature: PlanFeature }) {
   const { Icon, text } = feature;
   return (
     <li className="flex items-start gap-3">
-      <Icon className="mt-0.5 h-4 w-4 shrink-0 text-slate-400" aria-hidden="true" />
+      <Icon className="mt-0.5 h-4 w-4 shrink-0 text-slate-400" aria-hidden="true" suppressHydrationWarning />
       <span className="text-sm text-slate-600">{text}</span>
     </li>
   );
@@ -129,16 +127,16 @@ export default function PricingSection() {
       {/* Spherical blue glow */}
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute left-1/2 top-[40%] z-0 h-[400px] w-[700px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-blue-500/[0.18] blur-[160px]"
+        className="pointer-events-none absolute left-1/2 top-[40%] z-0 h-[400px] w-[700px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-teal-500/[0.18] blur-[160px]"
       />
 
       {/* ── Header ─────────────────────────────────────────────────────────── */}
       <div className="relative z-10 mx-auto max-w-2xl text-center">
         <h2 id="pricing-title" className="text-4xl font-bold text-slate-900">
-          Planes para cada etapa de tu practica
+          Planes para cada etapa de tu práctica
         </h2>
         <p className="mt-4 text-lg text-slate-500">
-          Desde consultorios individuales hasta centros medicos. Escala tu
+          Desde consultorios individuales hasta centros médicos. Escala tu
           presencia digital con confianza.
         </p>
 
@@ -146,7 +144,7 @@ export default function PricingSection() {
         <div
           className="mt-8 inline-flex rounded-full bg-slate-100 p-1"
           role="group"
-          aria-label="Periodo de facturacion"
+          aria-label="Periodo de facturación"
         >
           <button
             type="button"
@@ -193,16 +191,16 @@ export default function PricingSection() {
                 viewport={{ once: true, margin: '-40px' }}
                 transition={{ duration: 0.7, delay: index * 0.15, ease: 'easeOut' }}
                 whileHover={{ y: -10 }}
-                className={`relative flex flex-col rounded-3xl bg-white p-8 transition-all duration-300 ease-out will-change-transform hover:border-blue-500 hover:shadow-xl hover:shadow-blue-500/5 ${
+                className={`relative flex flex-col rounded-3xl bg-white p-8 transition-all duration-300 ease-out will-change-transform hover:border-teal-500 hover:shadow-xl hover:shadow-teal-500/5 ${
                   isPopular
-                    ? 'border-2 border-blue-500/60 shadow-md'
+                    ? 'border-2 border-teal-500/60 shadow-md'
                     : 'border-2 border-slate-200 shadow-sm'
                 }`}
               >
                 {/* Popular badge */}
                 {isPopular && (
                   <div className="absolute right-5 top-5">
-                    <span className="rounded-full bg-blue-500 px-2.5 py-1 text-xs font-semibold text-white">
+                    <span className="rounded-full bg-teal-600 px-2.5 py-1 text-xs font-semibold text-white">
                       Popular
                     </span>
                   </div>
@@ -234,7 +232,7 @@ export default function PricingSection() {
                   type="button"
                   className={`mb-6 w-full rounded-xl px-4 py-3 text-center text-sm font-medium text-white transition-colors ${
                     isPopular
-                      ? 'bg-blue-600 hover:bg-blue-700'
+                      ? 'bg-teal-600 hover:bg-teal-700'
                       : 'bg-slate-950 hover:bg-slate-900'
                   }`}
                 >
