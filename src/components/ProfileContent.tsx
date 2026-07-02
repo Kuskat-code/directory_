@@ -11,10 +11,8 @@ import ProfileSidebar from '@/src/components/ProfileSidebar';
 import { buildDefaultProfile } from '@/src/features/profile/lib/defaults';
 import { useProfileEditor } from '@/src/features/profile/hooks/use-profile-editor';
 import { ProfileEditorModal } from '@/src/features/profile/components/ProfileEditorModal';
-import {
-  getCurrentUserSession,
-  type UserSessionData,
-} from '@/src/features/profile/profile.actions';
+import type { UserSessionData } from '@/src/features/profile/profile.actions';
+import { AUTH_CHANGE_EVENT, getCachedUserSession } from '@/src/features/profile/lib/session-client-cache';
 
 const EASE = [0.4, 0, 0.2, 1] as const;
 
@@ -27,7 +25,7 @@ export default function ProfileContent() {
 
   useEffect(() => {
     async function loadUser() {
-      const response = await getCurrentUserSession();
+      const response = await getCachedUserSession();
       if (response.success && response.data) {
         setCurrentUser(response.data);
       } else {
@@ -36,9 +34,9 @@ export default function ProfileContent() {
     }
     void loadUser();
 
-    window.addEventListener('auth-change', loadUser);
+    window.addEventListener(AUTH_CHANGE_EVENT, loadUser);
     return () => {
-      window.removeEventListener('auth-change', loadUser);
+      window.removeEventListener(AUTH_CHANGE_EVENT, loadUser);
     };
   }, []);
 

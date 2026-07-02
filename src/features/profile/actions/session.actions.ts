@@ -1,5 +1,6 @@
 'use server';
 
+import { cache } from 'react';
 import { createClient } from '@/src/lib/supabase/server';
 import type { ActionResponse } from '../types';
 import { signUpSchema } from '../validation';
@@ -93,31 +94,43 @@ export interface UserSessionData {
   role: ApplicationRole;
 }
 
+// Memoizado con cache() de React: si dentro del mismo request de servidor
+// (p. ej. varios Server Components del mismo árbol) se invoca más de una vez,
+// solo se ejecuta un round-trip real contra Supabase. Nota: esto NO deduplica
+// llamadas hechas por separado desde distintos Client Components (cada una es
+// un request de Server Action independiente); para ese caso ver
+// `src/features/profile/lib/session-client-cache.ts`.
+const getCurrentUserSessionCached = cache(
+  async (): Promise<ActionResponse<UserSessionData | null>> => {
+    const supabase = await createClient();
+
+    const { data: { user }, error: userError } = await supabase.auth.getUser();
+    if (userError || !user) {
+      return { success: true, data: null };
+    }
+
+    // Buscamos los datos de perfil desde la tabla usuarios
+    const { data: userData } = await supabase
+      .from('usuarios')
+      .select('avatar, nombre, correo, rol')
+      .eq('id', user.id)
+      .maybeSingle();
+
+    return {
+      success: true,
+      data: {
+        id: user.id,
+        name: userData?.nombre || user.user_metadata?.name || 'Usuario',
+        email: userData?.correo || user.email || '',
+        avatar: userData?.avatar || null,
+        role: toApplicationRole(userData?.rol),
+      },
+    };
+  },
+);
+
 export async function getCurrentUserSession(): Promise<ActionResponse<UserSessionData | null>> {
-  const supabase = await createClient();
-  
-  const { data: { user }, error: userError } = await supabase.auth.getUser();
-  if (userError || !user) {
-    return { success: true, data: null };
-  }
-
-  // Buscamos los datos de perfil desde la tabla usuarios
-  const { data: userData } = await supabase
-    .from('usuarios')
-    .select('avatar, nombre, correo, rol')
-    .eq('id', user.id)
-    .maybeSingle();
-
-  return {
-    success: true,
-    data: {
-      id: user.id,
-      name: userData?.nombre || user.user_metadata?.name || 'Usuario',
-      email: userData?.correo || user.email || '',
-      avatar: userData?.avatar || null,
-      role: toApplicationRole(userData?.rol),
-    },
-  };
+  return getCurrentUserSessionCached();
 }
 
 export async function signOutAction(): Promise<ActionResponse<void>> {

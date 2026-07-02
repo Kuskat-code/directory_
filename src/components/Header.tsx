@@ -7,10 +7,14 @@ import { usePathname, useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/src/components/ui/Button';
 import {
-  getCurrentUserSession,
   signOutAction,
   type UserSessionData,
 } from '@/src/features/profile/profile.actions';
+import {
+  AUTH_CHANGE_EVENT,
+  getCachedUserSession,
+  invalidateCachedUserSession,
+} from '@/src/features/profile/lib/session-client-cache';
 
 function getNavLinks(role: UserSessionData['role'] | null) {
   const links: { label: string; href: string }[] = [];
@@ -78,7 +82,7 @@ export default function Header() {
 
   useEffect(() => {
     async function loadSession() {
-      const response = await getCurrentUserSession();
+      const response = await getCachedUserSession();
       if (response.success && response.data) {
         setUser(response.data);
         setProfileAvatar(response.data.avatar);
@@ -89,9 +93,9 @@ export default function Header() {
     }
     void loadSession();
 
-    window.addEventListener('auth-change', loadSession);
+    window.addEventListener(AUTH_CHANGE_EVENT, loadSession);
     return () => {
-      window.removeEventListener('auth-change', loadSession);
+      window.removeEventListener(AUTH_CHANGE_EVENT, loadSession);
     };
   }, [pathname]);
 
@@ -108,6 +112,7 @@ export default function Header() {
 
   const handleSignOut = async () => {
     await signOutAction();
+    invalidateCachedUserSession();
     setUser(null);
     setProfileAvatar(null);
     setDropdownOpen(false);

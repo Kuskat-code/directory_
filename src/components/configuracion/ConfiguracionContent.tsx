@@ -7,7 +7,8 @@ import Image from 'next/image'
 import { Lock, Mail, Loader2, AlertTriangle, Eye, EyeOff, ArrowLeft, User, Camera } from 'lucide-react'
 import Link from 'next/link'
 import { createClient } from '@/src/lib/supabase/client'
-import { getCurrentUserSession, updateAvatar, updateUserProfile, type UserSessionData } from '@/src/features/profile/profile.actions'
+import { updateAvatar, updateUserProfile, type UserSessionData } from '@/src/features/profile/profile.actions'
+import { getCachedUserSession, notifyAuthChange } from '@/src/features/profile/lib/session-client-cache'
 import { ImageUploader } from '@/src/features/profile/components/ImageUploader'
 
 export default function ConfiguracionContent() {
@@ -39,7 +40,7 @@ export default function ConfiguracionContent() {
 
   useEffect(() => {
     async function load() {
-      const res = await getCurrentUserSession()
+      const res = await getCachedUserSession()
       if (res.success && res.data) {
         setUser(res.data)
         setName(res.data.name)
@@ -80,7 +81,7 @@ export default function ConfiguracionContent() {
         setProfileError('Error al guardar el perfil. Intenta de nuevo.')
       } else {
         setProfileSuccess('Perfil actualizado correctamente')
-        window.dispatchEvent(new Event('auth-change'))
+        notifyAuthChange()
       }
     })
   }
