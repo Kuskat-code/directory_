@@ -18,6 +18,7 @@
 # Debug & Logs
 *.log
 .pnpm-debug.log*
+.opencode/
 
 # Environment files
 .env*
