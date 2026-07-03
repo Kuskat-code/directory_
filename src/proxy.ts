@@ -33,7 +33,7 @@ export async function proxy(request: NextRequest) {
   const { data: { user } } = await supabase.auth.getUser()
   const url = request.nextUrl.clone()
   const path = url.pathname
-  const userRole = user?.app_metadata?.role
+  const userRole = user?.app_metadata?.role || user?.user_metadata?.role
 
   // Dashboard routes - requieren autenticación y autorizaciones por rol
   if (path.startsWith('/dashboard')) {

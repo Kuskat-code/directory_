@@ -68,7 +68,7 @@ export default function DoctorCard({ doctor, index = 0 }: Props) {
         initial={{ opacity: 0, y: 28 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true, margin: '-40px' }}
-        transition={{ duration: 0.45, delay: index * 0.06, ease: EASE }}
+        transition={{ duration: 0.45, delay: index < 6 ? (index % 3) * 0.06 : 0, ease: EASE }}
         whileHover={{ y: -6, scale: 1.01 }}
         className="group h-full"
       >
