@@ -1,11 +1,19 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useState, useRef } from 'react';
+import Image from 'next/image';
 import { AnimatePresence, motion } from 'framer-motion';
-import { ChevronLeft, ChevronRight, Plus, Star, Trash2, X } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Plus, Trash2, X } from 'lucide-react';
 import type { Doctor } from '@/src/lib/constants';
 import type { EditableProfile, ProfileService } from '@/src/features/profile/types';
 import { ImageUploader } from '@/src/features/profile/components/ImageUploader';
+import {
+  ACCEPTED_IMAGE_MIME_TYPES,
+  FREE_GALLERY_LIMIT,
+  MAX_GALLERY_IMAGES,
+  MAX_IMAGE_BYTES,
+  isAcceptedImageMimeType,
+} from '@/src/features/profile/validation';
 import { Button } from '@/src/components/ui/Button';
 
 const EASE = [0.4, 0, 0.2, 1] as const;
@@ -40,11 +48,48 @@ interface ProfileDetailsProps {
 export default function ProfileDetails({
   profile,
   tags,
-  doctor,
   isEditing = false,
   onChange,
 }: ProfileDetailsProps) {
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
+  const [fileError, setFileError] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const isPremium = profile.planType === 'premium' || profile.planType === 'enterprise';
+  const galleryLimit = isPremium ? MAX_GALLERY_IMAGES : FREE_GALLERY_LIMIT;
+
+  const handleSelectFile = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setFileError(null);
+
+    if (!isAcceptedImageMimeType(file.type)) {
+      setFileError('Usa una imagen JPG, PNG, WebP o GIF.');
+      e.target.value = '';
+      return;
+    }
+
+    if (file.size > MAX_IMAGE_BYTES) {
+      setFileError('La imagen no puede superar 5 MB.');
+      e.target.value = '';
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      if (!onChange) return;
+      onChange({ galleryImages: [...profile.galleryImages, reader.result as string] });
+    };
+    reader.onerror = () => setFileError('No se pudo leer la imagen.');
+    reader.readAsDataURL(file);
+    e.target.value = ''; // Reset input
+  };
+  const languagesSource = profile.languages.join(', ');
+  const [languagesDraft, setLanguagesDraft] = useState(() => ({
+    source: languagesSource,
+    value: languagesSource,
+  }));
+  const languagesText =
+    languagesDraft.source === languagesSource ? languagesDraft.value : languagesSource;
 
   const closeLightbox = useCallback(() => setLightboxIndex(null), []);
 
@@ -97,16 +142,6 @@ export default function ProfileDetails({
     onChange({ galleryImages });
   };
 
-  const addGalleryImage = () => {
-    if (!onChange) return;
-    onChange({
-      galleryImages: [
-        ...profile.galleryImages,
-        'https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?q=80&w=400',
-      ],
-    });
-  };
-
   const removeGalleryImage = (index: number) => {
     if (!onChange) return;
     onChange({ galleryImages: profile.galleryImages.filter((_, i) => i !== index) });
@@ -142,17 +177,19 @@ export default function ProfileDetails({
               </label>
               <input
                 type="text"
-                value={profile.languages.join(', ')}
-                onChange={(e) =>
+                value={languagesText}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  setLanguagesDraft({ source: languagesSource, value: val });
                   onChange({
-                    languages: e.target.value
+                    languages: val
                       .split(',')
                       .map((l) => l.trim())
                       .filter(Boolean),
-                  })
-                }
+                  });
+                }}
                 className="profile-input"
-                placeholder="Espanol, Ingles"
+                placeholder="Español, Inglés"
               />
             </div>
           </div>
@@ -253,14 +290,30 @@ export default function ProfileDetails({
         className={sectionClass(isEditing)}
       >
         <div className="mb-4 flex items-center justify-between">
-          <h2 className="text-base font-bold text-text tracking-tight">Galeria Profesional</h2>
+          <h2 className="text-base font-bold text-text tracking-tight">Galería Profesional</h2>
           {isEditing && onChange && (
-            <Button type="button" variant="ghost" size="sm" onClick={addGalleryImage}>
-              <Plus className="h-4 w-4" />
-              Agregar foto
-            </Button>
+            <div>
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={profile.galleryImages.length >= galleryLimit}
+              >
+                <Plus className="h-4 w-4" />
+                Agregar foto
+              </Button>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept={ACCEPTED_IMAGE_MIME_TYPES.join(',')}
+                className="hidden"
+                onChange={handleSelectFile}
+              />
+            </div>
           )}
         </div>
+        {fileError && <p className="mb-3 text-xs text-red-600">{fileError}</p>}
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {profile.galleryImages.map((imgUrl, i) => (
             <motion.div
@@ -280,10 +333,13 @@ export default function ProfileDetails({
                 aria-label={`Ver imagen ${i + 1} en grande`}
                 tabIndex={isEditing ? -1 : 0}
               >
-                <img
+                <Image
                   src={imgUrl}
                   alt={`Instalacion profesional ${i + 1}`}
-                  className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                  fill
+                  sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
+                  className="object-cover transition-transform duration-300 group-hover:scale-105"
+                  unoptimized
                 />
                 {!isEditing && (
                   <span className="absolute inset-0 flex items-center justify-center bg-text/0 transition-colors duration-200 group-hover:bg-text/10" />
@@ -401,55 +457,6 @@ export default function ProfileDetails({
         )}
       </AnimatePresence>
 
-      <motion.section
-        custom={3}
-        initial="hidden"
-        whileInView="visible"
-        viewport={{ once: true, margin: '-40px' }}
-        variants={sectionVariants}
-        className={sectionClass(false)}
-      >
-        <div className="mb-4 flex items-center justify-between">
-          <div>
-            <h2 className="text-base font-bold text-text tracking-tight">Resenas de Clientes</h2>
-            <p className="mt-0.5 text-[11px] text-text-muted">
-              Basado en {doctor.reviews} opiniones verificadas
-            </p>
-          </div>
-          <button
-            type="button"
-            className="cursor-pointer text-xs font-semibold text-primary transition-colors hover:text-primary-dark"
-          >
-            Ver todas
-          </button>
-        </div>
-
-        <div className="rounded-[var(--radius-card)] border border-border bg-secondary/30 p-4">
-          <div className="mb-2.5 flex items-center justify-between gap-2">
-            <div className="flex items-center gap-2.5">
-              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-xs font-bold text-white shadow-sm">
-                {profile.name.charAt(0)}
-              </div>
-              <div>
-                <h4 className="text-xs font-bold text-text leading-none">Paciente Verificado</h4>
-                <p className="mt-0.5 text-[10px] text-text-muted">Atencion en {profile.specialty}</p>
-              </div>
-            </div>
-            <div className="flex items-center gap-0.5 text-xs text-amber-400" aria-label={`${doctor.rating} de 5 estrellas`}>
-              {Array.from({ length: 5 }, (_, i) => (
-                <Star
-                  key={i}
-                  className={`h-3 w-3 ${i < Math.floor(doctor.rating) ? 'fill-amber-400 text-amber-400' : 'fill-border text-border'}`}
-                />
-              ))}
-            </div>
-          </div>
-          <p className="pl-0.5 text-xs leading-relaxed italic text-text-muted">
-            Excelente atencion y profesionalismo. El doctor me brindo un diagnostico claro y
-            un tratamiento efectivo. Altamente recomendado.
-          </p>
-        </div>
-      </motion.section>
     </div>
   );
 }

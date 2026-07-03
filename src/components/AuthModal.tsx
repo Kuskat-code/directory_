@@ -6,7 +6,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import dynamic from 'next/dynamic';
 import { X, Mail, Lock, User, Eye, EyeOff, Loader2, Stethoscope, ArrowLeft } from 'lucide-react';
 const Turnstile = dynamic(() => import('react-turnstile'), { ssr: false });
-import { signUpAction, signInAction, getCurrentUserSession } from '@/src/features/profile/profile.actions';
+import { signUpAction, signInAction } from '@/src/features/profile/profile.actions';
+import { getCachedUserSession } from '@/src/lib/session-cache';
 
 export default function AuthModal() {
   const router = useRouter();
@@ -120,7 +121,7 @@ export default function AuthModal() {
         if (response.success) {
           // Login exitoso, redirección inteligente de acuerdo al rol
           window.dispatchEvent(new Event('auth-change'));
-          const sessionResp = await getCurrentUserSession();
+          const sessionResp = await getCachedUserSession();
           if (sessionResp.success && sessionResp.data) {
             if (sessionResp.data.role === 'paciente') {
               router.push('/dashboard/paciente');
