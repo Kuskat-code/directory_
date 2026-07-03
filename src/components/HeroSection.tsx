@@ -3,11 +3,8 @@
 import Link from 'next/link';
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { AnimatedWord } from '@/src/components/ui/animated-word';
 
 const EASE = [0.4, 0, 0.2, 1] as const;
-
-const flipWords = ['Consulta', 'Encuentra', 'Agenda', 'Contacta'];
 
 const videos = [
   '/videos/consultorio.mp4',
@@ -31,34 +28,34 @@ export default function HeroSection() {
             Oriente de El Salvador
           </span>
 
-          <div className="flex max-w-xl flex-col gap-2">
-            <h1
-              id="hero-heading"
-              className="text-4xl leading-tight font-bold text-gray-900 md:text-5xl"
-            >
-              Directorio Médico{' '}
-              <span className="text-teal-600">Profesional</span>
-            </h1>
+          <h1
+            id="hero-heading"
+            className="text-5xl leading-tight font-bold text-gray-900 md:text-6xl"
+          >
+            Directorio Médico
+            <br />
+            <span className="text-teal-600">Profesional</span>
+          </h1>
 
-            <p className="mt-3 text-base font-medium text-gray-700">
-              <AnimatedWord
-                words={flipWords}
-                duration={1800}
-                className="font-bold text-teal-600"
-              />
-              {' '}al especialista que necesitas hoy.
-            </p>
-          </div>
+          <p className="max-w-md text-lg text-gray-500">
+            Encuentra especialistas verificados cerca de ti.
+          </p>
 
           <div className="mt-2 flex flex-wrap gap-4">
             <Link
               href="/directorio"
-              className="inline-flex items-center rounded-lg bg-teal-600 px-6 py-3 font-semibold text-white transition-all duration-300 ease-out hover:-translate-y-0.5 hover:bg-teal-700 hover:shadow-lg hover:shadow-teal-600/25 active:scale-95 active:shadow-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 focus-visible:ring-offset-2"
+              className="group inline-flex items-center gap-2 rounded-lg bg-teal-600 px-6 py-3 font-semibold text-white transition-all duration-300 ease-out hover:-translate-y-0.5 hover:bg-teal-700 hover:shadow-lg hover:shadow-teal-600/25 active:scale-95 active:shadow-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 focus-visible:ring-offset-2"
             >
               Explorar directorio
+              <span
+                className="transition-transform duration-300 group-hover:translate-x-1"
+                aria-hidden="true"
+              >
+                →
+              </span>
             </Link>
             <Link
-              href="/registro"
+              href="?auth=register"
               className="inline-flex items-center rounded-lg border border-gray-300 px-6 py-3 font-semibold text-gray-700 transition-all duration-300 ease-out hover:-translate-y-0.5 hover:border-teal-500 hover:text-teal-600 hover:shadow-md active:scale-95 active:shadow-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 focus-visible:ring-offset-2"
             >
               ¿Eres médico? Regístrate
