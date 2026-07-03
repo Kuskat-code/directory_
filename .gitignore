@@ -71,3 +71,4 @@ schema.sql
 skills-lock.json
 schema.dbml
 seed.sql
+.opencode/skills/project-cleanup/
