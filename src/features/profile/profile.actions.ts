@@ -2,6 +2,7 @@
 
 import { createClient } from '@/src/lib/supabase/server';
 import { publicSupabase } from '@/src/lib/supabase/public';
+import { updateTag, unstable_cache } from 'next/cache';
 import type { Doctor } from '@/src/lib/constants';
 import type {
   ActionResponse,
@@ -306,6 +307,7 @@ export async function updateBasicInfo(
     }
   }
 
+  revalidateDoctor(result.data.doctorId);
   return { success: true, data: result.data };
 }
 
@@ -355,6 +357,7 @@ export async function updateSummary(
     }
   }
 
+  revalidateDoctor(result.data.doctorId);
   return { success: true, data: result.data };
 }
 
@@ -395,6 +398,7 @@ export async function updateSchedule(
     }
   }
 
+  revalidateDoctor(result.data.doctorId);
   return { success: true, data: result.data };
 }
 
@@ -435,6 +439,7 @@ export async function updateServices(
     }
   }
 
+  revalidateDoctor(result.data.doctorId);
   return { success: true, data: result.data };
 }
 
@@ -509,6 +514,7 @@ export async function updateGallery(
     }
   }
 
+  revalidateDoctor(result.data.doctorId);
   return { success: true, data: { ...result.data, galleryImages: uploadedUrls } };
 }
 
@@ -563,6 +569,7 @@ export async function updateAvatar(
     }
   }
 
+  revalidateDoctor(result.data.doctorId);
   return { success: true, data: { ...result.data, avatar: avatarUrl } };
 }
 
@@ -624,8 +631,60 @@ export async function updateCoverImage(
     }
   }
 
+  revalidateDoctor(result.data.doctorId);
   return { success: true, data: { ...result.data, coverImage: coverUrl } };
 }
+
+
+// Función auxiliar para revalidar cachés de Next.js ante cambios de perfil
+function revalidateDoctor(doctorId: string) {
+  try {
+    updateTag('directory-doctors');
+    updateTag(`doctor-profile-${doctorId}`);
+  } catch (err) {
+    console.error('Error updating tags:', err);
+  }
+}
+
+const getCachedDoctorProfileDb = (doctorId: string) => {
+  return unstable_cache(
+    async () => {
+      const { data, error } = await publicSupabase
+        .from('doctores')
+        .select(`
+          id,
+          ubicacion,
+          experiencia,
+          telefono,
+          bio,
+          lenguajes,
+          servicios,
+          cronograma,
+          galeria_imagenes,
+          imagen_portada,
+          tipo_plan,
+          usuarios (
+            nombre,
+            correo,
+            avatar
+          ),
+          especialidades (
+            categoria
+          )
+        `)
+        .eq('id', doctorId)
+        .maybeSingle();
+
+      if (error) throw error;
+      return data;
+    },
+    [`doctor-profile-${doctorId}`],
+    {
+      revalidate: 300, // 5 min
+      tags: [`doctor-profile-${doctorId}`],
+    }
+  )();
+};
 
 export async function getDoctorProfile(
   doctorId: string,
@@ -633,37 +692,8 @@ export async function getDoctorProfile(
   if (!doctorId) {
     return { success: false, error: 'ID de doctor inválido' };
   }
-
   try {
-    const { data, error } = await publicSupabase
-      .from('doctores')
-      .select(`
-        id,
-        ubicacion,
-        experiencia,
-        telefono,
-        bio,
-        lenguajes,
-        servicios,
-        cronograma,
-        galeria_imagenes,
-        imagen_portada,
-        tipo_plan,
-        usuarios (
-          nombre,
-          correo,
-          avatar
-        ),
-        especialidades (
-          categoria
-        )
-      `)
-      .eq('id', doctorId)
-      .maybeSingle();
-
-    if (error) {
-      return { success: false, error: error.message };
-    }
+    const data = await getCachedDoctorProfileDb(doctorId);
 
     if (!data) {
       return { success: true, data: null };

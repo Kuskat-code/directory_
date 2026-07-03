@@ -228,6 +228,7 @@ export function useProfileEditor(doctorId: string, defaults: EditableProfile) {
       setDraft(finalDraft);
       setIsEditing(false);
       setSaveStatus('saved');
+      window.dispatchEvent(new Event('auth-change'));
       setTimeout(() => setSaveStatus('idle'), 3000);
     });
   }, [doctorId, draft, profile]);
