@@ -5,7 +5,8 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { Search, User, ArrowRight, Stethoscope, Heart, Baby, Brain, Activity, Sparkles, HeartHandshake, Loader2 } from 'lucide-react';
-import { getCurrentUserSession, type UserSessionData } from '@/src/features/profile/profile.actions';
+import { type UserSessionData } from '@/src/features/profile/profile.actions';
+import { getCachedUserSession } from '@/src/lib/session-cache';
 import Header from '@/src/components/Header';
 import Footer from '@/src/components/Footer';
 
@@ -35,7 +36,7 @@ export default function PacienteDashboardPage() {
 
   useEffect(() => {
     async function loadUser() {
-      const response = await getCurrentUserSession();
+      const response = await getCachedUserSession();
       if (response.success && response.data && response.data.role === 'paciente') {
         setUser(response.data);
       } else {

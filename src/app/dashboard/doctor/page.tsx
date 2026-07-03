@@ -5,7 +5,8 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { User, Eye, Calendar, Sparkles, Settings, ArrowRight, Stethoscope, Loader2 } from 'lucide-react';
-import { getCurrentUserSession, type UserSessionData } from '@/src/features/profile/profile.actions';
+import { type UserSessionData } from '@/src/features/profile/profile.actions';
+import { getCachedUserSession } from '@/src/lib/session-cache';
 import Header from '@/src/components/Header';
 import Footer from '@/src/components/Footer';
 import PricingSection from '@/src/components/PricingSection';
@@ -17,7 +18,7 @@ export default function DoctorDashboardPage() {
 
   useEffect(() => {
     async function loadUser() {
-      const response = await getCurrentUserSession();
+      const response = await getCachedUserSession();
       if (response.success && response.data && (response.data.role === 'doctor' || response.data.role === 'admin')) {
         setUser(response.data);
       } else {

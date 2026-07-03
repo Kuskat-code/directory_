@@ -70,4 +70,5 @@ schema.sql
 skills-lock.json
 schema.dbml
 seed.sql
-
+test-db-security.mjs
+skills-lock.json
