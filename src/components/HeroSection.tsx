@@ -3,9 +3,8 @@
 import Link from 'next/link';
 import { useState } from 'react';
 import { motion } from 'framer-motion';
+import { EASE } from '@/src/lib/constants';
 import { AnimatedWord } from '@/src/components/ui/animated-word';
-
-const EASE = [0.4, 0, 0.2, 1] as const;
 
 const flipWords = ['Consulta', 'Encuentra', 'Agenda', 'Contacta'];
 

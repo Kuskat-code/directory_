@@ -5,6 +5,7 @@ import Image from 'next/image';
 import { AnimatePresence, motion } from 'framer-motion';
 import { ChevronLeft, ChevronRight, Plus, Trash2, X } from 'lucide-react';
 import type { Doctor } from '@/src/lib/constants';
+import { EASE } from '@/src/lib/constants';
 import type { EditableProfile, ProfileService } from '@/src/features/profile/types';
 import { ImageUploader } from '@/src/features/profile/components/ImageUploader';
 import {
@@ -15,8 +16,6 @@ import {
   isAcceptedImageMimeType,
 } from '@/src/features/profile/validation';
 import { Button } from '@/src/components/ui/Button';
-
-const EASE = [0.4, 0, 0.2, 1] as const;
 
 const sectionVariants = {
   hidden: { opacity: 0, y: 28 },

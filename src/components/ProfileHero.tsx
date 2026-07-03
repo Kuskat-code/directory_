@@ -3,13 +3,11 @@
 import Image from 'next/image';
 import { motion } from 'framer-motion';
 import { MapPin } from 'lucide-react';
+import { EASE, MEDICAL_SPECIALTIES as SPECIALTIES } from '@/src/lib/constants';
 import type { Doctor } from '@/src/lib/constants';
-import { MEDICAL_SPECIALTIES as SPECIALTIES } from '@/src/lib/constants';
 import { getSpecialtyBadgeColors } from '@/src/lib/specialty-badge-colors';
 import type { EditableProfile } from '@/src/features/profile/types';
 import { ImageUploader } from '@/src/features/profile/components/ImageUploader';
-
-const EASE = [0.4, 0, 0.2, 1] as const;
 
 interface ProfileHeroProps {
   profile: EditableProfile;

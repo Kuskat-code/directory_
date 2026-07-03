@@ -4,7 +4,7 @@ import { useMemo, useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Pencil } from 'lucide-react';
 import { useSearchParams } from 'next/navigation';
-import { EXAMPLE_DOCTORS, type Doctor, type DoctorAvailability } from '@/src/lib/constants';
+import { EASE, EXAMPLE_DOCTORS, type Doctor, type DoctorAvailability } from '@/src/lib/constants';
 import ProfileHero from '@/src/components/ProfileHero';
 import ProfileDetails from '@/src/components/ProfileDetails';
 import ProfileSidebar from '@/src/components/ProfileSidebar';
@@ -13,8 +13,6 @@ import { useProfileEditor } from '@/src/features/profile/hooks/use-profile-edito
 import { ProfileEditorModal } from '@/src/features/profile/components/ProfileEditorModal';
 import type { UserSessionData } from '@/src/features/profile/profile.actions';
 import { AUTH_CHANGE_EVENT, getCachedUserSession } from '@/src/features/profile/lib/session-client-cache';
-
-const EASE = [0.4, 0, 0.2, 1] as const;
 
 export default function ProfileContent() {
   const searchParams = useSearchParams();

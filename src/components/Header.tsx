@@ -176,6 +176,7 @@ export default function Header() {
                         sizes="40px"
                         className="object-cover"
                         unoptimized
+                        loading="eager"
                       />
                     </button>
                     <AnimatePresence>
@@ -241,6 +242,7 @@ export default function Header() {
                       sizes="40px"
                       className="object-cover"
                       unoptimized
+                      loading="eager"
                     />
                   </Link>
                 )}
@@ -345,6 +347,7 @@ export default function Header() {
                       sizes="40px"
                       className="object-cover"
                       unoptimized
+                      loading="eager"
                     />
                   </div>
                   <span className="font-semibold text-gray-700">{user.name}</span>

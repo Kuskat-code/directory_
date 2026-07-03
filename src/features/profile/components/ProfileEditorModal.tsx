@@ -31,9 +31,7 @@ import {
   MAX_IMAGE_BYTES,
   isAcceptedImageMimeType,
 } from '../validation';
-import { MEDICAL_SPECIALTIES, EL_SALVADOR_DEPARTMENTS_ORIENTE } from '@/src/lib/constants';
-
-const EASE = [0.4, 0, 0.2, 1] as const;
+import { EASE, MEDICAL_SPECIALTIES, EL_SALVADOR_DEPARTMENTS_ORIENTE } from '@/src/lib/constants';
 
 export type SaveStatus = 'idle' | 'saving' | 'saved' | 'error';
 

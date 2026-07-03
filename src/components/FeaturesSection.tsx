@@ -2,9 +2,8 @@
 
 import { motion } from 'framer-motion';
 import { SectionContainer } from '@/src/components/ui/SectionContainer';
+import { EASE } from '@/src/lib/constants';
 import { Card } from '@/src/components/ui/Card';
-
-const EASE = [0.4, 0, 0.2, 1] as const;
 
 function DirectoryIcon() {
   return (

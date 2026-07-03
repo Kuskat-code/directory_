@@ -13,9 +13,6 @@ export const MEDICAL_SPECIALTIES = [
   'Ginecología',
   'Cardiología',
   'Dermatología',
-
-  'Pediatría',
-  'Ginecología',
   'Odontología',
   'Psicología',
   'Psiquiatría',
@@ -37,6 +34,8 @@ export const EL_SALVADOR_DEPARTMENTS_ORIENTE = [
   'Morazán',
   'La Unión',
 ];
+
+export const EASE = [0.4, 0, 0.2, 1] as const;
 
 export const VALIDATION = {
   EMAIL_REGEX: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,

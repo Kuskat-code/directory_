@@ -6,9 +6,8 @@ import { Calendar, Clock, MapPin, Plus, Trash2 } from 'lucide-react';
 import AppointmentModal from '@/src/components/AppointmentModal';
 import { getSpecialtyBadgeColors } from '@/src/lib/specialty-badge-colors';
 import type { EditableProfile, ProfileScheduleItem } from '@/src/features/profile/types';
+import { EASE } from '@/src/lib/constants';
 import type { AppointmentData } from '@/src/components/AppointmentModal';
-
-const EASE = [0.4, 0, 0.2, 1] as const;
 
 const sidebarVariants = {
   hidden: { opacity: 0, y: 28 },

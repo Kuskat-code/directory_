@@ -188,6 +188,7 @@ export default function ConfiguracionContent() {
                   sizes="80px"
                   className="object-cover"
                   unoptimized
+                  loading="eager"
                 />
               ) : (
                 <div className="flex h-full w-full items-center justify-center bg-teal-50 text-teal-600">
