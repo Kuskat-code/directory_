@@ -44,9 +44,10 @@ export default function DirectorioContent({
     const params = new URLSearchParams();
     if (nextSpecialty) params.set('specialty', nextSpecialty);
     if (nextLocation) params.set('location', nextLocation);
-    router.replace(params.size > 0 ? `/directorio?${params.toString()}` : '/directorio', {
-      scroll: false,
-    });
+    const nextUrl = params.size > 0 ? `/directorio?${params.toString()}` : '/directorio';
+    
+    // Actualizar la URL de forma local en el navegador, evitando el viaje al servidor
+    window.history.replaceState({ ...window.history.state, as: nextUrl, url: nextUrl }, '', nextUrl);
   };
 
   const updateSpecialty = (nextSpecialty: string) => {
