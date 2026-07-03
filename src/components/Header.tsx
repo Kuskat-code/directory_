@@ -7,10 +7,10 @@ import { usePathname, useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { Button } from '@/src/components/ui/Button';
 import {
-  getCurrentUserSession,
   signOutAction,
   type UserSessionData,
 } from '@/src/features/profile/profile.actions';
+import { getCachedUserSession } from '@/src/lib/session-cache';
 
 // Links se definen dinámicamente dentro del componente por rol
 
@@ -89,10 +89,10 @@ export default function Header() {
     };
   }, [menuOpen]);
 
-  // Auth Hook (Safe server-side session loading, reactive to pathname and auth-change events)
+  // Auth Hook (Safe server-side session loading, reactive to auth-change events)
   useEffect(() => {
     async function loadSession() {
-      const response = await getCurrentUserSession();
+      const response = await getCachedUserSession();
       if (response.success && response.data) {
         setUser(response.data);
         setProfileAvatar(response.data.avatar);
@@ -107,7 +107,7 @@ export default function Header() {
     return () => {
       window.removeEventListener('auth-change', loadSession);
     };
-  }, [pathname]);
+  }, []);
 
   const handleSignOut = async () => {
     await signOutAction();
