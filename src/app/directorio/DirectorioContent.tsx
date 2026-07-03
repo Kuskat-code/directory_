@@ -1,7 +1,7 @@
 'use client';
 
 import { useMemo, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { AlertCircle, Search, SlidersHorizontal } from 'lucide-react';
 import type { Doctor } from '@/src/lib/constants';
 import Header from '@/src/components/Header';
@@ -17,20 +17,18 @@ import {
 
 interface DirectorioContentProps {
   initialDoctors: Doctor[];
-  initialSpecialty: string;
-  initialLocation: string;
   loadError: string | null;
 }
 
 export default function DirectorioContent({
   initialDoctors,
-  initialSpecialty,
-  initialLocation,
   loadError,
 }: DirectorioContentProps) {
   const router = useRouter();
-  const [specialty, setSpecialty] = useState(initialSpecialty);
-  const [location, setLocation] = useState(initialLocation);
+  const searchParams = useSearchParams();
+  
+  const [specialty, setSpecialty] = useState(() => searchParams.get('specialty') ?? '');
+  const [location, setLocation] = useState(() => searchParams.get('location') ?? '');
   const doctors = initialDoctors;
 
   const filtered = useMemo(() => {
@@ -44,9 +42,10 @@ export default function DirectorioContent({
     const params = new URLSearchParams();
     if (nextSpecialty) params.set('specialty', nextSpecialty);
     if (nextLocation) params.set('location', nextLocation);
-    router.replace(params.size > 0 ? `/directorio?${params.toString()}` : '/directorio', {
-      scroll: false,
-    });
+    const nextUrl = params.size > 0 ? `/directorio?${params.toString()}` : '/directorio';
+    
+    // Actualizar la URL de forma local en el navegador, evitando el viaje al servidor
+    window.history.replaceState({ ...window.history.state, as: nextUrl, url: nextUrl }, '', nextUrl);
   };
 
   const updateSpecialty = (nextSpecialty: string) => {
@@ -67,8 +66,38 @@ export default function DirectorioContent({
 
   const hasFilters = specialty || location;
 
+  const itemListJsonLd = useMemo(() => {
+    const origin = typeof window !== 'undefined' ? window.location.origin : 'https://directorio.pro';
+    return {
+      '@context': 'https://schema.org',
+      '@type': 'ItemList',
+      name: 'Directorio medico de El Salvador',
+      url: `${origin}/directorio`,
+      numberOfItems: filtered.length,
+      itemListElement: filtered.slice(0, 24).map((doctor, index) => ({
+        '@type': 'ListItem',
+        position: index + 1,
+        url: `${origin}/perfil?id=${encodeURIComponent(doctor.id)}`,
+        item: {
+          '@type': 'Physician',
+          name: doctor.name,
+          medicalSpecialty: doctor.specialty,
+          address: {
+            '@type': 'PostalAddress',
+            addressLocality: doctor.location,
+            addressCountry: 'SV',
+          },
+        },
+      })),
+    };
+  }, [filtered]);
+
   return (
     <div className="relative min-h-screen bg-secondary/40">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(itemListJsonLd) }}
+      />
       <Header />
 
       <main className="pt-24 pb-16">
