@@ -67,20 +67,20 @@ const CARDS_PER_PAGE = 3;
 const TOTAL_PAGES = Math.ceil(NEWS.length / CARDS_PER_PAGE);
 // ─── Slide variants (whole page slides in/out) ────────────────────────────────
 
-const pageVariants = {
+const pageVariants: import('framer-motion').Variants = {
   enter: (dir: number) => ({
-    x: dir > 0 ? '110%' : '-110%',
+    x: dir > 0 ? 50 : -50,
     opacity: 0,
   }),
   center: {
-    x: '0%',
+    x: 0,
     opacity: 1,
-    transition: { duration: 0.5, ease: EASE },
+    transition: { duration: 0.6, ease: 'easeOut' },
   },
   exit: (dir: number) => ({
-    x: dir > 0 ? '-110%' : '110%',
+    x: dir > 0 ? -50 : 50,
     opacity: 0,
-    transition: { duration: 0.4, ease: EASE },
+    transition: { duration: 0.4, ease: 'easeIn' },
   }),
 };
 
