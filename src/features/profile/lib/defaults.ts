@@ -13,36 +13,34 @@ const DEFAULT_GALLERY = [
 const DEFAULT_SERVICES: ProfileService[] = [
   {
     title: 'Consulta Especializada',
-    desc: 'Atencion medica personalizada con enfasis en diagnostico preciso y plan de tratamiento integral.',
+    desc: 'Atención médica personalizada con énfasis en diagnóstico preciso y plan de tratamiento integral.',
   },
   {
-    title: 'Diagnostico Avanzado',
-    desc: 'Evaluacion completa utilizando tecnologia de punta para resultados precisos y confiables.',
+    title: 'Diagnóstico Avanzado',
+    desc: 'Evaluación completa utilizando tecnología de punta para resultados precisos y confiables.',
   },
   {
     title: 'Seguimiento Continuo',
-    desc: 'Monitoreo regular del progreso del tratamiento con ajustes personalizados segun sea necesario.',
+    desc: 'Monitoreo regular del progreso del tratamiento con ajustes personalizados según sea necesario.',
   },
   {
     title: 'Teleconsulta',
-    desc: 'Consultas virtuales para seguimiento y atencion primaria desde la comodidad de tu hogar.',
+    desc: 'Consultas virtuales para seguimiento y atención primaria desde la comodidad de tu hogar.',
   },
 ];
 
 const DEFAULT_SCHEDULE: ProfileScheduleItem[] = [
   { days: 'Lunes - Viernes', hours: '8:00 AM - 5:00 PM' },
-  { days: 'Sabado', hours: '8:00 AM - 12:00 PM' },
+  { days: 'Sábado', hours: '8:00 AM - 12:00 PM' },
   { days: 'Domingo', hours: 'Solo Emergencias', closed: true },
 ];
 
 export function buildDefaultProfile(
   doctor: Doctor,
-  services: ProfileService[] = DEFAULT_SERVICES,
-  schedule: ProfileScheduleItem[] = DEFAULT_SCHEDULE,
-  galleryImages: string[] = DEFAULT_GALLERY,
+  isMock: boolean = false,
 ): EditableProfile {
   return {
-    avatar: doctor.avatar,
+    avatar: doctor.avatar || `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(doctor.name)}`,
     coverImage: DEFAULT_COVER,
     name: doctor.name,
     specialty: doctor.specialty,
@@ -50,13 +48,14 @@ export function buildDefaultProfile(
     experience: doctor.experience,
     bio:
       doctor.bio ??
-      `Especialista en ${doctor.specialty} con ${doctor.experience} años de experiencia. Atencion personalizada y compromiso con la salud de sus pacientes.`,
-    languages: doctor.languages ?? [],
+      `Especialista en ${doctor.specialty} con ${doctor.experience} años de experiencia.  Atención personalizada y compromiso con la salud de sus pacientes.`,
+    languages: doctor.languages ?? ['Español'],
     phone: doctor.phone,
     email: doctor.email,
-    services,
-    schedule,
-    galleryImages,
+    services: isMock ? DEFAULT_SERVICES : [],
+    schedule: isMock ? DEFAULT_SCHEDULE : [],
+    galleryImages: isMock ? DEFAULT_GALLERY : [],
+    planType: doctor.isPremium ? 'premium' : 'free',
   };
 }
 

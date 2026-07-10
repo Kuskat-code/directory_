@@ -6,17 +6,16 @@ import Image from 'next/image';
 import { motion } from 'framer-motion';
 import { Calendar, Crown, MapPin, Stethoscope } from 'lucide-react';
 import type { Doctor } from '@/src/lib/constants';
-import { getSpecialtyBadgeColors } from '@/src/lib/specialty-badge-colors';
 import { Card } from '@/src/components/ui/Card';
 import AppointmentModal from '@/src/components/AppointmentModal';
+import { EASE } from '@/src/lib/constants';
 import type { AppointmentData } from '@/src/components/AppointmentModal';
+import { getSpecialtyColorTokens } from '@/src/lib/specialty-colors';
 
 interface Props {
   doctor: Doctor;
   index?: number;
 }
-
-const EASE = [0.4, 0, 0.2, 1] as const;
 
 function AvailabilityIndicator({ status }: { status: Doctor['availability'] }) {
   const config = {
@@ -35,7 +34,7 @@ function AvailabilityIndicator({ status }: { status: Doctor['availability'] }) {
 
 export default function DoctorCard({ doctor, index = 0 }: Props) {
   const [showAppointment, setShowAppointment] = useState(false);
-  const specialtyColor = getSpecialtyBadgeColors(doctor.specialty);
+  const specialtyColor = getSpecialtyColorTokens(doctor.specialty);
 
   const handleAppointmentConfirm = (data: AppointmentData) => {
     console.log('Cita agendada:', data);
@@ -54,7 +53,7 @@ export default function DoctorCard({ doctor, index = 0 }: Props) {
         initial={{ opacity: 0, y: 28 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true, margin: '-40px' }}
-        transition={{ duration: 0.45, delay: index * 0.06, ease: EASE }}
+        transition={{ duration: 0.45, delay: index < 6 ? (index % 3) * 0.06 : 0, ease: EASE }}
         whileHover={{ y: -6, scale: 1.01 }}
         className="group h-full"
       >
@@ -65,12 +64,14 @@ export default function DoctorCard({ doctor, index = 0 }: Props) {
         >
           {/* Header: cover image (premium) or gradient (free) */}
           <div className="relative h-30 overflow-hidden">
-            {doctor.isPremium ? (
+            {doctor.isPremium && doctor.coverImage ? (
               <>
-                <img
+                <Image
                   src={doctor.coverImage}
                   alt=""
-                  className="h-full w-full object-cover"
+                  fill
+                  sizes="(min-width: 1280px) 31vw, (min-width: 768px) 45vw, 92vw"
+                  className="object-cover"
                   loading="lazy"
                 />
                 <div className="absolute inset-0 bg-gradient-to-b from-black/50 to-black/10" />

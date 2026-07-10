@@ -1,8 +1,10 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import Image from 'next/image';
 import { AnimatePresence, motion } from 'framer-motion';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { EASE } from '@/src/lib/constants';
 
 // ─── Data ─────────────────────────────────────────────────────────────────────
 
@@ -63,24 +65,22 @@ const NEWS: NewsItem[] = [
 
 const CARDS_PER_PAGE = 3;
 const TOTAL_PAGES = Math.ceil(NEWS.length / CARDS_PER_PAGE);
-const EASE = [0.4, 0, 0.2, 1] as const;
-
 // ─── Slide variants (whole page slides in/out) ────────────────────────────────
 
-const pageVariants = {
+const pageVariants: import('framer-motion').Variants = {
   enter: (dir: number) => ({
-    x: dir > 0 ? '110%' : '-110%',
+    x: dir > 0 ? 50 : -50,
     opacity: 0,
   }),
   center: {
-    x: '0%',
+    x: 0,
     opacity: 1,
-    transition: { duration: 0.5, ease: EASE },
+    transition: { duration: 0.6, ease: 'easeOut' },
   },
   exit: (dir: number) => ({
-    x: dir > 0 ? '-110%' : '110%',
+    x: dir > 0 ? -50 : 50,
     opacity: 0,
-    transition: { duration: 0.4, ease: EASE },
+    transition: { duration: 0.4, ease: 'easeIn' },
   }),
 };
 
@@ -97,12 +97,13 @@ function NewsCard({ item, index }: { item: NewsItem; index: number }) {
       className="flex cursor-pointer flex-col overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-sm will-change-transform"
     >
       {/* Image */}
-      <div className="relative w-full overflow-hidden">
-        <img
+      <div className="relative aspect-video w-full overflow-hidden">
+        <Image
           src={item.image}
           alt={item.title}
-          className="aspect-video w-full object-cover transition-transform duration-500 hover:scale-105"
-          loading="lazy"
+          fill
+          sizes="(min-width: 1024px) 33vw, (min-width: 768px) 50vw, 100vw"
+          className="object-cover transition-transform duration-500 hover:scale-105"
         />
         <span className="absolute left-3 top-3 rounded-full bg-black/50 px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-white backdrop-blur-sm">
           {item.category}
@@ -118,7 +119,7 @@ function NewsCard({ item, index }: { item: NewsItem; index: number }) {
           <time dateTime={item.date} className="text-xs text-slate-400">
             {item.date}
           </time>
-          <span className="text-xs font-medium text-blue-600">
+          <span className="text-xs font-medium text-teal-600">
             Leer más →
           </span>
         </div>
@@ -196,9 +197,6 @@ export default function NewsCarousel() {
           className="mb-10 flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-end"
         >
           <div>
-            <span className="mb-2 inline-block rounded-full bg-blue-50 px-3 py-1 text-xs font-semibold uppercase tracking-wider text-blue-600">
-              Novedades
-            </span>
             <h2 className="text-3xl font-bold text-slate-900 sm:text-4xl">
               Últimas noticias médicas
             </h2>
@@ -210,10 +208,10 @@ export default function NewsCarousel() {
           {/* Arrows — top right, aligned with header */}
           <div className="flex shrink-0 items-center gap-2">
             <NavButton onClick={() => go(-1)} label="Página anterior" disabled={page === 0}>
-              <ChevronLeft className="h-4 w-4" />
+              <ChevronLeft className="h-4 w-4" suppressHydrationWarning />
             </NavButton>
             <NavButton onClick={() => go(1)} label="Página siguiente" disabled={page === TOTAL_PAGES - 1}>
-              <ChevronRight className="h-4 w-4" />
+              <ChevronRight className="h-4 w-4" suppressHydrationWarning />
             </NavButton>
           </div>
         </motion.div>
@@ -252,7 +250,7 @@ export default function NewsCarousel() {
               }}
               className={`rounded-full transition-all duration-300 ${
                 i === page
-                  ? 'h-2 w-7 bg-blue-500'
+                  ? 'h-2 w-7 bg-teal-600'
                   : 'h-2 w-2 bg-slate-300 hover:bg-slate-400'
               }`}
             />

@@ -1,6 +1,7 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
+import Image from 'next/image';
 import { AnimatePresence, motion } from 'framer-motion';
 import {
   Briefcase,
@@ -23,12 +24,15 @@ import type { EditableProfile, ProfileService, SpecialtyColorScheme } from '../t
 import { ImageUploader } from './ImageUploader';
 import { HoursSection } from './hours-section';
 import { getSpecialtyColors } from '../specialty-colors';
-import { MEDICAL_SPECIALTIES } from '@/src/lib/constants';
+import {
+  ACCEPTED_IMAGE_MIME_TYPES,
+  FREE_GALLERY_LIMIT,
+  MAX_GALLERY_IMAGES,
+  MAX_IMAGE_BYTES,
+  isAcceptedImageMimeType,
+} from '../validation';
+import { EASE, MEDICAL_SPECIALTIES, EL_SALVADOR_DEPARTMENTS_ORIENTE } from '@/src/lib/constants';
 
-const FREE_GALLERY_LIMIT = 3;
-const EASE = [0.4, 0, 0.2, 1] as const;
-const FALLBACK_IMG =
-  'https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?q=80&w=400';
 
 export type SaveStatus = 'idle' | 'saving' | 'saved' | 'error';
 
@@ -71,19 +75,18 @@ export function ProfileEditorModal({
   onCancel,
   onChange,
 }: ProfileEditorModalProps) {
-  const [activeTab, setActiveTab] = useState<TabId>('perfil');
-
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = 'hidden';
     } else {
       document.body.style.overflow = '';
     }
-
     return () => {
       document.body.style.overflow = '';
     };
   }, [isOpen]);
+
+  const [activeTab, setActiveTab] = useState<TabId>('perfil');
 
   // Derive accent colors from the current specialty being edited
   const colors = getSpecialtyColors(draft.specialty);
@@ -91,15 +94,15 @@ export function ProfileEditorModal({
   return (
     <AnimatePresence>
       {isOpen && (
-        <>
-          {/* Backdrop — z-[100] cubre la navbar (z-50) */}
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+          {/* Backdrop con Blur */}
           <motion.div
             key="editor-backdrop"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.22 }}
-            className="fixed inset-0 z-[100] bg-black/50 backdrop-blur-sm"
+            className="absolute inset-0 bg-black/50 backdrop-blur-sm"
             onClick={onCancel}
             aria-hidden="true"
           />
@@ -114,7 +117,7 @@ export function ProfileEditorModal({
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.97, y: 24 }}
             transition={{ duration: 0.26, ease: EASE }}
-            className="fixed inset-x-4 bottom-4 top-6 z-[110] mx-auto flex max-w-2xl flex-col overflow-hidden rounded-3xl bg-white shadow-[0_32px_64px_-12px_rgb(10_110_122/0.25),0_0_0_1px_rgb(10_110_122/0.06)] sm:inset-x-8 md:inset-x-0 md:left-1/2 md:w-full md:-translate-x-1/2"
+            className="relative z-10 flex w-full max-w-2xl max-h-[90vh] flex-col overflow-hidden rounded-3xl bg-white shadow-[0_32px_64px_-12px_rgb(10_110_122/0.25),0_0_0_1px_rgb(10_110_122/0.06)]"
           >
             {/* Thin specialty-color accent strip at top */}
             <div
@@ -263,7 +266,7 @@ export function ProfileEditorModal({
               </AnimatePresence>
             </div>
           </motion.div>
-        </>
+        </div>
       )}
     </AnimatePresence>
   );
@@ -285,12 +288,17 @@ function PerfilTab({
       {/* Avatar card */}
       <Card>
         <Field label="Foto de perfil">
-          <div className="flex flex-col items-center gap-4">
-            <img
-              src={draft.avatar}
-              alt="Foto de perfil actual"
-              className="h-14 w-14 rounded-full object-cover ring-2 ring-border"
-            />
+          <div className="flex items-center gap-4">
+            <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-full ring-2 ring-border">
+              <Image
+                src={draft.avatar}
+                alt="Foto de perfil actual"
+                fill
+                sizes="56px"
+                className="object-cover"
+                unoptimized
+              />
+            </div>
             <ImageUploader
               value={draft.avatar}
               onChange={(avatar) => onChange({ avatar })}
@@ -351,15 +359,20 @@ function PerfilTab({
               <MapPin
                 aria-hidden="true"
                 className="pointer-events-none absolute left-3 top-1/2 z-10 h-3.5 w-3.5 -translate-y-1/2 text-text-muted"
+                suppressHydrationWarning
               />
-              <input
-                type="text"
+              <select
                 value={draft.location}
                 onChange={(e) => onChange({ location: e.target.value })}
-                className="profile-input"
+                className="profile-input cursor-pointer"
                 style={{ paddingLeft: '2.5rem' }}
-                placeholder="Ciudad, Depto."
-              />
+              >
+                {EL_SALVADOR_DEPARTMENTS_ORIENTE.map((dept) => (
+                  <option key={dept} value={dept}>
+                    {dept}
+                  </option>
+                ))}
+              </select>
             </div>
           </Field>
           <Field label="Años de experiencia">
@@ -424,6 +437,14 @@ function ResumenTab({
   draft: EditableProfile;
   onChange: (u: Partial<EditableProfile>) => void;
 }) {
+  const languagesSource = draft.languages.join(', ');
+  const [languagesDraft, setLanguagesDraft] = useState(() => ({
+    source: languagesSource,
+    value: languagesSource,
+  }));
+  const languagesText =
+    languagesDraft.source === languagesSource ? languagesDraft.value : languagesSource;
+
   return (
     <Card>
       <div className="space-y-4">
@@ -444,15 +465,17 @@ function ResumenTab({
         <Field label="Idiomas hablados">
           <input
             type="text"
-            value={draft.languages.join(', ')}
-            onChange={(e) =>
+            value={languagesText}
+            onChange={(e) => {
+              const val = e.target.value;
+              setLanguagesDraft({ source: languagesSource, value: val });
               onChange({
-                languages: e.target.value
+                languages: val
                   .split(',')
                   .map((l) => l.trim())
                   .filter(Boolean),
-              })
-            }
+              });
+            }}
             className="profile-input"
             placeholder="Español, Inglés, Francés…"
           />
@@ -495,6 +518,27 @@ function BannerTab({
   draft: EditableProfile;
   onChange: (u: Partial<EditableProfile>) => void;
 }) {
+  const isPremium = draft.planType === 'premium' || draft.planType === 'enterprise';
+
+  if (!isPremium) {
+    return (
+      <Card>
+        <div className="flex flex-col items-center justify-center p-8 text-center space-y-4">
+          <div className="flex h-12 w-12 items-center justify-center rounded-full bg-amber-50 text-amber-500 border border-amber-100">
+            <Crown className="h-6 w-6" />
+          </div>
+          <div>
+            <h3 className="text-sm font-semibold text-text">Función Premium</h3>
+            <p className="mt-1 text-xs text-text-muted max-w-sm leading-relaxed">
+              La personalización de la imagen de portada (banner) es una característica exclusiva para suscriptores Premium. Mejora tu plan para habilitar esta sección.
+            </p>
+          </div>
+          <PremiumUpgradeButton className="mt-1" />
+        </div>
+      </Card>
+    );
+  }
+
   return (
     <Card>
       <div className="space-y-4">
@@ -505,11 +549,14 @@ function BannerTab({
         </div>
 
         {/* Banner preview */}
-        <div className="relative overflow-hidden rounded-[var(--radius-card)] border border-border/60">
-          <img
+        <div className="relative h-40 overflow-hidden rounded-[var(--radius-card)] border border-border/60">
+          <Image
             src={draft.coverImage}
             alt="Banner actual del perfil"
-            className="h-40 w-full object-cover"
+            fill
+            sizes="(min-width: 768px) 640px, 100vw"
+            className="object-cover"
+            unoptimized
           />
         </div>
 
@@ -539,11 +586,35 @@ function GaleriaTab({
   onChange: (u: Partial<EditableProfile>) => void;
 }) {
   const images = draft.galleryImages;
-  const atLimit = images.length >= FREE_GALLERY_LIMIT;
+  const isPremium = draft.planType === 'premium' || draft.planType === 'enterprise';
+  const atLimit = isPremium ? images.length >= MAX_GALLERY_IMAGES : images.length >= FREE_GALLERY_LIMIT;
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [fileError, setFileError] = useState<string | null>(null);
 
-  const addImage = () => {
-    if (atLimit) return;
-    onChange({ galleryImages: [...images, FALLBACK_IMG] });
+  const handleAddFile = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setFileError(null);
+
+    if (!isAcceptedImageMimeType(file.type)) {
+      setFileError('Usa una imagen JPG, PNG, WebP o GIF.');
+      e.target.value = '';
+      return;
+    }
+
+    if (file.size > MAX_IMAGE_BYTES) {
+      setFileError('La imagen no puede superar 5 MB.');
+      e.target.value = '';
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      onChange({ galleryImages: [...images, reader.result as string] });
+    };
+    reader.onerror = () => setFileError('No se pudo leer la imagen.');
+    reader.readAsDataURL(file);
+    e.target.value = ''; // Reset input
   };
 
   const removeImage = (idx: number) => {
@@ -562,20 +633,32 @@ function GaleriaTab({
           <div>
             <h3 className="text-sm font-semibold text-text">Galería profesional</h3>
             <p className="text-[11px] text-text-muted">
-              {images.length} / {FREE_GALLERY_LIMIT} imágenes en versión gratuita
+              {isPremium
+                ? `${images.length} / ${MAX_GALLERY_IMAGES} imágenes (Premium)`
+                : `${images.length} / ${FREE_GALLERY_LIMIT} imágenes en versión gratuita`}
             </p>
           </div>
           {!atLimit && (
-            <button
-              type="button"
-              onClick={addImage}
-              className="inline-flex items-center gap-1.5 rounded-[var(--radius-button)] border border-border px-3 py-1.5 text-xs font-medium text-text-muted transition-colors hover:border-primary/50 hover:text-primary"
-            >
-              <Plus className="h-3.5 w-3.5" aria-hidden="true" />
-              Agregar foto
-            </button>
+            <div>
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                className="inline-flex items-center gap-1.5 rounded-[var(--radius-button)] border border-border px-3 py-1.5 text-xs font-medium text-text-muted transition-colors hover:border-primary/50 hover:text-primary cursor-pointer"
+              >
+                <Plus className="h-3.5 w-3.5" aria-hidden="true" />
+                Agregar foto
+              </button>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept={ACCEPTED_IMAGE_MIME_TYPES.join(',')}
+                className="hidden"
+                onChange={handleAddFile}
+              />
+            </div>
           )}
         </div>
+        {fileError && <p className="mb-3 text-xs text-red-600">{fileError}</p>}
 
         {/* Image grid */}
         {images.length > 0 ? (
@@ -583,11 +666,13 @@ function GaleriaTab({
             {images.map((imgUrl, i) => (
               <div key={i} className="space-y-2">
                 <div className="relative aspect-[4/3] overflow-hidden rounded-[var(--radius-card)] border border-border/60 bg-secondary">
-                  <img
+                  <Image
                     src={imgUrl}
                     alt={`Foto profesional ${i + 1}`}
-                    className="h-full w-full object-cover"
-                    loading="lazy"
+                    fill
+                    sizes="(min-width: 768px) 200px, 33vw"
+                    className="object-cover"
+                    unoptimized
                   />
                   <button
                     type="button"

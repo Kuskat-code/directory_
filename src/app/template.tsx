@@ -1,8 +1,7 @@
 'use client';
 
 import { motion } from 'framer-motion';
-
-const EASE = [0.4, 0, 0.2, 1] as const;
+import { EASE } from '@/src/lib/constants';
 
 export default function Template({ children }: { children: React.ReactNode }) {
   return (

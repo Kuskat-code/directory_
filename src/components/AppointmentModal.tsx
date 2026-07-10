@@ -1,9 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState, useSyncExternalStore } from 'react';
+import { createPortal } from 'react-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import {
-  AlertTriangle,
   Calendar,
   CheckCircle2,
   ChevronLeft,
@@ -11,8 +11,7 @@ import {
   Clock,
   X,
 } from 'lucide-react';
-
-const EASE = [0.4, 0, 0.2, 1] as const;
+import { EASE } from '@/src/lib/constants';
 
 const MONTHS = [
   'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
@@ -21,18 +20,19 @@ const MONTHS = [
 
 const DAYS = ['Do', 'Lu', 'Ma', 'Mi', 'Ju', 'Vi', 'Sa'];
 
-const URGENCY_LEVELS = [
-  { value: 'bajo', label: 'Bajo', color: 'text-green-600 bg-green-50 border-green-200' },
-  { value: 'medio', label: 'Medio', color: 'text-yellow-600 bg-yellow-50 border-yellow-200' },
-  { value: 'alto', label: 'Alto', color: 'text-orange-600 bg-orange-50 border-orange-200' },
-  { value: 'urgente', label: 'Urgente', color: 'text-red-600 bg-red-50 border-red-200' },
-];
-
 const TIME_SLOTS = [
   '8:00 AM', '8:30 AM', '9:00 AM', '9:30 AM', '10:00 AM', '10:30 AM',
   '11:00 AM', '11:30 AM', '2:00 PM', '2:30 PM', '3:00 PM', '3:30 PM',
   '4:00 PM', '4:30 PM', '5:00 PM',
 ];
+
+function useIsMounted() {
+  return useSyncExternalStore(
+    () => () => undefined,
+    () => true,
+    () => false,
+  );
+}
 
 interface AppointmentModalProps {
   isOpen: boolean;
@@ -57,13 +57,25 @@ export default function AppointmentModal({
   onClose,
   onConfirm,
 }: AppointmentModalProps) {
+  const mounted = useIsMounted();
+
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [isOpen]);
+
   const today = new Date();
   const [currentMonth, setCurrentMonth] = useState(today.getMonth());
   const [currentYear, setCurrentYear] = useState(today.getFullYear());
   const [selectedDate, setSelectedDate] = useState<number | null>(null);
   const [selectedTime, setSelectedTime] = useState('');
   const [isEmergency, setIsEmergency] = useState(false);
-  const [urgencyLevel, setUrgencyLevel] = useState('medio');
   const [reason, setReason] = useState('');
   const [confirmed, setConfirmed] = useState(false);
 
@@ -105,7 +117,7 @@ export default function AppointmentModal({
       date: dateStr,
       time: selectedTime,
       isEmergency,
-      urgencyLevel: isEmergency ? urgencyLevel : '',
+      urgencyLevel: isEmergency ? 'urgente' : '',
       reason: isEmergency ? reason : '',
     });
     setConfirmed(true);
@@ -119,7 +131,6 @@ export default function AppointmentModal({
     setSelectedDate(null);
     setSelectedTime('');
     setIsEmergency(false);
-    setUrgencyLevel('medio');
     setReason('');
     setConfirmed(false);
   };
@@ -131,21 +142,25 @@ export default function AppointmentModal({
 
   const isFormValid = selectedDate !== null && selectedTime !== '' && (!isEmergency || reason.trim().length > 0);
 
-  return (
+  if (!mounted) return null;
+
+  return createPortal(
     <AnimatePresence>
       {isOpen && (
-        <>
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+          {/* Backdrop con Blur */}
           <motion.div
             key="appt-backdrop"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.22 }}
-            className="fixed inset-0 z-[100] bg-black/50 backdrop-blur-sm"
+            className="absolute inset-0 bg-black/50 backdrop-blur-sm"
             onClick={handleClose}
             aria-hidden="true"
           />
 
+          {/* Caja del Modal */}
           <motion.div
             key="appt-panel"
             role="dialog"
@@ -155,7 +170,7 @@ export default function AppointmentModal({
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.97, y: 24 }}
             transition={{ duration: 0.26, ease: EASE }}
-            className="fixed inset-x-4 bottom-4 top-6 z-[110] mx-auto flex max-w-lg flex-col overflow-hidden rounded-3xl bg-white shadow-[0_32px_64px_-12px_rgb(10_110_122/0.25),0_0_0_1px_rgb(10_110_122/0.06)] sm:inset-x-8 md:inset-x-0 md:left-1/2 md:w-full md:-translate-x-1/2"
+            className="relative z-10 flex w-full max-w-lg max-h-[90vh] flex-col overflow-hidden rounded-3xl bg-white shadow-[0_32px_64px_-12px_rgb(10_110_122/0.25),0_0_0_1px_rgb(10_110_122/0.06)]"
           >
             <div className="h-1 w-full shrink-0 bg-primary" />
 
@@ -164,7 +179,7 @@ export default function AppointmentModal({
                 <span className="flex h-6 w-6 items-center justify-center rounded-md bg-secondary">
                   <Calendar className="h-3.5 w-3.5 text-primary" aria-hidden="true" />
                 </span>
-                <h2 className="text-sm font-bold text-text">Agendar Cita</h2>
+                <h2 className="text-sm font-bold text-text">Agendar Cita Médica</h2>
               </div>
               <button
                 type="button"
@@ -182,7 +197,7 @@ export default function AppointmentModal({
                   <CheckCircle2 className="h-8 w-8 text-success" />
                 </span>
                 <div>
-                  <p className="text-lg font-bold text-text">Cita agendada</p>
+                  <p className="text-lg font-bold text-text">Cita Médica Agendada</p>
                   <p className="mt-1 text-sm text-text-muted">
                     {isEmergency ? 'Emergencia registrada. Te contactaremos pronto.' : 'Tu cita ha sido registrada exitosamente.'}
                   </p>
@@ -288,73 +303,54 @@ export default function AppointmentModal({
                   </motion.div>
                 )}
 
-                {/* Emergency toggle */}
-                <div className="mb-5 space-y-4">
-                  <label className="flex cursor-pointer items-center gap-3 rounded-[var(--radius-card)] border border-border/60 p-3 transition-colors hover:border-amber-300">
-                    <input
-                      type="checkbox"
-                      checked={isEmergency}
-                      onChange={(e) => setIsEmergency(e.target.checked)}
-                      className="h-4 w-4 accent-amber-500"
-                    />
-                    <div>
-                      <span className="flex items-center gap-1.5 text-sm font-semibold text-text">
-                        <AlertTriangle className="h-4 w-4 text-amber-500" />
-                        Es una emergencia
-                      </span>
-                      <p className="text-[11px] text-text-muted">
-                        Marca esta opción si requieres atención prioritaria.
-                      </p>
-                    </div>
+          {/* Emergency toggle */}
+          <div className="mb-5 space-y-4">
+            <label className="flex cursor-pointer items-center gap-3 rounded-[var(--radius-card)] border border-border/60 p-3 transition-colors hover:border-amber-300">
+              <input
+                type="checkbox"
+                checked={isEmergency}
+                onChange={(e) => setIsEmergency(e.target.checked)}
+                className="h-4 w-4 accent-amber-500"
+              />
+              <div className="flex-1">
+                <span className="flex items-center gap-2 text-sm font-semibold text-text">
+                  <span className="relative flex h-2.5 w-2.5">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-500 opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-red-600"></span>
+                  </span>
+                  Atención de emergencia
+                </span>
+                <p className="mt-1 text-[11px] text-text-muted">
+                  Marca esta opción si requieres atención prioritaria.
+                </p>
+              </div>
+            </label>
+
+            {isEmergency && (
+              <motion.div
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="space-y-4 rounded-[var(--radius-card)] border border-amber-200/60 bg-amber-50/40 p-4"
+              >
+                <div>
+                  <label className="mb-1.5 block text-xs font-semibold text-text-muted">
+                    Motivo de la emergencia
                   </label>
-
-                  {isEmergency && (
-                    <motion.div
-                      initial={{ opacity: 0, y: 8 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      className="space-y-4 rounded-[var(--radius-card)] border border-amber-200/60 bg-amber-50/40 p-4"
-                    >
-                      <div>
-                        <label className="mb-1.5 block text-xs font-semibold text-text-muted">
-                          Nivel de urgencia
-                        </label>
-                        <div className="grid grid-cols-2 gap-2">
-                          {URGENCY_LEVELS.map((level) => (
-                            <button
-                              key={level.value}
-                              type="button"
-                              onClick={() => setUrgencyLevel(level.value)}
-                              className={`rounded-[var(--radius-button)] border px-3 py-2 text-xs font-medium transition-all ${
-                                urgencyLevel === level.value
-                                  ? level.color
-                                  : 'border-border text-text-muted hover:border-border/80'
-                              }`}
-                            >
-                              {level.label}
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-
-                      <div>
-                        <label className="mb-1.5 block text-xs font-semibold text-text-muted">
-                          Motivo de la emergencia
-                        </label>
-                        <textarea
-                          value={reason}
-                          onChange={(e) => setReason(e.target.value)}
-                          rows={3}
-                          className="profile-input profile-textarea resize-none text-xs"
-                          placeholder="Describe brevemente el motivo de la emergencia..."
-                          maxLength={500}
-                        />
-                        <p className="mt-1 text-right text-[10px] text-text-muted">
-                          {reason.length} / 500
-                        </p>
-                      </div>
-                    </motion.div>
-                  )}
+                  <textarea
+                    value={reason}
+                    onChange={(e) => setReason(e.target.value)}
+                    rows={3}
+                    className="profile-input profile-textarea resize-none text-xs"
+                    placeholder="Describe brevemente el motivo de la emergencia..."
+                    maxLength={500}
+                  />
+                  <p className="mt-1 text-right text-[10px] text-text-muted">
+                    {reason.length} / 500
+                  </p>
                 </div>
+              </motion.div>
+            )}
+          </div>
 
                 {/* Confirm button */}
                 <button
@@ -368,8 +364,9 @@ export default function AppointmentModal({
               </div>
             )}
           </motion.div>
-        </>
+        </div>
       )}
-    </AnimatePresence>
+    </AnimatePresence>,
+    document.body,
   );
 }

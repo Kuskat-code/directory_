@@ -1,7 +1,12 @@
 'use client';
 
-import { useRef, type ChangeEvent } from 'react';
+import { useRef, useState, type ChangeEvent } from 'react';
 import { Camera, Link2 } from 'lucide-react';
+import {
+  ACCEPTED_IMAGE_MIME_TYPES,
+  MAX_IMAGE_BYTES,
+  isAcceptedImageMimeType,
+} from '../validation';
 
 interface ImageUploaderProps {
   value: string;
@@ -21,13 +26,28 @@ export function ImageUploader({
   showUrlInput = false,
 }: ImageUploaderProps) {
   const inputRef = useRef<HTMLInputElement>(null);
+  const [error, setError] = useState<string | null>(null);
 
   const handleFile = (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
+    setError(null);
+
+    if (!isAcceptedImageMimeType(file.type)) {
+      setError('Usa una imagen JPG, PNG, WebP o GIF.');
+      e.target.value = '';
+      return;
+    }
+
+    if (file.size > MAX_IMAGE_BYTES) {
+      setError('La imagen no puede superar 5 MB.');
+      e.target.value = '';
+      return;
+    }
 
     const reader = new FileReader();
     reader.onload = () => onChange(reader.result as string);
+    reader.onerror = () => setError('No se pudo leer la imagen.');
     reader.readAsDataURL(file);
     e.target.value = '';
   };
@@ -47,7 +67,7 @@ export function ImageUploader({
         <input
           ref={inputRef}
           type="file"
-          accept="image/*"
+          accept={ACCEPTED_IMAGE_MIME_TYPES.join(',')}
           className="hidden"
           onChange={handleFile}
         />
@@ -77,10 +97,11 @@ export function ImageUploader({
           />
         </div>
       )}
+      {error && <p className="text-xs text-red-600">{error}</p>}
       <input
         ref={inputRef}
         type="file"
-        accept="image/*"
+        accept={ACCEPTED_IMAGE_MIME_TYPES.join(',')}
         className="hidden"
         onChange={handleFile}
       />

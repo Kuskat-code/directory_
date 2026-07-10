@@ -1,12 +1,10 @@
 import { Suspense } from 'react';
-import Header from '@/src/components/Header';
 import Footer from '@/src/components/Footer';
 import ProfileContent from '@/src/components/ProfileContent';
 
 export default function ProfilePage() {
   return (
     <div className="min-h-screen bg-secondary/40 flex flex-col">
-      <Header />
       <main className="flex-grow">
         <Suspense fallback={
           <div className="flex items-center justify-center py-20">

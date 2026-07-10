@@ -3,13 +3,11 @@
 import Image from 'next/image';
 import { motion } from 'framer-motion';
 import { MapPin } from 'lucide-react';
+import { EASE, MEDICAL_SPECIALTIES as SPECIALTIES } from '@/src/lib/constants';
 import type { Doctor } from '@/src/lib/constants';
-import { MEDICAL_SPECIALTIES as SPECIALTIES } from '@/src/lib/constants';
-import { getSpecialtyBadgeColors } from '@/src/lib/specialty-badge-colors';
 import type { EditableProfile } from '@/src/features/profile/types';
+import { getSpecialtyColorTokens } from '@/src/lib/specialty-colors';
 import { ImageUploader } from '@/src/features/profile/components/ImageUploader';
-
-const EASE = [0.4, 0, 0.2, 1] as const;
 
 interface ProfileHeroProps {
   profile: EditableProfile;
@@ -23,7 +21,7 @@ export default function ProfileHero({
   isEditing = false,
   onChange,
 }: ProfileHeroProps) {
-  const specialtyColor = getSpecialtyBadgeColors(profile.specialty);
+  const specialtyColors = getSpecialtyColorTokens(profile.specialty);
 
   return (
     <motion.section
@@ -142,13 +140,11 @@ export default function ProfileHero({
                 <h1 className="text-2xl font-bold text-text tracking-tight">{profile.name}</h1>
                 <span className="text-accent text-lg" title="Perfil Verificado">&#10003;</span>
               </div>
-              <div className="flex justify-center md:justify-start">
-                <span
-                  className={`inline-flex items-center rounded-[var(--radius-pill)] px-3 py-1 text-xs font-semibold md:text-sm ${specialtyColor.bg} ${specialtyColor.text}`}
-                >
-                  {profile.specialty}
-                </span>
-              </div>
+              <span
+                className={`inline-flex items-center rounded-[var(--radius-pill)] px-3 py-1 text-sm font-semibold ${specialtyColors.bg} ${specialtyColors.text}`}
+              >
+                {profile.specialty}
+              </span>
               <div className="flex flex-wrap justify-center gap-x-4 gap-y-2 text-xs font-medium text-text-muted md:justify-start">
                 <span className="flex items-center gap-1">
                   <MapPin className="h-3.5 w-3.5" aria-hidden="true" />
