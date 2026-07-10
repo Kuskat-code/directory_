@@ -2,9 +2,8 @@
 
 import { motion } from 'framer-motion';
 import { Clock, Plus, Trash2 } from 'lucide-react';
+import { EASE } from '@/src/lib/constants';
 import type { EditableProfile, ProfileScheduleItem, SpecialtyColorScheme } from '../types';
-
-const EASE = [0.4, 0, 0.2, 1] as const;
 
 interface HoursSectionProps {
   schedule: ProfileScheduleItem[];

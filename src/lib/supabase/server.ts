@@ -19,7 +19,7 @@ export async function createClient() {
         setAll(cookiesToSet) {
           try {
             cookiesToSet.forEach(({ name, value, options }) =>
-              cookieStore.set(name, value, options)
+              cookieStore.set(name, value, options),
             );
           } catch {
             // El método setAll puede fallar si se llama desde Server Components
@@ -28,6 +28,6 @@ export async function createClient() {
           }
         },
       },
-    }
+    },
   );
 }

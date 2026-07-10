@@ -15,8 +15,7 @@ import {
   type OrienteDepartmentConfig,
   type OrienteDepartmentId,
 } from '@/src/lib/oriente-departments';
-
-const EASE = [0.4, 0, 0.2, 1] as const;
+import { EASE } from '@/src/lib/constants';
 
 interface TooltipState {
   id: OrienteDepartmentId;

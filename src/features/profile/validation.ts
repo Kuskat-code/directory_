@@ -99,6 +99,11 @@ export const updateCoverImageSchema = z.object({
   coverImage: profileImageInputSchema,
 });
 
+export const updateUserProfileSchema = z.object({
+  userId: z.string().min(1),
+  name: z.string().min(2, 'Mínimo 2 caracteres').max(100, 'Máximo 100 caracteres'),
+});
+
 export const signUpSchema = z.object({
   name: z.string().trim().min(2, 'Mínimo 2 caracteres').max(100, 'Máximo 100 caracteres'),
   email: z.string().trim().email('Correo inválido').max(254, 'Correo demasiado largo'),
@@ -114,4 +119,5 @@ export type UpdateServicesInput = z.infer<typeof updateServicesSchema>;
 export type UpdateGalleryInput = z.infer<typeof updateGallerySchema>;
 export type UpdateAvatarInput = z.infer<typeof updateAvatarSchema>;
 export type UpdateCoverImageInput = z.infer<typeof updateCoverImageSchema>;
+export type UpdateUserProfileInput = z.infer<typeof updateUserProfileSchema>;
 export type SignUpInput = z.infer<typeof signUpSchema>;

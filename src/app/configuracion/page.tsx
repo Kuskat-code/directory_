@@ -1,23 +1,18 @@
-import { redirect } from 'next/navigation';
-import { getAuthenticatedRole } from '@/src/lib/auth';
-import ConfiguracionContent from '@/src/components/configuracion/ConfiguracionContent';
+import { requireRole } from '@/src/lib/auth';
 import Header from '@/src/components/Header';
 import Footer from '@/src/components/Footer';
+import ConfiguracionContent from '@/src/components/configuracion/ConfiguracionContent';
 
 export default async function ConfiguracionPage() {
-  const { user } = await getAuthenticatedRole();
-
-  if (!user) {
-    redirect('/?auth=login');
-  }
+  await requireRole(['paciente', 'doctor', 'admin'], '/?auth=login');
 
   return (
-    <>
+    <div className="min-h-screen bg-gray-50">
       <Header />
-      <div className="bg-gray-50/50 min-h-screen pt-20">
+      <main className="pt-20 md:pt-24">
         <ConfiguracionContent />
-      </div>
+      </main>
       <Footer />
-    </>
+    </div>
   );
 }

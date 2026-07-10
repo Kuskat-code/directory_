@@ -12,8 +12,7 @@ import {
   Clock,
   X,
 } from 'lucide-react';
-
-const EASE = [0.4, 0, 0.2, 1] as const;
+import { EASE } from '@/src/lib/constants';
 
 const MONTHS = [
   'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',

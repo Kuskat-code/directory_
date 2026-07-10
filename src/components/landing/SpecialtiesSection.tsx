@@ -13,9 +13,7 @@ import {
   Sparkles,
   Stethoscope,
 } from 'lucide-react';
-import { LANDING_SPECIALTIES } from '@/src/lib/constants';
-
-const EASE = [0.4, 0, 0.2, 1] as const;
+import { EASE, LANDING_SPECIALTIES } from '@/src/lib/constants';
 
 const iconMap = {
   stethoscope: Stethoscope,

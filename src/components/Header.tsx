@@ -1,18 +1,42 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/src/components/ui/Button';
 import {
   signOutAction,
   type UserSessionData,
 } from '@/src/features/profile/profile.actions';
-import { getCachedUserSession } from '@/src/lib/session-cache';
+import {
+  AUTH_CHANGE_EVENT,
+  getCachedUserSession,
+  invalidateCachedUserSession,
+} from '@/src/features/profile/lib/session-client-cache';
 
-// Links se definen dinámicamente dentro del componente por rol
+function getNavLinks(role: UserSessionData['role'] | null) {
+  const links: { label: string; href: string }[] = [];
+
+  if (role === 'paciente') {
+    links.push({ label: 'Inicio', href: '/dashboard/paciente' });
+  } else if (role === 'doctor') {
+    links.push({ label: 'Inicio', href: '/dashboard/doctor' });
+  } else if (role === 'admin') {
+    links.push({ label: 'Inicio', href: '/dashboard/admin' });
+  } else {
+    links.push({ label: 'Inicio', href: '/' });
+  }
+
+  links.push({ label: 'Directorio Médico', href: '/directorio' });
+
+  if (role !== 'admin' && role !== 'paciente') {
+    links.push({ label: 'Planes', href: '/precios' });
+  }
+
+  return links;
+}
 
 function isNavLinkActive(pathname: string, href: string) {
   if (href === '/') return pathname === '/';
@@ -25,49 +49,15 @@ export default function Header() {
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
 
-  // Auth States
   const [user, setUser] = useState<UserSessionData | null>(null);
   const [profileAvatar, setProfileAvatar] = useState<string | null>(null);
 
+  const role = user?.role ?? null;
+  const navLinks = getNavLinks(role);
   const isHeroPage = pathname === '/';
   const hasSolidBg = scrolled || !isHeroPage || menuOpen;
-
-  const getNavLinks = () => {
-    if (!user) {
-      return [
-        { label: 'Inicio', href: '/' },
-        { label: 'Directorio', href: '/directorio' },
-        { label: 'Precios', href: '/precios' },
-        { label: 'Soporte', href: '/soporte' },
-      ];
-    }
-    if (user.role === 'paciente') {
-      return [
-        { label: 'Home', href: '/dashboard/paciente' },
-        { label: 'Directorio', href: '/directorio' },
-      ];
-    }
-    if (user.role === 'doctor') {
-      return [
-        { label: 'Home', href: '/dashboard/doctor' },
-        { label: 'Directorio', href: '/directorio' },
-        { label: 'Precios', href: '/precios' },
-      ];
-    }
-    if (user.role === 'admin') {
-      return [
-        { label: 'Home', href: '/dashboard/doctor' },
-        { label: 'Directorio', href: '/directorio' },
-        { label: 'Precios', href: '/precios' },
-        { label: 'Admin', href: '/dashboard/admin' },
-      ];
-    }
-    return [
-      { label: 'Inicio', href: '/' },
-      { label: 'Directorio', href: '/directorio' },
-    ];
-  };
 
   useEffect(() => {
     const handleScroll = () => {
@@ -89,7 +79,6 @@ export default function Header() {
     };
   }, [menuOpen]);
 
-  // Auth Hook (Safe server-side session loading, reactive to auth-change events)
   useEffect(() => {
     async function loadSession() {
       const response = await getCachedUserSession();
@@ -103,19 +92,30 @@ export default function Header() {
     }
     void loadSession();
 
-    window.addEventListener('auth-change', loadSession);
+    window.addEventListener(AUTH_CHANGE_EVENT, loadSession);
     return () => {
-      window.removeEventListener('auth-change', loadSession);
+      window.removeEventListener(AUTH_CHANGE_EVENT, loadSession);
     };
+  }, [pathname]);
+
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+        setDropdownOpen(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
   const handleSignOut = async () => {
     await signOutAction();
-    // Limpiamos los estados de inmediato para reactividad instantánea en pantalla
+    invalidateCachedUserSession();
     setUser(null);
     setProfileAvatar(null);
-    
-    if (pathname === '/perfil') {
+    setDropdownOpen(false);
+
+    if (pathname === '/perfil' || pathname.startsWith('/dashboard') || pathname === '/configuracion') {
       router.push('/');
     } else {
       router.refresh();
@@ -132,15 +132,14 @@ export default function Header() {
       <nav aria-label="Navegación principal">
         <div className="relative mx-auto flex h-16 max-w-7xl items-center justify-center px-6 md:h-20">
           <ul className="hidden items-center gap-8 md:flex lg:gap-10">
-            {getNavLinks().map((link) => {
+            {navLinks.map((link) => {
               const isActive = isNavLinkActive(pathname, link.href);
               return (
                 <li key={link.href}>
                   <Link
                     href={link.href}
-                    className={`relative text-[1.05rem] font-medium tracking-wide transition-colors duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
-                      isActive ? 'text-primary' : 'text-gray-700 hover:opacity-70'
-                    }`}
+                    className={`relative text-[1.05rem] font-medium tracking-wide transition-colors duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${isActive ? 'text-primary' : 'text-gray-700 hover:opacity-70'
+                      }`}
                   >
                     {link.label}
                     {isActive && (
@@ -158,104 +157,100 @@ export default function Header() {
 
           <div className="absolute right-6 hidden md:block">
             {user ? (
-              user.role === 'doctor' ? (
-                <div className="relative">
-                  <button
-                    type="button"
-                    onClick={() => setDropdownOpen(!dropdownOpen)}
-                    className="relative block h-10 w-10 overflow-hidden rounded-full ring-2 ring-teal-500 transition-all hover:ring-teal-600 active:scale-95 shadow-sm cursor-pointer"
-                    title="Menú de usuario"
-                  >
-                    <Image
-                      src={profileAvatar || `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(user.name || 'Doctor')}`}
-                      alt="Foto de perfil"
-                      fill
-                      sizes="40px"
-                      className="object-cover"
-                      unoptimized
-                    />
-                  </button>
-                  {dropdownOpen && (
-                    <>
-                      <div className="fixed inset-0 z-10" onClick={() => setDropdownOpen(false)} />
-                      <div className="absolute right-0 mt-2 w-48 rounded-lg bg-white py-1 shadow-lg ring-1 ring-black/5 z-20">
-                        <Link
-                          href={`/perfil?id=${user.id}`}
-                          onClick={() => setDropdownOpen(false)}
-                          className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+              <div className="flex items-center gap-4">
+                {role === 'doctor' || role === 'admin' ? (
+                  <div className="relative" ref={dropdownRef}>
+                    <button
+                      type="button"
+                      onClick={() => setDropdownOpen((prev) => !prev)}
+                      className="relative block h-10 w-10 overflow-hidden rounded-full ring-2 ring-teal-500 transition-all hover:ring-teal-600 active:scale-95 shadow-sm"
+                      title="Opciones de perfil"
+                    >
+                      <Image
+                        src={profileAvatar || `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(user.name || 'Doctor')}`}
+                        alt="Foto de perfil"
+                        fill
+                        sizes="40px"
+                        className="object-cover"
+                        unoptimized
+                        loading="eager"
+                      />
+                    </button>
+                    <AnimatePresence>
+                      {dropdownOpen && (
+                        <motion.div
+                          initial={{ opacity: 0, y: -8 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0, y: -8 }}
+                          transition={{ duration: 0.15 }}
+                          className="absolute right-0 mt-2 w-52 rounded-xl border border-gray-100 bg-white py-2 shadow-lg"
                         >
-                          Personalizar
-                        </Link>
-                        <Link
-                          href="/configuracion"
-                          onClick={() => setDropdownOpen(false)}
-                          className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                        >
-                          Configurar
-                        </Link>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setDropdownOpen(false);
-                            handleSignOut();
-                          }}
-                          className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 border-t border-gray-100 cursor-pointer"
-                        >
-                          Cerrar sesión
-                        </button>
-                      </div>
-                    </>
-                  )}
-                </div>
-              ) : user.role === 'paciente' ? (
-                <div className="flex items-center gap-4">
-                  <div className="relative block h-10 w-10 overflow-hidden rounded-full ring-2 ring-teal-500 shadow-sm">
-                    <Image
-                      src={profileAvatar || `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(user.name || 'Paciente')}`}
-                      alt="Foto de perfil"
-                      fill
-                      sizes="40px"
-                      className="object-cover"
-                      unoptimized
-                    />
+                          <div className="px-4 py-2 border-b border-gray-100">
+                            <p className="text-sm font-semibold text-gray-900 truncate">{user.name}</p>
+                            <p className="text-xs text-gray-500 truncate">{user.email}</p>
+                          </div>
+                          {role === 'doctor' ? (
+                            <Link
+                              href={`/perfil?id=${user.id}`}
+                              onClick={() => setDropdownOpen(false)}
+                              className="block px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                            >
+                              Personalizar
+                            </Link>
+                          ) : (
+                            <Link
+                              href="/dashboard/admin"
+                              onClick={() => setDropdownOpen(false)}
+                              className="block px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                            >
+                              Dashboard
+                            </Link>
+                          )}
+                          <Link
+                            href="/configuracion"
+                            onClick={() => setDropdownOpen(false)}
+                            className="block px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                          >
+                            Configurar
+                          </Link>
+                          <div className="border-t border-gray-100 mt-1 pt-1">
+                            <button
+                              type="button"
+                              onClick={handleSignOut}
+                              className="w-full text-left px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition-colors"
+                            >
+                              Cerrar sesión
+                            </button>
+                          </div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
                   </div>
-                  <button
-                    type="button"
-                    className="inline-flex items-center justify-center rounded-[var(--radius-button)] px-5 py-2.5 text-sm font-semibold whitespace-nowrap transition-all duration-300 transition-premium active:scale-[0.98] border border-gray-300 text-gray-700 hover:bg-gray-50 bg-white/20 cursor-pointer"
-                    onClick={handleSignOut}
+                ) : (
+                  <Link
+                    href="#"
+                    className="relative block h-10 w-10 overflow-hidden rounded-full ring-2 ring-teal-500 transition-all hover:ring-teal-600 active:scale-95 shadow-sm"
+                    title="Mi cuenta"
                   >
-                    Cerrar sesión
-                  </button>
-                </div>
-              ) : (
-                <div className="flex items-center gap-4">
-                  <div className="relative block h-10 w-10 overflow-hidden rounded-full ring-2 ring-teal-500 shadow-sm">
                     <Image
-                      src={profileAvatar || `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(user.name || 'Admin')}`}
+                      src={profileAvatar || `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(user.name || 'Usuario')}`}
                       alt="Foto de perfil"
                       fill
                       sizes="40px"
                       className="object-cover"
                       unoptimized
+                      loading="eager"
                     />
-                  </div>
-                  <button
-                    type="button"
-                    className="inline-flex items-center justify-center rounded-[var(--radius-button)] px-5 py-2.5 text-sm font-semibold whitespace-nowrap transition-all duration-300 transition-premium active:scale-[0.98] border border-gray-300 text-gray-700 hover:bg-gray-50 bg-white/20 cursor-pointer"
-                    onClick={handleSignOut}
-                  >
-                    Cerrar sesión
-                  </button>
-                </div>
-              )
+                  </Link>
+                )}
+              </div>
             ) : (
               <button
                 type="button"
-                className={`inline-flex items-center justify-center rounded-[var(--radius-button)] px-5 py-2.5 text-sm font-semibold whitespace-nowrap transition-all duration-300 transition-premium active:scale-[0.98] border cursor-pointer ${
-                  hasSolidBg
-                    ? 'bg-teal-600 text-white border-teal-600 hover:bg-teal-700 shadow-md hover:shadow-lg'
-                    : 'border-gray-300 text-gray-700 hover:bg-gray-50 bg-white/20'
-                }`}
+                className={`inline-flex items-center justify-center rounded-[var(--radius-button)] px-5 py-2.5 text-sm font-semibold whitespace-nowrap transition-all duration-300 transition-premium active:scale-[0.98] border ${hasSolidBg
+                  ? 'bg-teal-600 text-white border-teal-600 hover:bg-teal-700 shadow-md hover:shadow-lg'
+                  : 'border-gray-300 text-gray-700 hover:bg-gray-50 bg-white/20'
+                  }`}
                 onClick={() => router.push('?auth=login')}
               >
                 Iniciar sesión
@@ -285,21 +280,19 @@ export default function Header() {
 
         <div
           id="mobile-nav"
-          className={`overflow-hidden transition-all duration-300 ease-in-out md:hidden ${
-            menuOpen ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
-          }`}
+          className={`overflow-hidden transition-all duration-300 ease-in-out md:hidden ${menuOpen ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
+            }`}
         >
           <ul className="flex flex-col gap-4 bg-white/95 px-6 pb-6 backdrop-blur-md">
-            {getNavLinks().map((link) => {
+            {navLinks.map((link) => {
               const isActive = isNavLinkActive(pathname, link.href);
               return (
                 <li key={link.href}>
                   <Link
                     href={link.href}
                     onClick={() => setMenuOpen(false)}
-                    className={`block text-lg font-medium transition-colors ${
-                      isActive ? 'text-primary' : 'text-gray-700 hover:text-teal-600'
-                    }`}
+                    className={`block text-lg font-medium transition-colors ${isActive ? 'text-primary' : 'text-gray-700 hover:text-teal-600'
+                      }`}
                   >
                     {link.label}
                   </Link>
@@ -308,49 +301,53 @@ export default function Header() {
             })}
             {user ? (
               <>
-                <li className="flex items-center gap-3 py-2 border-t border-gray-100">
-                  {user.role === 'doctor' ? (
-                    <div className="flex flex-col gap-2 w-full">
-                      <Link
-                        href={`/perfil?id=${user.id}`}
-                        onClick={() => setMenuOpen(false)}
-                        className="flex items-center gap-3 font-semibold text-gray-700"
-                      >
-                        <div className="relative h-10 w-10 overflow-hidden rounded-full ring-2 ring-teal-500">
-                          <Image
-                            src={profileAvatar || `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(user.name || 'Doctor')}`}
-                            alt="Foto de perfil"
-                            fill
-                            sizes="40px"
-                            className="object-cover"
-                            unoptimized
-                          />
-                        </div>
-                        <span>Mi Perfil</span>
-                      </Link>
+                {(role === 'doctor' || role === 'admin') && (
+                  <>
+                    {role === 'doctor' ? (
+                      <li>
+                        <Link
+                          href={`/perfil?id=${user.id}`}
+                          onClick={() => setMenuOpen(false)}
+                          className="block text-lg font-medium text-gray-700 hover:text-teal-600 transition-colors"
+                        >
+                          Personalizar
+                        </Link>
+                      </li>
+                    ) : (
+                      <li>
+                        <Link
+                          href="/dashboard/admin"
+                          onClick={() => setMenuOpen(false)}
+                          className="block text-lg font-medium text-gray-700 hover:text-teal-600 transition-colors"
+                        >
+                          Dashboard
+                        </Link>
+                      </li>
+                    )}
+                    <li>
                       <Link
                         href="/configuracion"
                         onClick={() => setMenuOpen(false)}
-                        className="block py-1 text-sm font-semibold text-gray-600 hover:text-teal-600"
+                        className="block text-lg font-medium text-gray-700 hover:text-teal-600 transition-colors"
                       >
                         Configurar
                       </Link>
-                    </div>
-                  ) : (
-                    <div className="flex items-center gap-3 font-semibold text-gray-700">
-                      <div className="relative h-10 w-10 overflow-hidden rounded-full ring-2 ring-teal-500">
-                        <Image
-                          src={profileAvatar || `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(user.name || 'Usuario')}`}
-                          alt="Foto de perfil"
-                          fill
-                          sizes="40px"
-                          className="object-cover"
-                          unoptimized
-                        />
-                      </div>
-                      <span>{user.name} ({user.role})</span>
-                    </div>
-                  )}
+                    </li>
+                  </>
+                )}
+                <li className="flex items-center gap-3 py-2 border-t border-gray-100">
+                  <div className="relative h-10 w-10 overflow-hidden rounded-full ring-2 ring-teal-500">
+                    <Image
+                      src={profileAvatar || `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(user.name || 'Usuario')}`}
+                      alt="Foto de perfil"
+                      fill
+                      sizes="40px"
+                      className="object-cover"
+                      unoptimized
+                      loading="eager"
+                    />
+                  </div>
+                  <span className="font-semibold text-gray-700">{user.name}</span>
                 </li>
                 <li>
                   <Button

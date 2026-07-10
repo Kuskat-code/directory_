@@ -1,292 +1,411 @@
-'use client';
+'use client'
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { createClient } from '@/src/lib/supabase/client';
-import { motion } from 'framer-motion';
-import { Lock, Mail, Trash2, Eye, EyeOff, Loader2, AlertTriangle, CheckCircle2 } from 'lucide-react';
-import { signOutAction } from '@/src/features/profile/profile.actions';
+import { useState, useTransition, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
+import { motion } from 'framer-motion'
+import Image from 'next/image'
+import { Lock, Mail, Loader2, AlertTriangle, Eye, EyeOff, ArrowLeft, User, Camera } from 'lucide-react'
+import Link from 'next/link'
+import { createClient } from '@/src/lib/supabase/client'
+import { updateAvatar, updateUserProfile, type UserSessionData } from '@/src/features/profile/profile.actions'
+import { getCachedUserSession, notifyAuthChange } from '@/src/features/profile/lib/session-client-cache'
+import { ImageUploader } from '@/src/features/profile/components/ImageUploader'
 
 export default function ConfiguracionContent() {
-  const router = useRouter();
-  const supabase = createClient();
+  const router = useRouter()
+  const [isPending, startTransition] = useTransition()
+  const [user, setUser] = useState<UserSessionData | null>(null)
 
-  // Password States
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [showPassword, setShowPassword] = useState(false);
-  const [passwordLoading, setPasswordLoading] = useState(false);
-  const [passwordError, setPasswordError] = useState<string | null>(null);
-  const [passwordSuccess, setPasswordSuccess] = useState<string | null>(null);
+  const [name, setName] = useState('')
+  const [avatar, setAvatar] = useState('')
+  const [profileError, setProfileError] = useState<string | null>(null)
+  const [profileSuccess, setProfileSuccess] = useState<string | null>(null)
 
-  // Email States
-  const [email, setEmail] = useState('');
-  const [emailLoading, setEmailLoading] = useState(false);
-  const [emailError, setEmailError] = useState<string | null>(null);
-  const [emailSuccess, setEmailSuccess] = useState<string | null>(null);
+  const [newPassword, setNewPassword] = useState('')
+  const [confirmNewPassword, setConfirmNewPassword] = useState('')
+  const [showPasswords, setShowPasswords] = useState(false)
+  const [passwordError, setPasswordError] = useState<string | null>(null)
+  const [passwordSuccess, setPasswordSuccess] = useState<string | null>(null)
 
-  // Delete Account States
-  const [deleteConfirm, setDeleteConfirm] = useState(false);
-  const [deleteLoading, setDeleteLoading] = useState(false);
-  const [deleteError, setDeleteError] = useState<string | null>(null);
+  const [newEmail, setNewEmail] = useState('')
+  const [emailError, setEmailError] = useState<string | null>(null)
+  const [emailSuccess, setEmailSuccess] = useState<string | null>(null)
 
-  const handleUpdatePassword = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setPasswordError(null);
-    setPasswordSuccess(null);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
+  const [deleteText, setDeleteText] = useState('')
 
-    if (password !== confirmPassword) {
-      return setPasswordError('Las contraseñas no coinciden.');
+  useEffect(() => {
+    async function load() {
+      const res = await getCachedUserSession()
+      if (res.success && res.data) {
+        setUser(res.data)
+        setName(res.data.name)
+        setAvatar(res.data.avatar || '')
+      }
     }
-    if (password.length < 6) {
-      return setPasswordError('La contraseña debe tener al menos 6 caracteres.');
-    }
+    void load()
+  }, [])
 
-    setPasswordLoading(true);
-    try {
-      const { error } = await supabase.auth.updateUser({ password });
-      if (error) throw error;
-      setPasswordSuccess('Contraseña actualizada con éxito.');
-      setPassword('');
-      setConfirmPassword('');
-    } catch (err: any) {
-      setPasswordError(err.message || 'Error al actualizar la contraseña.');
-    } finally {
-      setPasswordLoading(false);
-    }
-  };
+  const handleProfileSave = async () => {
+    if (!user) return
+    setProfileError(null)
+    setProfileSuccess(null)
 
-  const handleUpdateEmail = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setEmailError(null);
-    setEmailSuccess(null);
-
-    if (!email.trim()) {
-      return setEmailError('El correo electrónico es requerido.');
+    if (name.trim().length < 2) {
+      setProfileError('El nombre debe tener al menos 2 caracteres')
+      return
     }
 
-    setEmailLoading(true);
-    try {
-      const { error } = await supabase.auth.updateUser({ email });
-      if (error) throw error;
-      setEmailSuccess('Se ha enviado un enlace de confirmación a tu nuevo y antiguo correo electrónico.');
-      setEmail('');
-    } catch (err: any) {
-      setEmailError(err.message || 'Error al actualizar el correo electrónico.');
-    } finally {
-      setEmailLoading(false);
+    startTransition(async () => {
+      const tasks: Promise<unknown>[] = []
+
+      if (name !== user.name) {
+        tasks.push(updateUserProfile({ userId: user.id, name }))
+      }
+      if (
+        (user.role === 'doctor' || user.role === 'admin') &&
+        avatar !== (user.avatar || '')
+      ) {
+        tasks.push(updateAvatar({ doctorId: user.id, avatar }))
+      }
+
+      if (tasks.length === 0) {
+        setProfileSuccess('No hay cambios para guardar')
+        return
+      }
+
+      const results = await Promise.allSettled(tasks)
+      const failed = results.find((r) => r.status === 'rejected')
+      if (failed) {
+        setProfileError('Error al guardar el perfil. Intenta de nuevo.')
+      } else {
+        setProfileSuccess('Perfil actualizado correctamente')
+        notifyAuthChange()
+      }
+    })
+  }
+
+  const handlePasswordChange = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setPasswordError(null)
+    setPasswordSuccess(null)
+
+    if (newPassword.length < 6) {
+      setPasswordError('La nueva contraseña debe tener al menos 6 caracteres')
+      return
     }
-  };
+    if (newPassword !== confirmNewPassword) {
+      setPasswordError('Las contraseñas no coinciden')
+      return
+    }
+
+    startTransition(async () => {
+      const supabase = createClient()
+      const { error } = await supabase.auth.updateUser({ password: newPassword })
+      if (error) {
+        setPasswordError(error.message)
+      } else {
+        setPasswordSuccess('Contraseña actualizada correctamente')
+        setNewPassword('')
+        setConfirmNewPassword('')
+      }
+    })
+  }
+
+  const handleEmailChange = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setEmailError(null)
+    setEmailSuccess(null)
+
+    if (!newEmail.trim()) {
+      setEmailError('El correo es requerido')
+      return
+    }
+
+    startTransition(async () => {
+      const supabase = createClient()
+      const { error } = await supabase.auth.updateUser({ email: newEmail })
+      if (error) {
+        setEmailError(error.message)
+      } else {
+        setEmailSuccess('Se ha enviado un correo de confirmación a la nueva dirección')
+        setNewEmail('')
+      }
+    })
+  }
 
   const handleDeleteAccount = async () => {
-    setDeleteError(null);
-    setDeleteLoading(true);
-
-    try {
-      // Llamar a la función RPC delete_own_user en Supabase
-      const { error: rpcError } = await supabase.rpc('delete_own_user');
-      if (rpcError) throw rpcError;
-
-      // Cerrar la sesión localmente
-      await signOutAction();
-      window.dispatchEvent(new Event('auth-change'));
-      
-      router.push('/');
-      router.refresh();
-    } catch (err: any) {
-      setDeleteError(err.message || 'Error al eliminar la cuenta.');
-      setDeleteLoading(false);
-      setDeleteConfirm(false);
+    if (deleteText !== 'ELIMINAR') return
+    const supabase = createClient()
+    const { error } = await supabase.rpc('delete_own_user')
+    if (error) {
+      setPasswordError('Error al eliminar la cuenta. Intenta de nuevo.')
+      return
     }
-  };
+    router.push('/')
+    router.refresh()
+  }
+
+  const backHref =
+    user?.role === 'admin'
+      ? '/dashboard/admin'
+      : user?.role === 'paciente'
+        ? '/dashboard/paciente'
+        : '/dashboard/doctor'
 
   return (
-    <div className="mx-auto max-w-4xl px-4 py-8">
-      <h1 className="text-3xl font-extrabold text-gray-900 mb-8">Configuración de Cuenta</h1>
+    <div className="mx-auto max-w-2xl px-4 py-8 sm:px-6 lg:px-8">
+      <div className="mb-8">
+        <Link
+          href={backHref}
+          className="mb-4 inline-flex items-center gap-1.5 text-sm font-medium text-teal-600 hover:text-teal-700 transition-colors"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          Volver al dashboard
+        </Link>
+        <h1 className="text-3xl font-bold text-gray-900">Configuración</h1>
+        <p className="mt-1 text-gray-600">Administra tu perfil, contraseña, correo electrónico y cuenta.</p>
+      </div>
 
-      <div className="space-y-8">
-        {/* 1. Actualizar Correo Electrónico */}
-        <section className="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm">
-          <h2 className="text-xl font-bold text-gray-900 mb-2 flex items-center gap-2">
-            <Mail className="h-5 w-5 text-teal-600" />
-            Correo Electrónico
-          </h2>
-          <p className="text-sm text-gray-500 mb-6">
-            Cambia la dirección de correo con la que inicias sesión y recibes notificaciones.
-          </p>
+      <section className="mb-6 rounded-2xl border border-gray-200 bg-white p-6">
+        <div className="mb-4 flex items-center gap-3">
+          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-teal-50 text-teal-600">
+            <User className="h-5 w-5" />
+          </div>
+          <div>
+            <h2 className="text-lg font-bold text-gray-900">Perfil</h2>
+            <p className="text-sm text-gray-500">Actualiza tu foto y nombre</p>
+          </div>
+        </div>
 
-          {emailSuccess && (
-            <div className="mb-4 rounded-lg bg-emerald-50 p-4 text-sm text-emerald-800 border border-emerald-100 flex items-start gap-2">
-              <CheckCircle2 className="h-5 w-5 shrink-0 text-emerald-600 mt-0.5" />
-              <span>{emailSuccess}</span>
+        <div className="space-y-5">
+          <div className="flex items-center gap-5">
+            <div className="relative h-20 w-20 shrink-0 overflow-hidden rounded-full ring-2 ring-teal-500">
+              {avatar ? (
+                <Image
+                  src={avatar}
+                  alt="Foto de perfil"
+                  fill
+                  sizes="80px"
+                  className="object-cover"
+                  unoptimized
+                  loading="eager"
+                />
+              ) : (
+                <div className="flex h-full w-full items-center justify-center bg-teal-50 text-teal-600">
+                  <Camera className="h-8 w-8" />
+                </div>
+              )}
             </div>
-          )}
-
-          {emailError && (
-            <div className="mb-4 rounded-lg bg-red-50 p-4 text-sm text-red-800 border border-red-100 flex items-start gap-2">
-              <AlertTriangle className="h-5 w-5 shrink-0 text-red-600 mt-0.5" />
-              <span>{emailError}</span>
-            </div>
-          )}
-
-          <form onSubmit={handleUpdateEmail} className="max-w-md space-y-4">
-            <div className="space-y-1">
-              <label htmlFor="config-email" className="text-xs font-bold text-gray-700 uppercase tracking-wider">
-                Nuevo Correo Electrónico
-              </label>
-              <input
-                id="config-email"
-                type="email"
-                required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="nuevo-correo@example.com"
-                className="w-full rounded-lg border border-gray-200 bg-gray-50 py-2.5 px-4 text-sm text-gray-900 outline-none focus:border-teal-500 focus:bg-white focus:ring-2 focus:ring-teal-500/20 transition-all"
+            <div className="flex-1">
+              <ImageUploader
+                value={avatar}
+                onChange={setAvatar}
+                label="Cambiar foto"
+                showUrlInput
               />
             </div>
-            <button
-              type="submit"
-              disabled={emailLoading}
-              className="inline-flex items-center justify-center gap-2 rounded-lg bg-teal-600 px-5 py-2.5 font-semibold text-white hover:bg-teal-700 active:scale-[0.98] disabled:opacity-75 disabled:pointer-events-none transition-all cursor-pointer"
-            >
-              {emailLoading && <Loader2 className="h-4 w-4 animate-spin" />}
-              Actualizar Correo
-            </button>
-          </form>
-        </section>
+          </div>
 
-        {/* 2. Actualizar Contraseña */}
-        <section className="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm">
-          <h2 className="text-xl font-bold text-gray-900 mb-2 flex items-center gap-2">
-            <Lock className="h-5 w-5 text-teal-600" />
-            Cambiar Contraseña
-          </h2>
-          <p className="text-sm text-gray-500 mb-6">
-            Asegura tu cuenta actualizando tu contraseña periódicamente.
-          </p>
+          <div>
+            <label className="text-xs font-bold text-gray-700 uppercase tracking-wider">
+              Nombre Completo
+            </label>
+            <input
+              type="text"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              className="mt-1 w-full rounded-lg border border-gray-200 bg-gray-50 py-2.5 pl-4 pr-4 text-sm text-gray-900 outline-none transition-all focus:border-teal-500 focus:bg-white focus:ring-2 focus:ring-teal-500/20"
+              placeholder="Tu nombre"
+            />
+          </div>
 
-          {passwordSuccess && (
-            <div className="mb-4 rounded-lg bg-emerald-50 p-4 text-sm text-emerald-800 border border-emerald-100 flex items-start gap-2">
-              <CheckCircle2 className="h-5 w-5 shrink-0 text-emerald-600 mt-0.5" />
-              <span>{passwordSuccess}</span>
-            </div>
+          {profileError && (
+            <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-sm text-red-600">
+              {profileError}
+            </motion.p>
           )}
+          {profileSuccess && (
+            <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-sm text-green-600">
+              {profileSuccess}
+            </motion.p>
+          )}
+
+          <button
+            type="button"
+            disabled={isPending}
+            onClick={handleProfileSave}
+            className="inline-flex items-center gap-2 rounded-lg bg-teal-600 px-6 py-2.5 text-sm font-semibold text-white transition-all hover:bg-teal-700 active:scale-[0.98] disabled:opacity-75"
+          >
+            {isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
+            Guardar Perfil
+          </button>
+        </div>
+      </section>
+
+      <section className="mb-6 rounded-2xl border border-gray-200 bg-white p-6">
+        <div className="mb-4 flex items-center gap-3">
+          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-teal-50 text-teal-600">
+            <Lock className="h-5 w-5" />
+          </div>
+          <div>
+            <h2 className="text-lg font-bold text-gray-900">Cambiar Contraseña</h2>
+            <p className="text-sm text-gray-500">Actualiza tu contraseña de acceso</p>
+          </div>
+        </div>
+
+        <form onSubmit={handlePasswordChange} className="space-y-4">
+          <div>
+            <label className="text-xs font-bold text-gray-700 uppercase tracking-wider">Nueva Contraseña</label>
+            <div className="relative mt-1">
+              <input
+                type={showPasswords ? 'text' : 'password'}
+                required
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+                className="w-full rounded-lg border border-gray-200 bg-gray-50 py-2.5 pl-4 pr-10 text-sm text-gray-900 outline-none transition-all focus:border-teal-500 focus:bg-white focus:ring-2 focus:ring-teal-500/20"
+                placeholder="••••••••"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPasswords(!showPasswords)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+              >
+                {showPasswords ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+              </button>
+            </div>
+          </div>
+          <div>
+            <label className="text-xs font-bold text-gray-700 uppercase tracking-wider">Confirmar Contraseña</label>
+            <input
+              type={showPasswords ? 'text' : 'password'}
+              required
+              value={confirmNewPassword}
+              onChange={(e) => setConfirmNewPassword(e.target.value)}
+              className="mt-1 w-full rounded-lg border border-gray-200 bg-gray-50 py-2.5 pl-4 pr-4 text-sm text-gray-900 outline-none transition-all focus:border-teal-500 focus:bg-white focus:ring-2 focus:ring-teal-500/20"
+              placeholder="••••••••"
+            />
+          </div>
 
           {passwordError && (
-            <div className="mb-4 rounded-lg bg-red-50 p-4 text-sm text-red-800 border border-red-100 flex items-start gap-2">
-              <AlertTriangle className="h-5 w-5 shrink-0 text-red-600 mt-0.5" />
-              <span>{passwordError}</span>
-            </div>
+            <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-sm text-red-600">
+              {passwordError}
+            </motion.p>
+          )}
+          {passwordSuccess && (
+            <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-sm text-green-600">
+              {passwordSuccess}
+            </motion.p>
           )}
 
-          <form onSubmit={handleUpdatePassword} className="max-w-md space-y-4">
-            <div className="space-y-1">
-              <label htmlFor="config-password" className="text-xs font-bold text-gray-700 uppercase tracking-wider">
-                Nueva Contraseña
-              </label>
-              <div className="relative">
-                <input
-                  id="config-password"
-                  type={showPassword ? 'text' : 'password'}
-                  required
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="••••••••"
-                  className="w-full rounded-lg border border-gray-200 bg-gray-50 py-2.5 pl-4 pr-10 text-sm text-gray-900 outline-none focus:border-teal-500 focus:bg-white focus:ring-2 focus:ring-teal-500/20 transition-all"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 p-0.5 text-gray-400 hover:text-gray-600 transition-colors"
-                >
-                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                </button>
-              </div>
-            </div>
+          <button
+            type="submit"
+            disabled={isPending}
+            className="inline-flex items-center gap-2 rounded-lg bg-teal-600 px-6 py-2.5 text-sm font-semibold text-white transition-all hover:bg-teal-700 active:scale-[0.98] disabled:opacity-75"
+          >
+            {isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
+            Actualizar Contraseña
+          </button>
+        </form>
+      </section>
 
-            <div className="space-y-1">
-              <label htmlFor="config-confirm-password" className="text-xs font-bold text-gray-700 uppercase tracking-wider">
-                Confirmar Contraseña
-              </label>
-              <input
-                id="config-confirm-password"
-                type={showPassword ? 'text' : 'password'}
-                required
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                placeholder="••••••••"
-                className="w-full rounded-lg border border-gray-200 bg-gray-50 py-2.5 px-4 text-sm text-gray-900 outline-none focus:border-teal-500 focus:bg-white focus:ring-2 focus:ring-teal-500/20 transition-all"
-              />
-            </div>
+      <section className="mb-6 rounded-2xl border border-gray-200 bg-white p-6">
+        <div className="mb-4 flex items-center gap-3">
+          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-teal-50 text-teal-600">
+            <Mail className="h-5 w-5" />
+          </div>
+          <div>
+            <h2 className="text-lg font-bold text-gray-900">Cambiar Correo Electrónico</h2>
+            <p className="text-sm text-gray-500">Recibirás un enlace de confirmación al nuevo correo</p>
+          </div>
+        </div>
 
-            <button
-              type="submit"
-              disabled={passwordLoading}
-              className="inline-flex items-center justify-center gap-2 rounded-lg bg-teal-600 px-5 py-2.5 font-semibold text-white hover:bg-teal-700 active:scale-[0.98] disabled:opacity-75 disabled:pointer-events-none transition-all cursor-pointer"
-            >
-              {passwordLoading && <Loader2 className="h-4 w-4 animate-spin" />}
-              Actualizar Contraseña
-            </button>
-          </form>
-        </section>
+        <form onSubmit={handleEmailChange} className="space-y-4">
+          <div>
+            <label className="text-xs font-bold text-gray-700 uppercase tracking-wider">Nuevo Correo</label>
+            <input
+              type="email"
+              required
+              value={newEmail}
+              onChange={(e) => setNewEmail(e.target.value)}
+              className="mt-1 w-full rounded-lg border border-gray-200 bg-gray-50 py-2.5 pl-4 pr-4 text-sm text-gray-900 outline-none transition-all focus:border-teal-500 focus:bg-white focus:ring-2 focus:ring-teal-500/20"
+              placeholder="nuevo@example.com"
+            />
+          </div>
 
-        {/* 3. Eliminar Cuenta */}
-        <section className="rounded-2xl border border-red-100 bg-red-50/20 p-6 shadow-sm">
-          <h2 className="text-xl font-bold text-red-600 mb-2 flex items-center gap-2">
-            <Trash2 className="h-5 w-5" />
-            Zona de Peligro
-          </h2>
-          <p className="text-sm text-gray-500 mb-6">
-            Al eliminar tu cuenta, todos tus datos personales, historial clínico y perfiles creados se borrarán de forma permanente y no podrán ser recuperados.
-          </p>
-
-          {deleteError && (
-            <div className="mb-4 rounded-lg bg-red-50 p-4 text-sm text-red-800 border border-red-100 flex items-start gap-2">
-              <AlertTriangle className="h-5 w-5 shrink-0 text-red-600 mt-0.5" />
-              <span>{deleteError}</span>
-            </div>
+          {emailError && (
+            <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-sm text-red-600">
+              {emailError}
+            </motion.p>
+          )}
+          {emailSuccess && (
+            <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-sm text-green-600">
+              {emailSuccess}
+            </motion.p>
           )}
 
-          {!deleteConfirm ? (
-            <button
-              type="button"
-              onClick={() => setDeleteConfirm(true)}
-              className="inline-flex items-center justify-center gap-2 rounded-lg bg-red-600 px-5 py-2.5 font-semibold text-white hover:bg-red-700 active:scale-[0.98] transition-all cursor-pointer"
-            >
-              Eliminar mi Cuenta
-            </button>
-          ) : (
-            <div className="rounded-xl border border-red-200 bg-red-50 p-4 max-w-md">
-              <h3 className="text-base font-bold text-red-800 flex items-center gap-2 mb-2">
-                <AlertTriangle className="h-5 w-5" />
-                ¿Estás absolutamente seguro?
-              </h3>
-              <p className="text-xs text-red-700 leading-relaxed mb-4">
-                Esta acción es irreversible. Se eliminará tu registro de usuario, tu perfil clínico (si eres doctor) y tu suscripción asociada.
-              </p>
-              <div className="flex gap-3">
-                <button
-                  type="button"
-                  disabled={deleteLoading}
-                  onClick={handleDeleteAccount}
-                  className="inline-flex items-center justify-center gap-2 rounded-lg bg-red-600 px-4 py-2 text-xs font-bold text-white hover:bg-red-700 disabled:opacity-75 cursor-pointer"
-                >
-                  {deleteLoading && <Loader2 className="h-3 w-3 animate-spin" />}
-                  Sí, eliminar definitivamente
-                </button>
-                <button
-                  type="button"
-                  disabled={deleteLoading}
-                  onClick={() => setDeleteConfirm(false)}
-                  className="rounded-lg border border-gray-300 bg-white px-4 py-2 text-xs font-bold text-gray-700 hover:bg-gray-50 disabled:opacity-75 cursor-pointer"
-                >
-                  Cancelar
-                </button>
-              </div>
+          <button
+            type="submit"
+            disabled={isPending}
+            className="inline-flex items-center gap-2 rounded-lg bg-teal-600 px-6 py-2.5 text-sm font-semibold text-white transition-all hover:bg-teal-700 active:scale-[0.98] disabled:opacity-75"
+          >
+            {isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
+            Actualizar Correo
+          </button>
+        </form>
+      </section>
+
+      <section className="rounded-2xl border border-red-200 bg-white p-6">
+        <div className="mb-4 flex items-center gap-3">
+          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-red-50 text-red-600">
+            <AlertTriangle className="h-5 w-5" />
+          </div>
+          <div>
+            <h2 className="text-lg font-bold text-red-900">Eliminar Cuenta</h2>
+            <p className="text-sm text-red-600">Esta acción no se puede deshacer</p>
+          </div>
+        </div>
+
+        {!showDeleteConfirm ? (
+          <button
+            type="button"
+            onClick={() => setShowDeleteConfirm(true)}
+            className="rounded-lg bg-red-600 px-6 py-2.5 text-sm font-semibold text-white transition-all hover:bg-red-700 active:scale-[0.98]"
+          >
+            Eliminar mi cuenta
+          </button>
+        ) : (
+          <div className="space-y-3">
+            <p className="text-sm text-gray-700">
+              Escribe <strong>ELIMINAR</strong> para confirmar que deseas eliminar tu cuenta permanentemente.
+            </p>
+            <input
+              type="text"
+              value={deleteText}
+              onChange={(e) => setDeleteText(e.target.value)}
+              className="w-full rounded-lg border border-red-300 bg-red-50 py-2.5 pl-4 pr-4 text-sm text-gray-900 outline-none transition-all focus:border-red-500 focus:ring-2 focus:ring-red-500/20"
+              placeholder="ELIMINAR"
+            />
+            <div className="flex gap-3">
+              <button
+                type="button"
+                onClick={() => { setShowDeleteConfirm(false); setDeleteText('') }}
+                className="rounded-lg border border-gray-300 px-6 py-2.5 text-sm font-semibold text-gray-700 transition-all hover:bg-gray-50"
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                disabled={deleteText !== 'ELIMINAR'}
+                onClick={handleDeleteAccount}
+                className="rounded-lg bg-red-600 px-6 py-2.5 text-sm font-semibold text-white transition-all hover:bg-red-700 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Confirmar Eliminación
+              </button>
             </div>
-          )}
-        </section>
-      </div>
+          </div>
+        )}
+      </section>
     </div>
-  );
+  )
 }

@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
 import { AnimatePresence, motion } from 'framer-motion';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { EASE } from '@/src/lib/constants';
 
 // ─── Data ─────────────────────────────────────────────────────────────────────
 
@@ -64,8 +65,6 @@ const NEWS: NewsItem[] = [
 
 const CARDS_PER_PAGE = 3;
 const TOTAL_PAGES = Math.ceil(NEWS.length / CARDS_PER_PAGE);
-const EASE = [0.4, 0, 0.2, 1] as const;
-
 // ─── Slide variants (whole page slides in/out) ────────────────────────────────
 
 const pageVariants = {

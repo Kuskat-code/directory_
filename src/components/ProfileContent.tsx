@@ -4,25 +4,20 @@ import { useMemo, useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Pencil } from 'lucide-react';
 import { useSearchParams } from 'next/navigation';
-import { EXAMPLE_DOCTORS, type Doctor, type DoctorAvailability } from '@/src/lib/constants';
+import { EASE, EXAMPLE_DOCTORS, type Doctor, type DoctorAvailability } from '@/src/lib/constants';
 import ProfileHero from '@/src/components/ProfileHero';
 import ProfileDetails from '@/src/components/ProfileDetails';
 import ProfileSidebar from '@/src/components/ProfileSidebar';
 import { buildDefaultProfile } from '@/src/features/profile/lib/defaults';
 import { useProfileEditor } from '@/src/features/profile/hooks/use-profile-editor';
 import { ProfileEditorModal } from '@/src/features/profile/components/ProfileEditorModal';
-import {
-  type UserSessionData,
-} from '@/src/features/profile/profile.actions';
-import { getCachedUserSession } from '@/src/lib/session-cache';
-
-const EASE = [0.4, 0, 0.2, 1] as const;
+import type { UserSessionData } from '@/src/features/profile/profile.actions';
+import { AUTH_CHANGE_EVENT, getCachedUserSession } from '@/src/features/profile/lib/session-client-cache';
 
 export default function ProfileContent() {
   const searchParams = useSearchParams();
   const doctorId = searchParams.get('id') ?? '';
 
-  // Auth State
   const [currentUser, setCurrentUser] = useState<UserSessionData | null>(null);
 
   useEffect(() => {
@@ -36,9 +31,9 @@ export default function ProfileContent() {
     }
     void loadUser();
 
-    window.addEventListener('auth-change', loadUser);
+    window.addEventListener(AUTH_CHANGE_EVENT, loadUser);
     return () => {
-      window.removeEventListener('auth-change', loadUser);
+      window.removeEventListener(AUTH_CHANGE_EVENT, loadUser);
     };
   }, []);
 
@@ -55,7 +50,7 @@ export default function ProfileContent() {
       location: 'San Miguel',
       phone: '',
       email: '',
-      avatar: `https://api.dicebear.com/7.x/initials/svg?seed=Especialista`,
+      avatar: 'https://api.dicebear.com/7.x/initials/svg?seed=Especialista',
       rating: 5.0,
       reviews: 0,
       experience: 0,
@@ -107,7 +102,6 @@ export default function ProfileContent() {
 
   return (
     <>
-      {/* ── Profile Editor Modal ─────────────────────────────── */}
       <ProfileEditorModal
         isOpen={isEditing}
         draft={draft}
@@ -120,7 +114,6 @@ export default function ProfileContent() {
       />
 
       <div className="w-full">
-        {/* ── Banner ────────────────────────────────────────────── */}
         <motion.div
           initial={{ opacity: 0, scale: 1.04 }}
           animate={{ opacity: 1, scale: 1 }}
@@ -131,9 +124,7 @@ export default function ProfileContent() {
           <div className="absolute inset-0 bg-text/20 backdrop-blur-[2px]" />
         </motion.div>
 
-        {/* ── Page body ─────────────────────────────────────────── */}
         <div className={`relative z-10 mx-auto max-w-7xl px-4 pb-16 sm:px-6 lg:px-8 ${isOwner ? '-mt-14' : '-mt-4'}`}>
-          {/* Edit button - only render if user is logged in and owns this profile */}
           {isOwner && (
             <div className="mb-6 flex justify-end">
               <button

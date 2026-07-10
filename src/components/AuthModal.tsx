@@ -5,22 +5,21 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import dynamic from 'next/dynamic';
 import { X, Mail, Lock, User, Eye, EyeOff, Loader2, Stethoscope, ArrowLeft } from 'lucide-react';
-const Turnstile = dynamic(() => import('react-turnstile'), { ssr: false });
 import { signUpAction, signInAction } from '@/src/features/profile/profile.actions';
-import { getCachedUserSession } from '@/src/lib/session-cache';
+import { getCachedUserSession, notifyAuthChange } from '@/src/features/profile/lib/session-client-cache';
+
+const Turnstile = dynamic(() => import('react-turnstile'), { ssr: false });
 
 export default function AuthModal() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const authMode = searchParams.get('auth'); // 'login' o 'register'
-  
+  const authMode = searchParams.get('auth');
+
   const isOpen = authMode === 'login' || authMode === 'register';
   const isRegister = authMode === 'register';
 
-  // Role selection state for registration: 'paciente' | 'doctor' | null
   const [registerRole, setRegisterRole] = useState<'paciente' | 'doctor' | null>(null);
 
-  // Form State
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -43,13 +42,11 @@ export default function AuthModal() {
   }, [isOpen]);
 
   const handleClose = () => {
-    // Para cerrar, removemos el query param "auth"
     const params = new URLSearchParams(searchParams.toString());
     params.delete('auth');
     const queryString = params.toString();
     const targetUrl = window.location.pathname + (queryString ? `?${queryString}` : '');
     router.replace(targetUrl, { scroll: false });
-    // Resetear form
     setName('');
     setEmail('');
     setPassword('');
@@ -94,10 +91,9 @@ export default function AuthModal() {
           captchaToken: captchaToken || undefined,
         });
         if (response.success) {
-          // Registro exitoso, iniciamos sesión de forma automática
           const loginResponse = await signInAction({ email, password });
           if (loginResponse.success) {
-            window.dispatchEvent(new Event('auth-change'));
+            notifyAuthChange();
             if (registerRole === 'paciente') {
               router.push('/dashboard/paciente');
             } else {
@@ -105,7 +101,6 @@ export default function AuthModal() {
             }
             router.refresh();
           } else {
-            // Fallback a login manual en caso de error de autologin
             router.push('?auth=login');
           }
           handleClose();
@@ -119,21 +114,18 @@ export default function AuthModal() {
       startTransition(async () => {
         const response = await signInAction({ email, password });
         if (response.success) {
-          // Login exitoso, redirección inteligente de acuerdo al rol
-          window.dispatchEvent(new Event('auth-change'));
+          notifyAuthChange();
           const sessionResp = await getCachedUserSession();
           if (sessionResp.success && sessionResp.data) {
             if (sessionResp.data.role === 'paciente') {
               router.push('/dashboard/paciente');
-            } else if (sessionResp.data.role === 'doctor') {
-              router.push('/dashboard/doctor');
             } else if (sessionResp.data.role === 'admin') {
               router.push('/dashboard/admin');
             } else {
-              router.push('/');
+              router.push('/dashboard/doctor');
             }
           } else {
-            router.push('/');
+            router.push(`/perfil?id=${response.data.userId}`);
           }
           router.refresh();
           handleClose();
@@ -147,10 +139,8 @@ export default function AuthModal() {
   return (
     <AnimatePresence>
       {isOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4">
-          {/* Backdrop con Blur */}
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <motion.div
-            key="auth-backdrop"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -158,17 +148,15 @@ export default function AuthModal() {
             className="absolute inset-0 bg-gray-900/60 backdrop-blur-sm"
           />
 
-          {/* Caja del Modal */}
           <motion.div
             initial={{ opacity: 0, scale: 0.95, y: 16 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 16 }}
             transition={{ type: 'spring', duration: 0.5, bounce: 0.15 }}
-            className={`relative z-10 w-full max-h-[95vh] overflow-y-auto rounded-2xl bg-white p-5 sm:p-8 shadow-2xl border border-gray-100 flex flex-col transition-all duration-300 ${
+            className={`relative z-10 w-full max-h-[95vh] overflow-y-auto rounded-2xl bg-white p-6 sm:p-8 shadow-2xl border border-gray-100 flex flex-col transition-all duration-300 ${
               isRegister && !registerRole ? 'max-w-2xl' : 'max-w-md'
             }`}
           >
-            {/* Botón Volver (solo visible al registrarse tras elegir rol) */}
             {isRegister && registerRole && (
               <button
                 type="button"
@@ -181,7 +169,6 @@ export default function AuthModal() {
               </button>
             )}
 
-            {/* Botón Cerrar */}
             <button
               type="button"
               onClick={handleClose}
@@ -192,13 +179,12 @@ export default function AuthModal() {
             </button>
 
             {isRegister && !registerRole ? (
-              // ─── Selector de Roles para Registro ─────────────────────────────────
-              <div className="flex flex-col">
-                <div className="mb-5 text-center mt-4 sm:mt-2">
+              <div className="flex flex-col h-full">
+                <div className="mb-8 text-center mt-6 sm:mt-2">
                   <span className="text-sm font-semibold uppercase tracking-wider text-teal-600">
                     Directorio Médico
                   </span>
-                  <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mt-1">
+                  <h2 className="text-3xl font-bold text-gray-900 mt-1">
                     Crear Cuenta
                   </h2>
                   <p className="text-sm text-gray-500 mt-1.5">
@@ -207,38 +193,36 @@ export default function AuthModal() {
                 </div>
 
                 <div className="grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-6">
-                  {/* Rol Paciente */}
                   <button
                     type="button"
                     onClick={() => setRegisterRole('paciente')}
-                    className="flex flex-col items-center text-center p-4 sm:p-6 rounded-2xl border-2 border-gray-100 bg-gray-50/50 hover:bg-teal-50/10 hover:border-teal-500 hover:shadow-lg transition-all duration-300 group cursor-pointer"
+                    className="flex flex-col items-center text-center p-5 sm:p-6 rounded-2xl border-2 border-gray-100 bg-gray-50/50 hover:bg-teal-50/10 hover:border-teal-500 hover:shadow-lg transition-all duration-300 group cursor-pointer"
                   >
-                    <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-teal-50 text-teal-600 transition-all group-hover:bg-teal-600 group-hover:text-white mb-2 sm:mb-4 shadow-sm">
+                    <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-teal-50 text-teal-600 transition-all group-hover:bg-teal-600 group-hover:text-white mb-4 shadow-sm">
                       <User className="h-7 w-7" />
                     </div>
-                    <h3 className="text-base sm:text-lg font-bold text-gray-900 mb-1 sm:mb-2">Soy Paciente</h3>
+                    <h3 className="text-lg font-bold text-gray-900 mb-2">Soy Paciente</h3>
                     <p className="text-xs text-gray-500 leading-relaxed">
                       Busca especialistas certificados, agenda tus citas médicas y mantén tu historial en un solo lugar.
                     </p>
                   </button>
 
-                  {/* Rol Médico */}
                   <button
                     type="button"
                     onClick={() => setRegisterRole('doctor')}
-                    className="flex flex-col items-center text-center p-4 sm:p-6 rounded-2xl border-2 border-gray-100 bg-gray-50/50 hover:bg-teal-50/10 hover:border-teal-500 hover:shadow-lg transition-all duration-300 group cursor-pointer"
+                    className="flex flex-col items-center text-center p-5 sm:p-6 rounded-2xl border-2 border-gray-100 bg-gray-50/50 hover:bg-teal-50/10 hover:border-teal-500 hover:shadow-lg transition-all duration-300 group cursor-pointer"
                   >
-                    <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-teal-50 text-teal-600 transition-all group-hover:bg-teal-600 group-hover:text-white mb-2 sm:mb-4 shadow-sm">
+                    <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-teal-50 text-teal-600 transition-all group-hover:bg-teal-600 group-hover:text-white mb-4 shadow-sm">
                       <Stethoscope className="h-7 w-7" />
                     </div>
-                    <h3 className="text-base sm:text-lg font-bold text-gray-900 mb-1 sm:mb-2">Soy Médico</h3>
+                    <h3 className="text-lg font-bold text-gray-900 mb-2">Soy Médico</h3>
                     <p className="text-xs text-gray-500 leading-relaxed">
                       Crea tu perfil profesional, publica tu consultorio y conecta con miles de pacientes en El Salvador.
                     </p>
                   </button>
                 </div>
 
-                <div className="relative flex items-center justify-center my-4">
+                <div className="relative flex items-center justify-center my-6">
                   <div className="absolute inset-x-0 h-px bg-gray-100" />
                   <span className="relative bg-white px-3 text-xs text-gray-400 uppercase tracking-wider">O</span>
                 </div>
@@ -255,28 +239,25 @@ export default function AuthModal() {
                 </div>
               </div>
             ) : (
-              // ─── Formulario de Registro con Rol / Iniciar Sesión ─────────────────
               <>
-                {/* Encabezado */}
                 <div className="mb-6 text-center mt-6 sm:mt-2">
                   <span className="text-sm font-semibold uppercase tracking-wider text-teal-600">
                     Directorio Médico
                   </span>
                   <h2 className="text-3xl font-bold text-gray-900 mt-1">
-                    {isRegister 
-                      ? registerRole === 'paciente' 
-                        ? 'Registro Paciente' 
-                        : 'Registro Médico' 
+                    {isRegister
+                      ? registerRole === 'paciente'
+                        ? 'Registro Paciente'
+                        : 'Registro Médico'
                       : 'Iniciar Sesión'}
                   </h2>
                   <p className="text-sm text-gray-500 mt-1.5">
-                    {isRegister 
-                      ? `Completa los datos para registrarte como ${registerRole === 'paciente' ? 'paciente' : 'médico'}` 
+                    {isRegister
+                      ? `Completa los datos para registrarte como ${registerRole === 'paciente' ? 'paciente' : 'médico'}`
                       : 'Ingresa tus credenciales para administrar tu perfil'}
                   </p>
                 </div>
 
-                {/* Alerta de Error */}
                 {error && (
                   <motion.div
                     initial={{ opacity: 0, y: -8 }}
@@ -287,7 +268,6 @@ export default function AuthModal() {
                   </motion.div>
                 )}
 
-                {/* Formulario */}
                 <form onSubmit={handleSubmit} className="space-y-4">
                   {isRegister && (
                     <div className="space-y-1">
@@ -399,13 +379,11 @@ export default function AuthModal() {
                   </button>
                 </form>
 
-                {/* Separador */}
                 <div className="relative flex items-center justify-center my-6">
                   <div className="absolute inset-x-0 h-px bg-gray-100" />
                   <span className="relative bg-white px-3 text-xs text-gray-400 uppercase tracking-wider">O</span>
                 </div>
 
-                {/* Botón inferior de Cambio de Modo */}
                 <div className="text-center text-sm text-gray-500">
                   {isRegister ? (
                     <>

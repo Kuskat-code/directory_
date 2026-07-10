@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
+    "preinstall": "npx only-allow pnpm",
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
@@ -33,5 +34,12 @@
     "postcss": "^8.5.15",
     "tailwindcss": "^4",
     "typescript": "^5"
+  },
+  "overrides": {
+    "postcss": ">=8.5.10"
+  },
+  "engines": {
+    "npm": "please-use-pnpm",
+    "pnpm": ">=9"
   }
 }

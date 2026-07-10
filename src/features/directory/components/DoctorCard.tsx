@@ -8,14 +8,13 @@ import { Calendar, Crown, MapPin, Stethoscope } from 'lucide-react';
 import type { Doctor } from '@/src/lib/constants';
 import { Card } from '@/src/components/ui/Card';
 import AppointmentModal from '@/src/components/AppointmentModal';
+import { EASE } from '@/src/lib/constants';
 import type { AppointmentData } from '@/src/components/AppointmentModal';
 
 interface Props {
   doctor: Doctor;
   index?: number;
 }
-
-const EASE = [0.4, 0, 0.2, 1] as const;
 
 const SPECIALTY_COLORS: Record<string, { bg: string; text: string; button: string; gradientFrom: string; gradientTo: string }> = {
   'Medicina General': { bg: 'bg-green-100', text: 'text-green-700', button: 'bg-green-600 hover:bg-green-700', gradientFrom: '#bbf7d0', gradientTo: '#dcfce7' },
