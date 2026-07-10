@@ -1,6 +1,6 @@
 import { forwardRef, type ButtonHTMLAttributes } from 'react';
 
-type ButtonVariant = 'primary' | 'secondary' | 'outline' | 'ghost' | 'accent';
+type ButtonVariant = 'primary' | 'secondary' | 'outline' | 'ghost' | 'accent' | 'whatsapp';
 type ButtonSize = 'sm' | 'md' | 'lg';
 
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
@@ -20,6 +20,8 @@ const variantClasses: Record<ButtonVariant, string> = {
     'text-text-muted hover:bg-secondary hover:text-text focus-visible:ring-primary/20',
   accent:
     'bg-accent text-white shadow-md hover:bg-accent-hover hover:shadow-lg focus-visible:ring-accent/40',
+  whatsapp:
+    'bg-[#25D366] text-white shadow-md hover:bg-[#1EBE57] hover:shadow-lg focus-visible:ring-[#25D366]/40',
 };
 
 const sizeClasses: Record<ButtonSize, string> = {

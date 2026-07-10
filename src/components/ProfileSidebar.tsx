@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Calendar, Clock, MapPin, MessageCircle, Plus, Trash2 } from 'lucide-react';
 import { Button } from '@/src/components/ui/Button';
+import { WhatsAppIcon } from '@/src/components/icons/WhatsAppIcon';
 import AppointmentModal from '@/src/components/AppointmentModal';
 import type { EditableProfile, ProfileScheduleItem } from '@/src/features/profile/types';
 import { EASE } from '@/src/lib/constants';
@@ -119,8 +120,8 @@ export default function ProfileSidebar({
               <Calendar className="h-4 w-4" aria-hidden="true" />
               Agendar Cita
             </button>
-            <Button variant="accent" className="w-full">
-              <MessageCircle className="h-4 w-4" aria-hidden="true" />
+            <Button variant="whatsapp" className="w-full">
+              <WhatsAppIcon className="h-4 w-4" />
               Contactar WhatsApp
             </Button>
           </div>
