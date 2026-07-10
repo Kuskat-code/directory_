@@ -1,11 +1,9 @@
-import Header from '@/src/components/Header'
 import Footer from '@/src/components/Footer'
 import PricingSection from '@/src/components/PricingSection'
 
 export default function PreciosPage() {
   return (
     <div className="min-h-screen bg-white">
-      <Header />
       <main className="pt-20 md:pt-24">
         <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
           <div className="mb-8 text-center">

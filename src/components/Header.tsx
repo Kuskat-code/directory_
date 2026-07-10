@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
@@ -15,6 +15,17 @@ import {
   getCachedUserSession,
   invalidateCachedUserSession,
 } from '@/src/features/profile/lib/session-client-cache';
+
+interface HeaderProps {
+  /**
+   * Session resolved server-side by HeaderServer (src/components/HeaderServer.tsx).
+   * When provided the component renders the correct auth state immediately —
+   * no skeleton, no async fetch on mount.
+   * Omitting this prop (legacy / standalone usage) falls back to the skeleton
+   * + client-side fetch path.
+   */
+  initialUser?: UserSessionData | null;
+}
 
 function getNavLinks(role: UserSessionData['role'] | null) {
   const links: { label: string; href: string }[] = [];
@@ -43,7 +54,7 @@ function isNavLinkActive(pathname: string, href: string) {
   return pathname === href || pathname.startsWith(`${href}/`);
 }
 
-export default function Header() {
+export default function Header({ initialUser }: HeaderProps) {
   const pathname = usePathname();
   const router = useRouter();
   const [scrolled, setScrolled] = useState(false);
@@ -51,8 +62,19 @@ export default function Header() {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
-  const [user, setUser] = useState<UserSessionData | null>(null);
-  const [profileAvatar, setProfileAvatar] = useState<string | null>(null);
+  // When initialUser is provided by the Server Component parent, start from that value
+  // immediately (no flash, no skeleton).  When it is undefined (legacy / standalone usage),
+  // start from undefined so the skeleton shows until the async fetch resolves.
+  const [user, setUser] = useState<UserSessionData | null | undefined>(
+    initialUser !== undefined ? initialUser : undefined,
+  );
+  const [profileAvatar, setProfileAvatar] = useState<string | null>(
+    initialUser?.avatar ?? null,
+  );
+
+  // Track whether the server already provided a resolved session so the mount
+  // effect can skip the redundant initial client-side fetch.
+  const hasInitialUser = useRef(initialUser !== undefined);
 
   const role = user?.role ?? null;
   const navLinks = getNavLinks(role);
@@ -90,13 +112,21 @@ export default function Header() {
         setProfileAvatar(null);
       }
     }
-    void loadSession();
+
+    // Skip the initial client-side fetch when the server already resolved the
+    // session — the state is already correct from `initialUser`.  We still
+    // register the AUTH_CHANGE_EVENT listener so login/logout via AuthModal
+    // (which can't go through the server) updates the header without a reload.
+    if (!hasInitialUser.current) {
+      void loadSession();
+    }
 
     window.addEventListener(AUTH_CHANGE_EVENT, loadSession);
     return () => {
       window.removeEventListener(AUTH_CHANGE_EVENT, loadSession);
     };
-  }, [pathname]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // intentionally empty — session only changes on explicit auth events, not on route change
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
@@ -156,7 +186,17 @@ export default function Header() {
           </ul>
 
           <div className="absolute right-6 hidden md:block">
-            {user ? (
+            {user === undefined ? (
+              // ── Loading skeleton ─────────────────────────────────────────────────
+              // Rendered on the very first paint before the async session resolves.
+              // Matches the login-button height so nothing shifts when the real UI
+              // appears.  Absolutely positioned → zero CLS impact on the layout.
+              <div
+                className="h-10 w-28 animate-pulse rounded-[var(--radius-button)] bg-gray-200/70"
+                aria-hidden="true"
+              />
+            ) : user ? (
+              // ── Authenticated ────────────────────────────────────────────────────
               <div className="flex items-center gap-4">
                 {role === 'doctor' || role === 'admin' ? (
                   <div className="relative" ref={dropdownRef}>
@@ -245,6 +285,7 @@ export default function Header() {
                 )}
               </div>
             ) : (
+              // ── Not authenticated ────────────────────────────────────────────────
               <button
                 type="button"
                 className={`inline-flex items-center justify-center rounded-[var(--radius-button)] px-5 py-2.5 text-sm font-semibold whitespace-nowrap transition-all duration-300 transition-premium active:scale-[0.98] border ${hasSolidBg
@@ -299,7 +340,8 @@ export default function Header() {
                 </li>
               );
             })}
-            {user ? (
+            {user === undefined ? null : user ? (
+              // ── Mobile: authenticated ──────────────────────────────────────────
               <>
                 {(role === 'doctor' || role === 'admin') && (
                   <>
@@ -363,6 +405,7 @@ export default function Header() {
                 </li>
               </>
             ) : (
+              // ── Mobile: not authenticated ──────────────────────────────────────
               <li>
                 <Button
                   className="w-full"

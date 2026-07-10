@@ -3,6 +3,7 @@ import { Inter } from "next/font/google";
 import { Suspense } from "react";
 import "./globals.css";
 import AuthModal from "@/src/components/AuthModal";
+import HeaderServer from "@/src/components/HeaderServer";
 import { getSiteUrl, siteConfig } from "@/src/lib/seo";
 
 const inter = Inter({
@@ -65,12 +66,13 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="es" data-scroll-behavior="smooth" className={inter.variable} suppressHydrationWarning>
-      <body className="min-h-screen">
-        {children}
-        <Suspense fallback={null}>
-          <AuthModal />
-        </Suspense>
-      </body>
+        <body className="min-h-screen">
+          <HeaderServer />
+          {children}
+          <Suspense fallback={null}>
+            <AuthModal />
+          </Suspense>
+        </body>
     </html>
   );
 }

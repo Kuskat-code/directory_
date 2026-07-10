@@ -4,7 +4,6 @@ import { useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { AlertCircle, Search, SlidersHorizontal } from 'lucide-react';
 import type { Doctor } from '@/src/lib/constants';
-import Header from '@/src/components/Header';
 import Footer from '@/src/components/Footer';
 import DoctorCard from '@/src/features/directory/components/DoctorCard';
 import { SectionContainer } from '@/src/components/ui/SectionContainer';
@@ -75,8 +74,6 @@ export default function DirectorioContent({
       </div>
 
       <div className="relative z-10">
-      <Header />
-
       <main className="pt-24 pb-16">
         <SectionContainer spacing="sm" size="wide">
           <div className="mb-8 border-b border-border/80 pb-6">
