@@ -3,15 +3,14 @@ import { NextResponse, type NextRequest } from 'next/server'
 
 export async function proxy(request: NextRequest) {
   let response = NextResponse.next({
-    request: { headers: request.headers },
+    request: {
+      headers: request.headers,
+    },
   })
 
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL || '';
-  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY || '';
-
   const supabase = createServerClient(
-    supabaseUrl,
-    supabaseAnonKey,
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
       cookies: {
         getAll() {
@@ -21,7 +20,11 @@ export async function proxy(request: NextRequest) {
           cookiesToSet.forEach(({ name, value, options }) =>
             request.cookies.set({ name, value, ...options })
           )
-          response = NextResponse.next({ request: { headers: request.headers } })
+          response = NextResponse.next({
+            request: {
+              headers: request.headers,
+            },
+          })
           cookiesToSet.forEach(({ name, value, options }) =>
             response.cookies.set({ name, value, ...options })
           )
@@ -31,23 +34,57 @@ export async function proxy(request: NextRequest) {
   )
 
   const { data: { user } } = await supabase.auth.getUser()
+
   const url = request.nextUrl.clone()
   const path = url.pathname
   const userRole = user?.app_metadata?.role
 
-  // Dashboard routes - requieren autenticación y autorizaciones por rol
-  if (path.startsWith('/dashboard')) {
+
+  // Admin route - solo admin
+  if (path.startsWith('/admin') && userRole !== 'admin') {
+    return NextResponse.redirect(new URL('/', request.url))
+  }
+
+  // Dashboard routes - requieren autenticación
+  if (path.startsWith('/dashboard/paciente') && (!user || userRole !== 'paciente')) {
     if (!user) {
       return NextResponse.redirect(new URL('/?auth=login', request.url))
     }
-    if (path.startsWith('/dashboard/paciente') && userRole !== 'paciente') {
-      return NextResponse.redirect(new URL('/', request.url))
+    return NextResponse.redirect(new URL('/', request.url))
+  }
+
+  if (path.startsWith('/dashboard/doctor') && (!user || (userRole !== 'doctor' && userRole !== 'admin'))) {
+    if (!user) {
+      return NextResponse.redirect(new URL('/?auth=login', request.url))
     }
-    if (path.startsWith('/dashboard/doctor') && userRole !== 'doctor') {
-      return NextResponse.redirect(new URL('/', request.url))
+    return NextResponse.redirect(new URL('/', request.url))
+  }
+
+  if (path.startsWith('/dashboard/admin') && (!user || userRole !== 'admin')) {
+    if (!user) {
+      return NextResponse.redirect(new URL('/?auth=login', request.url))
     }
-    if (path.startsWith('/dashboard/admin') && userRole !== 'admin') {
-      return NextResponse.redirect(new URL('/', request.url))
+    return NextResponse.redirect(new URL('/', request.url))
+  }
+
+  // Configuracion route - solo doctor
+  if (path.startsWith('/configuracion') && (!user || (userRole !== 'doctor' && userRole !== 'admin'))) {
+    if (!user) {
+      return NextResponse.redirect(new URL('/?auth=login', request.url))
+    }
+    return NextResponse.redirect(new URL('/', request.url))
+  }
+
+  // Redirigir "/" al dashboard según el rol si está autenticado
+  if (path === '/' && user) {
+    if (userRole === 'paciente') {
+      return NextResponse.redirect(new URL('/dashboard/paciente', request.url))
+    }
+    if (userRole === 'doctor') {
+      return NextResponse.redirect(new URL('/dashboard/doctor', request.url))
+    }
+    if (userRole === 'admin') {
+      return NextResponse.redirect(new URL('/dashboard/admin', request.url))
     }
   }
 
