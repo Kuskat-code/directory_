@@ -189,7 +189,7 @@ export default function AppointmentModal({
                 <span className="flex h-6 w-6 items-center justify-center rounded-md bg-secondary">
                   <Calendar className="h-3.5 w-3.5 text-primary" aria-hidden="true" />
                 </span>
-                <h2 className="text-sm font-bold text-text">Agendar Cita</h2>
+                <h2 className="text-sm font-bold text-text">Agendar Cita Médica</h2>
               </div>
               <button
                 type="button"
@@ -207,7 +207,7 @@ export default function AppointmentModal({
                   <CheckCircle2 className="h-8 w-8 text-success" />
                 </span>
                 <div>
-                  <p className="text-lg font-bold text-text">Cita agendada</p>
+                  <p className="text-lg font-bold text-text">Cita Médica Agendada</p>
                   <p className="mt-1 text-sm text-text-muted">
                     {isEmergency ? 'Emergencia registrada. Te contactaremos pronto.' : 'Tu cita ha sido registrada exitosamente.'}
                   </p>

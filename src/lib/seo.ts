@@ -1,10 +1,10 @@
 const DEFAULT_SITE_URL = 'http://localhost:3000';
 
 export const siteConfig = {
-  name: 'Directorio Medico El Salvador',
-  title: 'Directorio Medico de El Salvador | Especialistas verificados',
+  name: 'Directorio Médico El Salvador',
+  title: 'Directorio Médico de El Salvador | Especialistas verificados',
   description:
-    'Busca medicos y especialistas verificados en El Salvador por especialidad, ubicacion y disponibilidad.',
+    'Busca médicos y especialistas verificados en El Salvador por especialidad, ubicación y disponibilidad.',
   url: process.env.NEXT_PUBLIC_SITE_URL || DEFAULT_SITE_URL,
 };
 

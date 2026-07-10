@@ -14,6 +14,7 @@ import {
   getDirectoryLocations,
   getDirectorySpecialties,
 } from '@/src/features/directory/lib/directory-filters';
+import { SpecialtyIconBackground } from '@/src/features/directory/components/SpecialtyIconBackground';
 
 interface DirectorioContentProps {
   initialDoctors: Doctor[];
@@ -68,7 +69,12 @@ export default function DirectorioContent({
   const hasFilters = specialty || location;
 
   return (
-    <div className="relative min-h-screen bg-secondary/40">
+    <div className="relative min-h-screen overflow-hidden bg-secondary/40">
+      <div className="pointer-events-none absolute inset-0 z-0">
+        <SpecialtyIconBackground specialty={specialty} />
+      </div>
+
+      <div className="relative z-10">
       <Header />
 
       <main className="pt-24 pb-16">
@@ -78,7 +84,7 @@ export default function DirectorioContent({
               <p className="text-xs font-semibold uppercase tracking-[0.18em] text-primary">
                 Especialistas verificados
               </p>
-              <h1 className="mt-2 text-heading font-bold text-text">Directorio Medico</h1>
+              <h1 className="mt-2 text-heading font-bold text-text">Directorio Médico</h1>
               <p className="mt-2 max-w-2xl text-sm leading-6 text-text-muted">
                 Filtra por especialidad y departamento para encontrar atencion medica disponible en El Salvador.
               </p>
@@ -181,6 +187,7 @@ export default function DirectorioContent({
       </main>
 
       <Footer />
+      </div>
     </div>
   );
 }

@@ -51,16 +51,16 @@ const getCachedDirectoryDoctors = unstable_cache(loadDirectoryDoctors, ['directo
 
 export async function generateMetadata({ searchParams }: DirectorioPageProps): Promise<Metadata> {
   const { specialty, location } = await getDirectorySearchParams(searchParams);
-  const titleParts = ['Directorio medico'];
+  const titleParts = ['Directorio Médico'];
   if (specialty) titleParts.push(specialty);
   if (location) titleParts.push(location);
 
   const title = titleParts.join(' - ');
   const description = [
-    'Encuentra medicos y especialistas verificados en El Salvador',
+    'Encuentra médicos y especialistas verificados en El Salvador',
     specialty ? `en ${specialty}` : '',
     location ? `en ${location}` : '',
-    'con filtros por ubicacion y especialidad.',
+    'con filtros por ubicación y especialidad.',
   ]
     .filter(Boolean)
     .join(' ');
@@ -101,7 +101,7 @@ export default async function DirectorioPage({ searchParams }: DirectorioPagePro
   const itemListJsonLd = {
     '@context': 'https://schema.org',
     '@type': 'ItemList',
-    name: 'Directorio medico de El Salvador',
+    name: 'Directorio Médico de El Salvador',
     url: getSiteUrl('/directorio').toString(),
     numberOfItems: filteredDoctors.length,
     itemListElement: filteredDoctors.slice(0, 24).map((doctor, index) => ({

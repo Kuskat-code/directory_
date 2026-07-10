@@ -59,7 +59,6 @@ export default function HeroSection() {
                 className="transition-transform duration-300 group-hover:translate-x-1"
                 aria-hidden="true"
               >
-                →
               </span>
             </Link>
             <Link

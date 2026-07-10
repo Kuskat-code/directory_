@@ -6,6 +6,7 @@ import { MapPin } from 'lucide-react';
 import { EASE, MEDICAL_SPECIALTIES as SPECIALTIES } from '@/src/lib/constants';
 import type { Doctor } from '@/src/lib/constants';
 import type { EditableProfile } from '@/src/features/profile/types';
+import { getSpecialtyColorTokens } from '@/src/lib/specialty-colors';
 import { ImageUploader } from '@/src/features/profile/components/ImageUploader';
 
 interface ProfileHeroProps {
@@ -20,6 +21,8 @@ export default function ProfileHero({
   isEditing = false,
   onChange,
 }: ProfileHeroProps) {
+  const specialtyColors = getSpecialtyColorTokens(profile.specialty);
+
   return (
     <motion.section
       initial={{ opacity: 0, y: 28 }}
@@ -137,7 +140,11 @@ export default function ProfileHero({
                 <h1 className="text-2xl font-bold text-text tracking-tight">{profile.name}</h1>
                 <span className="text-accent text-lg" title="Perfil Verificado">&#10003;</span>
               </div>
-              <p className="text-sm font-medium text-primary md:text-base">{profile.specialty}</p>
+              <span
+                className={`inline-flex items-center rounded-[var(--radius-pill)] px-3 py-1 text-sm font-semibold ${specialtyColors.bg} ${specialtyColors.text}`}
+              >
+                {profile.specialty}
+              </span>
               <div className="flex flex-wrap justify-center gap-x-4 gap-y-2 text-xs font-medium text-text-muted md:justify-start">
                 <span className="flex items-center gap-1">
                   <MapPin className="h-3.5 w-3.5" aria-hidden="true" />

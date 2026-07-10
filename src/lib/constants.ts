@@ -202,7 +202,7 @@ export const EXAMPLE_DOCTORS: Doctor[] = [
     reviews: 27,
     experience: 14,
     availability: 'unavailable',
-    bio: 'Ortopedico especializado en traumatología deportiva y reemplazos articulares.',
+    bio: 'Ortopédico especializado en traumatología deportiva y reemplazos articulares.',
     certifications: ['Universidad de El Salvador', 'Hospital Militar'],
     languages: ['Español'],
   },
